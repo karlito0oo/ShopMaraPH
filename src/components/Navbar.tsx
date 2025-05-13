@@ -1,0 +1,121 @@
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { useCart } from '../context/CartContext';
+
+const Navbar = () => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { getTotalItems } = useCart();
+
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
+  };
+
+  return (
+    <>
+      {/* Promotional Banner */}
+      <div className="bg-black text-white text-center py-2 text-sm">
+        Sale is on! 25% off sitewide using SHOPMARAPH25 at checkout
+      </div>
+      
+      {/* Main Navbar */}
+      <nav className="border-b border-gray-200 relative">
+        <div className="flex">
+          {/* Logo */}
+          <div className="bg-yellow-300 py-4 px-8">
+            <Link to="/" className="font-bold text-lg text-black no-underline">
+             ShopMara PH
+            </Link>
+          </div>
+          
+          {/* Mobile Menu Button */}
+          <button
+            className="md:hidden ml-auto flex items-center px-4"
+            onClick={toggleMenu}
+            aria-label="Toggle navigation menu"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+          
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex items-center ml-auto">
+            <Link to="/products" className="border-l border-gray-200 py-5 px-10 text-black no-underline hover:bg-gray-100">
+              All Products
+            </Link>
+            <Link to="/new" className="border-l border-gray-200 py-5 px-10 text-black no-underline hover:bg-gray-100">
+              New
+            </Link>
+            <Link to="/women" className="border-l border-gray-200 py-5 px-10 text-black no-underline hover:bg-gray-100">
+              Women
+            </Link>
+            <Link to="/men" className="border-l border-gray-200 py-5 px-10 text-black no-underline hover:bg-gray-100">
+              Men
+            </Link>
+            
+            {/* Login */}
+            <Link to="/login" className="border-l border-gray-200 py-5 px-5 text-black no-underline hover:bg-gray-100 flex items-center gap-2">
+              <div className="w-5 h-5 rounded-full bg-gray-800 flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-3 h-3 text-white" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <span className="text-sm">Log In</span>
+            </Link>
+            
+            {/* Cart */}
+            <Link to="/cart" className="border-l border-gray-200 py-5 px-5 text-black no-underline hover:bg-gray-100 flex items-center justify-center relative">
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3zM16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 18a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" />
+              </svg>
+              {getTotalItems() > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full text-xs w-5 h-5 flex items-center justify-center">
+                  {getTotalItems()}
+                </span>
+              )}
+            </Link>
+          </div>
+        </div>
+        
+        {/* Mobile Menu */}
+        {isMenuOpen && (
+          <div className="md:hidden w-full bg-white border-t border-gray-200">
+            <Link to="/products" className="block py-3 px-4 border-b border-gray-200 text-black no-underline hover:bg-gray-100">
+              All Products
+            </Link>
+            <Link to="/new" className="block py-3 px-4 border-b border-gray-200 text-black no-underline hover:bg-gray-100">
+              New
+            </Link>
+            <Link to="/women" className="block py-3 px-4 border-b border-gray-200 text-black no-underline hover:bg-gray-100">
+              Women
+            </Link>
+            <Link to="/men" className="block py-3 px-4 border-b border-gray-200 text-black no-underline hover:bg-gray-100">
+              Men
+            </Link>
+            <Link to="/login" className="flex items-center gap-2 py-3 px-4 border-b border-gray-200 text-black no-underline hover:bg-gray-100">
+              <div className="w-5 h-5 rounded-full bg-gray-800 flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-3 h-3 text-white" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <span className="text-sm">Log In</span>
+            </Link>
+            <Link to="/cart" className="flex items-center gap-2 py-3 px-4 text-black no-underline hover:bg-gray-100">
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3zM16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 18a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" />
+              </svg>
+              <span>Cart</span>
+              {getTotalItems() > 0 && (
+                <span className="bg-red-500 text-white rounded-full text-xs px-2 py-1">
+                  {getTotalItems()}
+                </span>
+              )}
+            </Link>
+          </div>
+        )}
+      </nav>
+    </>
+  );
+};
+
+export default Navbar; 
