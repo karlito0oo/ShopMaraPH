@@ -29,12 +29,12 @@ const Navbar = () => {
           
           {/* Mobile Menu Button */}
           <button
-            className="md:hidden ml-auto flex items-center px-4"
+            className={`md:hidden ml-auto flex items-center justify-center px-4 py-4 h-full transition-colors ${isMenuOpen ? 'bg-black text-yellow-300' : 'bg-yellow-300 text-black'}`}
             onClick={toggleMenu}
             aria-label="Toggle navigation menu"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d={isMenuOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"} />
             </svg>
           </button>
           
@@ -78,8 +78,12 @@ const Navbar = () => {
         </div>
         
         {/* Mobile Menu */}
-        {isMenuOpen && (
-          <div className="md:hidden w-full bg-white border-t border-gray-200">
+        <div 
+          className={`md:hidden w-full bg-white border-t border-gray-200 overflow-hidden transition-all duration-300 ease-in-out ${
+            isMenuOpen ? 'max-h-screen opacity-100' : 'max-h-0 opacity-0'
+          }`}
+        >
+          <div className="py-2">
             <Link to="/products" className="block py-3 px-4 border-b border-gray-200 text-black no-underline hover:bg-gray-100">
               All Products
             </Link>
@@ -112,7 +116,7 @@ const Navbar = () => {
               )}
             </Link>
           </div>
-        )}
+        </div>
       </nav>
     </>
   );

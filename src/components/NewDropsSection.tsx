@@ -3,7 +3,7 @@ import { products } from '../data/products';
 import type { Product } from '../types/product';
 
 const NewDropsSection = () => {
-  // Filter to show only new products and limit to 8 items
+  // Filter to show only new products and limit to 8 items (for 4x2 grid)
   const newProducts = products
     .filter(product => product.category === 'new')
     .slice(0, 8);
@@ -13,31 +13,29 @@ const NewDropsSection = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <h2 className="text-3xl font-bold mb-8">New Drops</h2>
         
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          <div className="md:col-span-3">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {newProducts.map((product) => (
-                <div key={product.id} className="group relative">
-                  {product.isBestSeller && (
-                    <div className="absolute top-0 right-0 z-10 bg-yellow-400 text-xs font-bold px-2 py-1 m-2">
-                      Best Seller
-                    </div>
-                  )}
-                  <div className="aspect-h-1 aspect-w-1 w-full overflow-hidden bg-gray-200 group-hover:opacity-90">
-                    <img
-                      src={product.image}
-                      alt={product.name}
-                      className="h-full w-full object-cover object-center"
-                    />
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          {newProducts.map((product) => (
+            <div key={product.id} className="group relative">
+              <Link to={`/product/${product.id}`} className="block no-underline text-inherit">
+                {product.isBestSeller && (
+                  <div className="absolute top-0 right-0 z-10 bg-yellow-400 text-xs font-bold px-2 py-1 m-2">
+                    Best Seller
                   </div>
-                  <div className="mt-4">
-                    <h3 className="text-sm text-gray-700">{product.name}</h3>
-                    <p className="mt-1 text-sm font-medium text-gray-900">₱{product.price.toFixed(2)}</p>
-                  </div>
+                )}
+                <div className="aspect-h-1 aspect-w-1 w-full overflow-hidden bg-gray-200 group-hover:opacity-90">
+                  <img
+                    src={product.image}
+                    alt={product.name}
+                    className="h-full w-full object-cover object-center"
+                  />
                 </div>
-              ))}
+                <div className="mt-4">
+                  <h3 className="text-sm text-gray-700">{product.name}</h3>
+                  <p className="mt-1 text-sm font-medium text-gray-900">₱{product.price.toFixed(2)}</p>
+                </div>
+              </Link>
             </div>
-          </div>
+          ))}
         </div>
         
         <div className="text-center mt-12">

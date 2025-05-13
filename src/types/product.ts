@@ -6,6 +6,7 @@ export interface Product {
   name: string;
   price: number;
   image: string;
+  images?: string[];  // Optional array of additional images
   category: ProductCategory;
   sizes: ProductSize[];
   isBestSeller?: boolean;

@@ -1,7 +1,10 @@
+import { useState } from 'react';
 import { useCart } from '../context/CartContext';
 import { Link } from 'react-router-dom';
+import CheckoutModal from '../components/CheckoutModal';
 
 const CartPage = () => {
+  const [isCheckoutModalOpen, setIsCheckoutModalOpen] = useState(false);
   const { 
     cartItems, 
     removeFromCart, 
@@ -13,6 +16,14 @@ const CartPage = () => {
   const subtotal = getTotalPrice();
   const shipping = subtotal > 0 ? 5.99 : 0;
   const total = subtotal + shipping;
+
+  const openCheckoutModal = () => {
+    setIsCheckoutModalOpen(true);
+  };
+
+  const closeCheckoutModal = () => {
+    setIsCheckoutModalOpen(false);
+  };
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -142,6 +153,7 @@ const CartPage = () => {
                 <span className="font-medium text-lg">₱{total.toFixed(2)}</span>
               </div>
               <button
+                onClick={openCheckoutModal}
                 className="w-full bg-black text-white py-3 px-4 font-medium rounded hover:bg-gray-800 transition-colors"
               >
                 Checkout
@@ -150,6 +162,13 @@ const CartPage = () => {
           </div>
         </div>
       )}
+
+      {/* Checkout Modal */}
+      <CheckoutModal 
+        isOpen={isCheckoutModalOpen} 
+        onClose={closeCheckoutModal} 
+        totalAmount={total}
+      />
     </div>
   )
 }

@@ -10,6 +10,7 @@ const ProductDetailPage = () => {
   const [selectedSize, setSelectedSize] = useState<ProductSize | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [error, setError] = useState('');
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const { addToCart } = useCart();
   const navigate = useNavigate();
 
@@ -17,6 +18,7 @@ const ProductDetailPage = () => {
     const foundProduct = products.find(p => p.id.toString() === productId);
     if (foundProduct) {
       setProduct(foundProduct);
+      setCurrentImageIndex(0); // Reset to first image when product changes
     }
   }, [productId]);
 
@@ -37,6 +39,17 @@ const ProductDetailPage = () => {
     setError('');
   };
 
+  // Get product images array or create one from the single image
+  const getProductImages = () => {
+    if (!product) return [];
+    return product.images || [product.image];
+  };
+
+  // Handle thumbnail click to change main image
+  const handleThumbnailClick = (index: number) => {
+    setCurrentImageIndex(index);
+  };
+
   if (!product) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -53,18 +66,46 @@ const ProductDetailPage = () => {
     );
   }
 
+  const productImages = getProductImages();
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        {/* Product Image */}
-        <div className="bg-gray-100 p-4 rounded">
-          <div className="aspect-w-1 aspect-h-1 bg-white">
-            <img 
-              src={product.image} 
-              alt={product.name}
-              className="w-full h-full object-contain"
-            />
+        {/* Product Images */}
+        <div className="space-y-4">
+          {/* Main Image */}
+          <div className="bg-gray-100 p-4 rounded">
+            <div className="aspect-w-1 aspect-h-1 bg-white">
+              <img 
+                src={productImages[currentImageIndex]} 
+                alt={product.name}
+                className="w-full h-full object-contain"
+              />
+            </div>
           </div>
+          
+          {/* Image Thumbnails */}
+          {productImages.length > 1 && (
+            <div className="flex space-x-2 overflow-x-auto">
+              {productImages.map((img, index) => (
+                <button 
+                  key={index}
+                  onClick={() => handleThumbnailClick(index)}
+                  className={`flex-shrink-0 w-16 h-16 border-2 rounded overflow-hidden ${
+                    currentImageIndex === index 
+                      ? 'border-black' 
+                      : 'border-gray-200 hover:border-gray-400'
+                  }`}
+                >
+                  <img 
+                    src={img} 
+                    alt={`${product.name} thumbnail ${index + 1}`}
+                    className="w-full h-full object-cover"
+                  />
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Product Details */}
