@@ -89,7 +89,7 @@ const CartPage = () => {
                         <div className="flex items-center">
                           <button 
                             className="w-8 h-8 flex items-center justify-center rounded-l border-2 border-gray-300 bg-white text-black hover:border-gray-500 font-medium" 
-                            onClick={() => updateQuantity(item.product.id, item.size, item.quantity - 1)}
+                            onClick={() => item.id !== undefined ? updateQuantity(item.id, item.quantity - 1) : null}
                           >
                             -
                           </button>
@@ -98,7 +98,7 @@ const CartPage = () => {
                           </span>
                           <button 
                             className="w-8 h-8 flex items-center justify-center rounded-r border-2 border-gray-300 bg-white text-black hover:border-gray-500 font-medium"
-                            onClick={() => updateQuantity(item.product.id, item.size, item.quantity + 1)}
+                            onClick={() => item.id !== undefined ? updateQuantity(item.id, item.quantity + 1) : null}
                           >
                             +
                           </button>
@@ -110,7 +110,7 @@ const CartPage = () => {
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <button 
                           className="text-red-600 hover:text-red-800 font-medium"
-                          onClick={() => removeFromCart(item.product.id, item.size)}
+                          onClick={() => item.id !== undefined ? removeFromCart(item.id) : null}
                         >
                           Remove
                         </button>

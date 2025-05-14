@@ -3,7 +3,10 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\CartController;
 use App\Http\Controllers\Api\ProductController;
+use App\Http\Controllers\Api\UserProfileController;
+use App\Http\Controllers\Api\OrderController;
 use App\Http\Middleware\AdminMiddleware;
 
 /*
@@ -30,6 +33,22 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('user', [AuthController::class, 'user']);
     Route::post('logout', [AuthController::class, 'logout']);
     
+    // Profile routes
+    Route::get('profile', [UserProfileController::class, 'getProfile']);
+    Route::post('profile', [UserProfileController::class, 'updateProfile']);
+    
+    // Cart routes
+    Route::get('cart', [CartController::class, 'getCart']);
+    Route::post('cart/add', [CartController::class, 'addToCart']);
+    Route::post('cart/update', [CartController::class, 'updateCartItem']);
+    Route::post('cart/remove', [CartController::class, 'removeFromCart']);
+    Route::post('cart/clear', [CartController::class, 'clearCart']);
+    
+    // Order routes
+    Route::post('orders', [OrderController::class, 'createOrder']);
+    Route::get('orders', [OrderController::class, 'getUserOrders']);
+    Route::get('orders/{id}', [OrderController::class, 'getUserOrder']);
+    
     // Admin routes for product management
     Route::middleware([AdminMiddleware::class])->group(function () {
         // Create a new product
@@ -46,5 +65,10 @@ Route::middleware('auth:sanctum')->group(function () {
         
         // Restock a product
         Route::post('products/{id}/restock', [ProductController::class, 'restock']);
+        
+        // Order management
+        Route::get('admin/orders', [OrderController::class, 'getAllOrders']);
+        Route::get('admin/orders/{id}', [OrderController::class, 'getOrder']);
+        Route::post('admin/orders/{id}/status', [OrderController::class, 'updateOrderStatus']);
     });
 }); 

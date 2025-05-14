@@ -1,87 +1,217 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import type { Product, ProductSize } from '../types/product';
+import { useAuth } from './AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 interface CartItem {
   product: Product;
   quantity: number;
   size: ProductSize;
+  id?: number; // Cart item ID from the database
 }
 
 interface CartContextType {
   cartItems: CartItem[];
-  addToCart: (product: Product, size: ProductSize, quantity: number) => void;
-  removeFromCart: (productId: string | number, size: ProductSize) => void;
-  updateQuantity: (productId: string | number, size: ProductSize, quantity: number) => void;
-  clearCart: () => void;
+  addToCart: (product: Product, size: ProductSize, quantity: number) => Promise<void>;
+  removeFromCart: (itemId: number) => Promise<void>;
+  updateQuantity: (itemId: number, quantity: number) => Promise<void>;
+  clearCart: () => Promise<void>;
   getTotalItems: () => number;
   getTotalPrice: () => number;
   isInCart: (productId: string | number, size: ProductSize) => boolean;
+  isLoading: boolean;
+  error: string | null;
+  token: string | null;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  // Initialize cart from localStorage if available
-  const [cartItems, setCartItems] = useState<CartItem[]>(() => {
-    const savedCart = localStorage.getItem('shopmara-cart');
-    return savedCart ? JSON.parse(savedCart) : [];
-  });
+  const { token, isAuthenticated, user } = useAuth();
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
 
-  // Save cart to localStorage whenever it changes
+  // Fetch cart from API when user logs in
   useEffect(() => {
-    localStorage.setItem('shopmara-cart', JSON.stringify(cartItems));
-  }, [cartItems]);
+    if (isAuthenticated && token) {
+      fetchCart();
+    } else {
+      // Clear the cart when the user logs out
+      setCartItems([]);
+    }
+  }, [isAuthenticated, token]);
 
-  const addToCart = (product: Product, size: ProductSize, quantity: number = 1) => {
-    setCartItems(prevItems => {
-      // Check if the item is already in the cart with the same size
-      const existingItemIndex = prevItems.findIndex(
-        item => item.product.id === product.id && item.size === size
-      );
-
-      if (existingItemIndex >= 0) {
-        // Item already exists, update quantity
-        const newItems = prevItems.map((item, index) => {
-          if (index === existingItemIndex) {
-            return {
-              ...item,
-              quantity: item.quantity + quantity
-            };
-          }
-          return item;
-        });
-        return newItems;
-      } else {
-        // Item doesn't exist, add it to cart
-        return [...prevItems, { product, size, quantity }];
+  const fetchCart = async () => {
+    if (!isAuthenticated || !token) return;
+    
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      const response = await fetch('http://localhost:8000/api/cart', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json',
+        },
+        credentials: 'include',
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch cart');
       }
-    });
+      
+      const data = await response.json();
+      setCartItems(data.data.items || []);
+    } catch (error) {
+      console.error('Error fetching cart:', error);
+      setError(error instanceof Error ? error.message : 'An error occurred while fetching the cart');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const removeFromCart = (productId: string | number, size: ProductSize) => {
-    setCartItems(prevItems => 
-      prevItems.filter(item => !(item.product.id === productId && item.size === size))
-    );
-  };
-
-  const updateQuantity = (productId: string | number, size: ProductSize, quantity: number) => {
-    if (quantity <= 0) {
-      removeFromCart(productId, size);
+  const addToCart = async (product: Product, size: ProductSize, quantity: number = 1) => {
+    // If not authenticated, redirect to login page
+    if (!isAuthenticated || !token) {
+      // Redirect to login page
+      navigate('/login');
       return;
     }
-
-    setCartItems(prevItems => 
-      prevItems.map(item => 
-        item.product.id === productId && item.size === size
-          ? { ...item, quantity }
-          : item
-      )
-    );
+    
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      const response = await fetch('http://localhost:8000/api/cart/add', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          product_id: product.id,
+          size,
+          quantity,
+        }),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to add item to cart');
+      }
+      
+      const data = await response.json();
+      setCartItems(data.data.items || []);
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+      setError(error instanceof Error ? error.message : 'An error occurred while adding to cart');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const clearCart = () => {
-    setCartItems([]);
+  const removeFromCart = async (itemId: number) => {
+    if (!isAuthenticated || !token) return;
+    
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      const response = await fetch('http://localhost:8000/api/cart/remove', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          cart_item_id: itemId,
+        }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to remove item from cart');
+      }
+      
+      const data = await response.json();
+      setCartItems(data.data.items || []);
+    } catch (error) {
+      console.error('Error removing from cart:', error);
+      setError(error instanceof Error ? error.message : 'An error occurred while removing from cart');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const updateQuantity = async (itemId: number, quantity: number) => {
+    if (!isAuthenticated || !token) return;
+    
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      const response = await fetch('http://localhost:8000/api/cart/update', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          cart_item_id: itemId,
+          quantity,
+        }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to update cart item');
+      }
+      
+      const data = await response.json();
+      setCartItems(data.data.items || []);
+    } catch (error) {
+      console.error('Error updating cart item:', error);
+      setError(error instanceof Error ? error.message : 'An error occurred while updating cart');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const clearCart = async () => {
+    if (!isAuthenticated || !token) return;
+    
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      const response = await fetch('http://localhost:8000/api/cart/clear', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json',
+        },
+        credentials: 'include',
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to clear cart');
+      }
+      
+      setCartItems([]);
+    } catch (error) {
+      console.error('Error clearing cart:', error);
+      setError(error instanceof Error ? error.message : 'An error occurred while clearing cart');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const getTotalItems = () => {
@@ -109,7 +239,10 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         clearCart,
         getTotalItems,
         getTotalPrice,
-        isInCart
+        isInCart,
+        isLoading,
+        error,
+        token
       }}
     >
       {children}

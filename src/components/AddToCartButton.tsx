@@ -27,8 +27,13 @@ const AddToCartButton: React.FC<AddToCartButtonProps> = ({
 
     if (!product.sizes || product.sizes.length === 0) {
       // Product doesn't have sizes, add directly
-      addToCart(product, 'medium', 1);
-      if (onAddedToCart) onAddedToCart();
+      addToCart(product, 'medium', 1)
+        .then(() => {
+          if (onAddedToCart) onAddedToCart();
+        })
+        .catch((err) => {
+          console.error('Error adding to cart:', err);
+        });
       return;
     }
 
@@ -36,25 +41,30 @@ const AddToCartButton: React.FC<AddToCartButtonProps> = ({
       // Check if selected size is in stock
       const sizeStockItem = product.sizeStock.find(item => item.size === selectedSize);
       if (sizeStockItem && sizeStockItem.stock > 0) {
-        addToCart(product, selectedSize, 1);
-        if (onAddedToCart) onAddedToCart();
+        addToCart(product, selectedSize, 1)
+          .then(() => {
+            if (onAddedToCart) onAddedToCart();
+          })
+          .catch((err) => {
+            console.error('Error adding to cart:', err);
+          });
       }
     }
   };
 
   return (
-    <button
+              <button
       type="button"
-      onClick={handleAddToCart}
+        onClick={handleAddToCart}
       disabled={isOutOfStock}
       className={`add-to-cart-button ${
         isOutOfStock 
           ? 'add-to-cart-button--disabled' 
           : ''
       } ${className}`}
-    >
+      >
       {isOutOfStock ? 'Out of Stock' : 'Add to Cart'}
-    </button>
+      </button>
   );
 };
 

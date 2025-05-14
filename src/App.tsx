@@ -14,8 +14,10 @@ import ProductDetailPage from './pages/ProductDetailPage'
 import AdminPage from './pages/AdminPage'
 import EditProductPage from './pages/EditProductPage'
 import AddProductPage from './pages/AddProductPage'
+import AdminOrdersPage from './pages/AdminOrdersPage'
 import { CartProvider } from './context/CartContext'
 import { AuthProvider, useAuth } from './context/AuthContext'
+import { ProfileProvider } from './context/ProfileContext'
 
 // Protected route component for authentication
 const ProtectedRoute = ({ children }: { children: React.ReactElement }) => {
@@ -46,53 +48,60 @@ const AdminRoute = ({ children }: { children: React.ReactElement }) => {
 function App() {
   return (
     <AuthProvider>
-      <CartProvider>
-        <div className="min-h-screen bg-white flex flex-col">
-          <Navbar />
-          <main className="flex-grow">
-            <Routes>
-              <Route path="/" element={<HomePage />} />
-              <Route path="/new" element={<NewPage />} />
-              <Route path="/women" element={<WomenPage />} />
-              <Route path="/men" element={<MenPage />} />
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/register" element={<RegisterPage />} />
-              <Route path="/cart" element={
-                <ProtectedRoute>
-                  <CartPage />
-                </ProtectedRoute>
-              } />
-              <Route path="/products" element={<AllProductsPage />} />
-              <Route path="/product/:productId" element={<ProductDetailPage />} />
-              
-              {/* Admin routes with tab parameter */}
-              <Route path="/admin" element={
-                <AdminRoute>
-                  <AdminPage />
-                </AdminRoute>
-              } />
-              <Route path="/admin/:tab" element={
-                <AdminRoute>
-                  <AdminPage />
-                </AdminRoute>
-              } />
-              
-              {/* Product management routes */}
-              <Route path="/add-product" element={
-                <AdminRoute>
-                  <AddProductPage />
-                </AdminRoute>
-              } />
-              <Route path="/edit-product/:productId" element={
-                <AdminRoute>
-                  <EditProductPage />
-                </AdminRoute>
-              } />
-            </Routes>
-          </main>
-          <Footer />
-        </div>
-      </CartProvider>
+      <ProfileProvider>
+        <CartProvider>
+          <div className="min-h-screen bg-white flex flex-col">
+            <Navbar />
+            <main className="flex-grow">
+              <Routes>
+                <Route path="/" element={<HomePage />} />
+                <Route path="/new" element={<NewPage />} />
+                <Route path="/women" element={<WomenPage />} />
+                <Route path="/men" element={<MenPage />} />
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/register" element={<RegisterPage />} />
+                <Route path="/cart" element={
+                  <ProtectedRoute>
+                    <CartPage />
+                  </ProtectedRoute>
+                } />
+                <Route path="/products" element={<AllProductsPage />} />
+                <Route path="/product/:productId" element={<ProductDetailPage />} />
+                
+                {/* Admin routes with tab parameter */}
+                <Route path="/admin" element={
+                  <AdminRoute>
+                    <AdminPage />
+                  </AdminRoute>
+                } />
+                <Route path="/admin/:tab" element={
+                  <AdminRoute>
+                    <AdminPage />
+                  </AdminRoute>
+                } />
+                
+                {/* Product management routes */}
+                <Route path="/add-product" element={
+                  <AdminRoute>
+                    <AddProductPage />
+                  </AdminRoute>
+                } />
+                <Route path="/edit-product/:productId" element={
+                  <AdminRoute>
+                    <EditProductPage />
+                  </AdminRoute>
+                } />
+                <Route path="/admin-orders" element={
+                  <AdminRoute>
+                    <AdminOrdersPage />
+                  </AdminRoute>
+                } />
+              </Routes>
+            </main>
+            <Footer />
+          </div>
+        </CartProvider>
+      </ProfileProvider>
     </AuthProvider>
   )
 }

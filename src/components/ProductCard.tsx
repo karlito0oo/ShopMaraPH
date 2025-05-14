@@ -26,10 +26,15 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     if (selectedSize) {
       const sizeStockItem = product.sizeStock.find(item => item.size === selectedSize);
       if (sizeStockItem && sizeStockItem.stock > 0) {
-        addToCart(product, selectedSize, 1);
-        setShowSizes(false);
-        setSelectedSize(null);
-        setError('');
+        addToCart(product, selectedSize, 1)
+          .then(() => {
+            setShowSizes(false);
+            setSelectedSize(null);
+            setError('');
+          })
+          .catch((err) => {
+            console.error('Error adding to cart:', err);
+          });
       } else {
         setError('Selected size is out of stock');
       }

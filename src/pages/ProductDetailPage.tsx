@@ -55,8 +55,18 @@ const ProductDetailPage = () => {
       return;
     }
 
-    addToCart(product, selectedSize, quantity);
-    navigate('/cart');
+    // The addToCart function will redirect to login if user is not authenticated
+    // If user is authenticated, add to cart and then navigate to cart page
+    addToCart(product, selectedSize, quantity)
+      .then(() => {
+        // Only navigate to cart if the addToCart promise resolves
+        // This won't happen if the user was redirected to login
+        navigate('/cart');
+      })
+      .catch((err) => {
+        // Handle any errors that might occur during addToCart
+        console.error('Error adding to cart:', err);
+      });
   };
 
   const handleSizeChange = (size: ProductSize) => {

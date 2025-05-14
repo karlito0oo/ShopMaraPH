@@ -32,7 +32,7 @@ class DatabaseSeeder extends Seeder
 
         // Add more test users if needed
         // User::factory(10)->create();
-        
+
         // Call product seeder
         $this->call([
             ProductSeeder::class,
