@@ -184,11 +184,12 @@ const UserOrdersPage: React.FC = () => {
       ) : (
         <>
           {/* Status tabs */}
-          <div className="bg-white shadow rounded mb-6">
+          <div className="bg-gray-900 shadow rounded mb-6">
             <TabButton 
               tabs={tabs} 
               activeTab={activeTab} 
               onTabChange={handleTabChange}
+              darkMode={true}
             />
           </div>
 

@@ -13,6 +13,7 @@ interface AdminLayoutProps {
   tabs?: { id: string; label: string }[];
   activeTab?: string;
   onTabChange?: (tabId: string) => void;
+  darkTabs?: boolean;
 }
 
 const AdminLayout: React.FC<AdminLayoutProps> = ({
@@ -23,7 +24,8 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({
   backButtonText = 'Back to Admin',
   tabs,
   activeTab,
-  onTabChange
+  onTabChange,
+  darkTabs = false
 }) => {
   const { isAdmin } = useAuth();
 
@@ -53,11 +55,12 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({
       </div>
       
       {tabs && activeTab && onTabChange && (
-        <div className="bg-white shadow rounded mb-6">
+        <div className={`${darkTabs ? 'bg-gray-900' : 'bg-white'} shadow rounded mb-6`}>
           <TabButton 
             tabs={tabs} 
             activeTab={activeTab} 
             onTabChange={onTabChange}
+            darkMode={darkTabs}
           />
         </div>
       )}

@@ -91,6 +91,7 @@ const AdminPage: React.FC = () => {
       tabs={tabs}
       activeTab={activeTab}
       onTabChange={handleTabChange}
+      darkTabs={true}
     >
       <div className="flex justify-end mb-4">
         <ActionButton />

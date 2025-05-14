@@ -61,14 +61,35 @@ const AdminOrdersPage: React.FC = () => {
   const [mobileView, setMobileView] = useState<boolean>(false);
   const [activeTab, setActiveTab] = useState<string>('all');
 
+  // Count orders by status
+  const getStatusCounts = () => {
+    const counts = {
+      all: orders.length,
+      pending: 0,
+      approved: 0,
+      shipped: 0,
+      delivered: 0,
+      cancelled: 0
+    };
+    
+    orders.forEach(order => {
+      if (counts[order.status as keyof typeof counts] !== undefined) {
+        counts[order.status as keyof typeof counts]++;
+      }
+    });
+    
+    return counts;
+  };
+
   // Define tabs for order statuses
+  const orderCounts = getStatusCounts();
   const tabs = [
-    { id: 'all', label: 'All Orders' },
-    { id: 'pending', label: 'Pending' },
-    { id: 'approved', label: 'Approved' },
-    { id: 'shipped', label: 'Shipped' },
-    { id: 'delivered', label: 'Delivered' },
-    { id: 'cancelled', label: 'Cancelled' },
+    { id: 'all', label: 'All Orders', count: orderCounts.all },
+    { id: 'pending', label: 'Pending', count: orderCounts.pending },
+    { id: 'approved', label: 'Approved', count: orderCounts.approved },
+    { id: 'shipped', label: 'Shipped', count: orderCounts.shipped },
+    { id: 'delivered', label: 'Delivered', count: orderCounts.delivered },
+    { id: 'cancelled', label: 'Cancelled', count: orderCounts.cancelled },
   ];
 
   // Handle tab change
@@ -217,6 +238,7 @@ const AdminOrdersPage: React.FC = () => {
       tabs={tabs}
       activeTab={activeTab}
       onTabChange={handleTabChange}
+      darkTabs={true}
     >
       {error && (
         <div className="mb-4 p-4 bg-red-100 text-red-700 rounded">
@@ -242,7 +264,7 @@ const AdminOrdersPage: React.FC = () => {
           </div>
           <div className="mt-2 md:mt-6">
             <button 
-              className="p-2 border border-gray-300 rounded"
+              className="bg-gray-100 text-gray-800 px-6 py-2 rounded inline-block hover:bg-gray-200 transition-colors"
               onClick={() => {
                 setSearchQuery('');
                 setStatusFilter('');
@@ -270,7 +292,7 @@ const AdminOrdersPage: React.FC = () => {
                 setStatusFilter('');
                 setActiveTab('all');
               }}
-              className="bg-black text-white px-6 py-2 rounded inline-block"
+              className="bg-gray-100 text-gray-800 px-6 py-2 rounded inline-block hover:bg-gray-200 transition-colors"
             >
               Clear Filters
             </button>
