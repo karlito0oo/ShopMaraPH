@@ -9,6 +9,7 @@ interface Product {
   price: number;
   category: string;
   sizeStock: SizeStock[];
+  sku?: string;
 }
 
 interface ManageProductsProps {
@@ -20,6 +21,8 @@ const ManageProducts: React.FC<ManageProductsProps> = ({ onSuccess, onError }) =
   const { token } = useAuth();
   const navigate = useNavigate();
   const [products, setProducts] = useState<Product[]>([]);
+  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isRestockModalOpen, setIsRestockModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
@@ -32,6 +35,27 @@ const ManageProducts: React.FC<ManageProductsProps> = ({ onSuccess, onError }) =
     fetchProducts();
   }, []);
   
+  // Filter products when search term or products change
+  useEffect(() => {
+    if (!searchTerm) {
+      setFilteredProducts(products);
+      return;
+    }
+    
+    const lowercaseSearch = searchTerm.toLowerCase();
+    const filtered = products.filter(product => 
+      product.name.toLowerCase().includes(lowercaseSearch) || 
+      product.category.toLowerCase().includes(lowercaseSearch) ||
+      (product.sku && product.sku.toLowerCase().includes(lowercaseSearch))
+    );
+    
+    setFilteredProducts(filtered);
+  }, [searchTerm, products]);
+  
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+  };
+  
   const fetchProducts = async () => {
     setIsLoading(true);
     try {
@@ -43,6 +67,7 @@ const ManageProducts: React.FC<ManageProductsProps> = ({ onSuccess, onError }) =
       
       const data = await response.json();
       setProducts(data.data || []);
+      setFilteredProducts(data.data || []);
     } catch (error) {
       console.error('Error fetching products:', error);
       onError('Failed to load products. Please try again.');
@@ -213,6 +238,8 @@ const ManageProducts: React.FC<ManageProductsProps> = ({ onSuccess, onError }) =
           <input
             type="text"
             placeholder="Search products..."
+            value={searchTerm}
+            onChange={handleSearchChange}
             className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-black focus:border-black"
           />
         </div>
@@ -234,13 +261,17 @@ const ManageProducts: React.FC<ManageProductsProps> = ({ onSuccess, onError }) =
       
       {isLoading && <p className="text-center py-4">Loading products...</p>}
       
-      {!isLoading && products.length === 0 && (
+      {!isLoading && filteredProducts.length === 0 && (
         <div className="text-center py-8">
-          <p className="text-gray-500">No products found</p>
+          {searchTerm ? (
+            <p className="text-gray-500">No products found matching "{searchTerm}"</p>
+          ) : (
+            <p className="text-gray-500">No products found</p>
+          )}
         </div>
       )}
       
-      {!isLoading && products.length > 0 && (
+      {!isLoading && filteredProducts.length > 0 && (
         <div className="mt-4 overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
@@ -266,13 +297,14 @@ const ManageProducts: React.FC<ManageProductsProps> = ({ onSuccess, onError }) =
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {products.map((product) => (
+              {filteredProducts.map((product) => (
                 <tr key={product.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                     {product.id}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {product.name}
+                    {product.sku && <div className="text-xs text-gray-400">SKU: {product.sku}</div>}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     ₱{product.price.toFixed(2)}
@@ -311,22 +343,30 @@ const ManageProducts: React.FC<ManageProductsProps> = ({ onSuccess, onError }) =
       )}
       
       <div className="mt-4 flex items-center justify-between">
-        <div className="text-sm text-gray-700">
-          Showing <span className="font-medium">1</span> to <span className="font-medium">{products.length}</span> of <span className="font-medium">{products.length}</span> products
-        </div>
-        <div className="flex-1 flex justify-end">
-          <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
-            <button className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
-              Previous
-            </button>
-            <button className="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-black text-sm font-medium text-white">
-              1
-            </button>
-            <button className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
-              Next
-            </button>
-          </nav>
-        </div>
+        {filteredProducts.length > 0 && (
+          <div className="text-sm text-gray-700">
+            {searchTerm ? (
+              <span>Showing <span className="font-medium">{filteredProducts.length}</span> results from <span className="font-medium">{products.length}</span> products</span>
+            ) : (
+              <span>Showing <span className="font-medium">1</span> to <span className="font-medium">{filteredProducts.length}</span> of <span className="font-medium">{products.length}</span> products</span>
+            )}
+          </div>
+        )}
+        {filteredProducts.length > 0 && (
+          <div className="flex-1 flex justify-end">
+            <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+              <button className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                Previous
+              </button>
+              <button className="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-black text-sm font-medium text-white">
+                1
+              </button>
+              <button className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                Next
+              </button>
+            </nav>
+          </div>
+        )}
       </div>
       
       {/* Restock Modal */}
