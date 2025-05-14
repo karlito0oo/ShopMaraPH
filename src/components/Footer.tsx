@@ -6,7 +6,7 @@ const Footer = () => {
   return (
     <footer className="bg-gray-100 pt-12 pb-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
           {/* Brand and About */}
           <div>
             <h3 className="font-bold text-lg mb-4">ShopMara PH</h3>
@@ -52,28 +52,6 @@ const Footer = () => {
               <li><Link to="/terms" className="text-gray-600 hover:text-black text-sm">Terms & Conditions</Link></li>
               <li><Link to="/privacy" className="text-gray-600 hover:text-black text-sm">Privacy Policy</Link></li>
             </ul>
-          </div>
-
-          {/* Newsletter */}
-          <div>
-            <h3 className="font-bold text-lg mb-4">Stay Updated</h3>
-            <p className="text-sm text-gray-600 mb-4">
-              Subscribe to our newsletter for updates on new drops and exclusive offers.
-            </p>
-            <form className="flex">
-              <input
-                type="email"
-                placeholder="Your email"
-                className="px-3 py-2 border border-gray-300 flex-1 mr-2 text-sm"
-                required
-              />
-              <button
-                type="submit"
-                className="bg-black text-white px-4 py-2 text-sm"
-              >
-                Subscribe
-              </button>
-            </form>
           </div>
         </div>
 

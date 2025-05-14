@@ -223,9 +223,6 @@ const ManageProducts: React.FC<ManageProductsProps> = ({ onSuccess, onError }) =
             </svg>
             Add Product
           </button>
-          <button className="px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black">
-            Bulk Actions
-          </button>
         </div>
       </div>
       
