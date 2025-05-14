@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useProfile } from '../context/ProfileContext';
+import { OrderApi } from '../services/ApiService';
 
 interface CheckoutModalProps {
   isOpen: boolean;
@@ -201,22 +202,7 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, totalAmo
     orderData.append('payment_proof', formData.paymentProof);
 
     try {
-      const response = await fetch('http://localhost:8000/api/orders', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Accept': 'application/json',
-        },
-        body: orderData, // FormData for file upload
-        credentials: 'include',
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to create order');
-      }
-
-      const data = await response.json();
+      const data = await OrderApi.createOrder(token, orderData);
       return data.data.order;
     } catch (error) {
       console.error('Error creating order:', error);

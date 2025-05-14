@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { ProductSize, SizeStock } from '../../types/product';
 import { useAuth } from '../../context/AuthContext';
+import { ProductApi } from '../../services/ApiService';
 
 interface Product {
   id: string | number;
@@ -59,13 +60,7 @@ const ManageProducts: React.FC<ManageProductsProps> = ({ onSuccess, onError }) =
   const fetchProducts = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('http://localhost:8000/api/products');
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch products');
-      }
-      
-      const data = await response.json();
+      const data = await ProductApi.getAllProducts();
       setProducts(data.data || []);
       setFilteredProducts(data.data || []);
     } catch (error) {
@@ -98,7 +93,7 @@ const ManageProducts: React.FC<ManageProductsProps> = ({ onSuccess, onError }) =
   const handleRestockSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!selectedProduct) return;
+    if (!selectedProduct || !token) return;
     
     // Check if any size has a quantity greater than 0
     const hasSizeToRestock = Object.values(sizeRestockQuantities).some(qty => qty > 0);
@@ -116,23 +111,7 @@ const ManageProducts: React.FC<ManageProductsProps> = ({ onSuccess, onError }) =
         }));
       
       // Call the restock API endpoint
-      const response = await fetch(`http://localhost:8000/api/products/${selectedProduct.id}/restock`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-          'Accept': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({ sizeStock: sizeStockForApi }),
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to restock product');
-      }
-      
-      const data = await response.json();
+      const data = await ProductApi.restockProduct(token, selectedProduct.id, { sizeStock: sizeStockForApi });
       
       // Update the UI with the new stock information
       const updatedProducts = products.map(product => {
@@ -174,22 +153,13 @@ const ManageProducts: React.FC<ManageProductsProps> = ({ onSuccess, onError }) =
       return;
     }
     
+    if (!token) return;
+    
     setIsLoading(true);
     
     try {
       // Make API call to delete the product
-      const response = await fetch(`http://localhost:8000/api/products/${productId}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Accept': 'application/json',
-        },
-        credentials: 'include',
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to delete product');
-      }
+      await ProductApi.deleteProduct(token, productId);
       
       // Remove the product from state
       setProducts(products.filter(product => product.id !== productId));

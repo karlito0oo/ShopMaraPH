@@ -1,6 +1,7 @@
 import { useAuth } from '../context/AuthContext';
+import { API_CONFIG } from '../config';
 
-const API_URL = 'http://localhost:8000/api';
+const API_URL = API_CONFIG.BASE_URL;
 
 /**
  * Saves a product (creates a new one or updates an existing one)
@@ -12,7 +13,7 @@ export const saveProduct = async (formData: FormData, token: string, productId?:
   try {
     // Get CSRF token first
     try {
-      await fetch('http://localhost:8000/sanctum/csrf-cookie', {
+      await fetch(`${API_URL.replace('/api', '')}/sanctum/csrf-cookie`, {
         method: 'GET',
         credentials: 'include',
       });

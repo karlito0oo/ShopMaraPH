@@ -1,8 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import type { ProductCategory, ProductSize, SizeStock } from '../../types/product';
 import { useAuth } from '../../context/AuthContext';
-import { getProductById } from '../../services/ProductService';
-import { saveProduct } from '../../services/AdminService';
+import { ProductApi } from '../../services/ApiService';
 
 interface ProductFormData {
   sku: string;
@@ -69,7 +68,8 @@ const ProductForm: React.FC<ProductFormProps> = ({ productId, onSuccess, onError
 
       try {
         setIsInitializing(true);
-        const product = await getProductById(productId);
+        const response = await ProductApi.getProductById(productId);
+        const product = response.data;
         
         // Save original image URLs
         const imageUrls = [product.image];
@@ -156,6 +156,37 @@ const ProductForm: React.FC<ProductFormProps> = ({ productId, onSuccess, onError
     setFormData({ ...formData, sizeStock: newSizeStock });
   };
 
+  // Reset form to initial state
+  const resetForm = () => {
+    setFormData({
+      sku: '',
+      name: '',
+      price: 0,
+      description: '',
+      careInstructions: '* Machine wash cold\n* Tumble dry low\n* Do not bleach',
+      image: '',
+      imageFile: null,
+      additionalImages: ['', '', ''],
+      additionalImageFiles: [null, null, null],
+      category: 'women',
+      sizes: [],
+      isBestSeller: false,
+      isNewArrival: false,
+      sizeStock: []
+    });
+
+    // Reset file input elements
+    if (mainImageFileRef.current) {
+      mainImageFileRef.current.value = '';
+    }
+    
+    additionalImageFileRefs.forEach(ref => {
+      if (ref.current) {
+        ref.current.value = '';
+      }
+    });
+  };
+
   const handleMainImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
@@ -208,109 +239,108 @@ const ProductForm: React.FC<ProductFormProps> = ({ productId, onSuccess, onError
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Basic validation
-    if (!formData.name || (!formData.image && !formData.imageFile) || formData.price <= 0 || formData.sizes.length === 0) {
-      onError('Please fill in all required fields: Name, Price, Main Image, and at least one Size');
+    if (!token) {
+      onError('Authentication token is missing. Please log in again.');
+      return;
+    }
+    
+    // Validate form data
+    if (!formData.name) {
+      onError('Product name is required');
+      return;
+    }
+    
+    if (formData.price <= 0) {
+      onError('Product price must be greater than 0');
+      return;
+    }
+    
+    if (!formData.image && !formData.imageFile) {
+      onError('Product image is required');
+      return;
+    }
+    
+    if (formData.sizes.length === 0) {
+      onError('At least one size must be selected');
       return;
     }
     
     setIsLoading(true);
     
     try {
-      // Create a FormData object for the multipart/form-data request
+      // Create a FormData object for the API request
       const apiFormData = new FormData();
       
-      // Add basic product data
+      // Append basic product data
       apiFormData.append('name', formData.name);
       apiFormData.append('price', formData.price.toString());
-      apiFormData.append('category', formData.category);
       apiFormData.append('description', formData.description);
-      apiFormData.append('care_instructions', formData.careInstructions);
+      apiFormData.append('careInstructions', formData.careInstructions);
+      apiFormData.append('category', formData.category);
+      apiFormData.append('sku', formData.sku || '');
+      apiFormData.append('isBestSeller', formData.isBestSeller ? '1' : '0');
+      apiFormData.append('isNewArrival', formData.isNewArrival ? '1' : '0');
       
-      // Add SKU
-      if (formData.sku) {
-        apiFormData.append('sku', formData.sku);
-      }
+      // Append sizes
+      formData.sizes.forEach((size: ProductSize) => apiFormData.append('sizes[]', size));
       
-      // Add main image file if it was changed or this is a new product
-      if (formData.imageFile) {
-        apiFormData.append('image', formData.imageFile);
-      }
-      
-      // Add any additional image files that were changed or this is a new product
-      formData.additionalImageFiles.forEach((file, index) => {
-        if (file) {
-          apiFormData.append(`additional_images[${index}]`, file);
-        }
+      // Append size stock data
+      formData.sizeStock.forEach((item, index) => {
+        apiFormData.append(`sizeStock[${index}][size]`, item.size);
+        apiFormData.append(`sizeStock[${index}][stock]`, item.stock.toString());
       });
       
-      // In edit mode, keep track of original images that weren't changed
-      if (productId) {
-        apiFormData.append('original_image_urls', JSON.stringify(originalImageUrls));
+      // Append images
+      if (formData.imageFile) {
+        apiFormData.append('image', formData.imageFile);
+      } else if (productId && formData.image) {
+        // Keep existing image
+        apiFormData.append('keepMainImage', '1');
       }
       
-      // Convert boolean fields to proper format
-      apiFormData.append('is_best_seller', formData.isBestSeller ? 'true' : 'false');
-      apiFormData.append('is_new_arrival', formData.isNewArrival ? 'true' : 'false');
+      // Handle additional images
+      const newAdditionalImages = [];
+      const keepAdditionalImages = [];
       
-      // Ensure sizes and sizeStock are properly formatted
-      const sizesData = formData.sizeStock.filter(ss => formData.sizes.includes(ss.size));
-      apiFormData.append('sizes', JSON.stringify(formData.sizes));
-      apiFormData.append('size_stock', JSON.stringify(sizesData));
-      
-      // Debug logging
-      console.log('Form data being sent:');
-      console.log('- name:', formData.name);
-      console.log('- price:', formData.price);
-      console.log('- category:', formData.category);
-      console.log('- is_best_seller:', formData.isBestSeller);
-      console.log('- is_new_arrival:', formData.isNewArrival);
-      console.log('- sizes:', JSON.stringify(formData.sizes));
-      
-      if (!token) {
-        throw new Error('Authentication token is missing. Please log in again.');
-      }
-      
-      // Use the unified saveProduct function for both creating and updating products
-      const data = await saveProduct(apiFormData, token, productId);
-      
-      console.log('API Success Response:', data);
-      
-      onSuccess(`Product ${productId ? 'updated' : 'added'} successfully!`);
-      
-      // Clear form if it's an add operation
-      if (!productId) {
-        setFormData({
-          sku: '',
-          name: '',
-          price: 0,
-          description: '',
-          careInstructions: '* Machine wash cold\n* Tumble dry low\n* Do not bleach',
-          image: '',
-          imageFile: null,
-          additionalImages: ['', '', ''],
-          additionalImageFiles: [null, null, null],
-          category: 'women',
-          sizes: [],
-          isBestSeller: false,
-          isNewArrival: false,
-          sizeStock: []
-        });
-
-        // Reset file input elements
-        if (mainImageFileRef.current) {
-          mainImageFileRef.current.value = '';
-        }
+      for (let i = 0; i < 3; i++) {
+        const imageFile = formData.additionalImageFiles[i];
+        const imageUrl = formData.additionalImages[i];
         
-        additionalImageFileRefs.forEach(ref => {
-          if (ref.current) {
-            ref.current.value = '';
-          }
+        if (imageFile) {
+          apiFormData.append(`additionalImages[${newAdditionalImages.length}]`, imageFile);
+          newAdditionalImages.push(i);
+        } else if (productId && imageUrl && originalImageUrls.includes(imageUrl)) {
+          // Keep existing additional image
+          keepAdditionalImages.push(i + 1); // +1 because index 0 is the main image in originalImageUrls
+        }
+      }
+      
+      if (keepAdditionalImages.length > 0) {
+        keepAdditionalImages.forEach(index => {
+          apiFormData.append('keepAdditionalImages[]', index.toString());
         });
+      }
+      
+      // Submit the form data
+      let result;
+      if (productId) {
+        // Update existing product
+        result = await ProductApi.updateProduct(token, productId, apiFormData);
+      } else {
+        // Create new product
+        result = await ProductApi.createProduct(token, apiFormData);
+      }
+      
+      // Show success message
+      onSuccess(productId ? 'Product updated successfully' : 'Product created successfully');
+      
+      // Clear form if creating a new product
+      if (!productId) {
+        resetForm();
       }
     } catch (error) {
-      console.error(`Error ${productId ? 'updating' : 'adding'} product:`, error);
-      onError(error instanceof Error ? error.message : `An error occurred while ${productId ? 'updating' : 'adding'} the product`);
+      console.error('Error saving product:', error);
+      onError(error instanceof Error ? error.message : 'An error occurred while saving the product');
     } finally {
       setIsLoading(false);
     }

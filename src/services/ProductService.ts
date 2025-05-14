@@ -1,6 +1,7 @@
 import type { Product } from '../types/product';
+import { API_CONFIG } from '../config';
 
-const API_URL = 'http://localhost:8000/api';
+const API_URL = API_CONFIG.BASE_URL;
 
 /**
  * Fetches all products from the backend

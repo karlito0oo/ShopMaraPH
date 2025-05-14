@@ -158,6 +158,12 @@ const CartPage = () => {
               >
                 Checkout
               </button>
+              <Link
+                to="/my-orders"
+                className="w-full text-center block text-gray-700 hover:text-black py-2 text-sm font-medium"
+              >
+                View Your Orders
+              </Link>
             </div>
           </div>
         </div>

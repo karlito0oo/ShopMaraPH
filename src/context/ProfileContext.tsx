@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { useAuth } from './AuthContext';
+import { API_CONFIG } from '../config';
 
 interface UserProfile {
   id: number;
@@ -47,7 +48,7 @@ export const ProfileProvider: React.FC<{ children: ReactNode }> = ({ children })
     setError(null);
     
     try {
-      const response = await fetch('http://localhost:8000/api/profile', {
+      const response = await fetch(`${API_CONFIG.BASE_URL}/profile`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -77,7 +78,7 @@ export const ProfileProvider: React.FC<{ children: ReactNode }> = ({ children })
     setError(null);
     
     try {
-      const response = await fetch('http://localhost:8000/api/profile', {
+      const response = await fetch(`${API_CONFIG.BASE_URL}/profile`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

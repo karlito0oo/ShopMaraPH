@@ -11,10 +11,11 @@ import RegisterPage from './pages/RegisterPage'
 import CartPage from './pages/CartPage'
 import AllProductsPage from './pages/AllProductsPage'
 import ProductDetailPage from './pages/ProductDetailPage'
-import AdminPage from './pages/AdminPage'
-import EditProductPage from './pages/EditProductPage'
-import AddProductPage from './pages/AddProductPage'
-import AdminOrdersPage from './pages/AdminOrdersPage'
+import AdminPage from './pages/admin/AdminPage'
+import EditProductPage from './pages/admin/EditProductPage'
+import AddProductPage from './pages/admin/AddProductPage'
+import AdminOrdersPage from './pages/admin/AdminOrdersPage'
+import UserOrdersPage from './pages/UserOrdersPage'
 import { CartProvider } from './context/CartContext'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import { ProfileProvider } from './context/ProfileContext'
@@ -63,6 +64,11 @@ function App() {
                 <Route path="/cart" element={
                   <ProtectedRoute>
                     <CartPage />
+                  </ProtectedRoute>
+                } />
+                <Route path="/my-orders" element={
+                  <ProtectedRoute>
+                    <UserOrdersPage />
                   </ProtectedRoute>
                 } />
                 <Route path="/products" element={<AllProductsPage />} />

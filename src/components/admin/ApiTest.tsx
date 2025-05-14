@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { API_CONFIG } from '../../config';
 
 interface ApiTestProps {
   onSuccess: (message: string) => void;
@@ -11,9 +12,9 @@ const ApiTest: React.FC<ApiTestProps> = ({ onSuccess, onError }) => {
   const [loading, setLoading] = useState(false);
   
   const testEndpoints = [
-    { name: 'Public Products', url: 'http://localhost:8000/api/products', method: 'GET', auth: false },
-    { name: 'User Profile', url: 'http://localhost:8000/api/user', method: 'GET', auth: true },
-    { name: 'Test Admin Access', url: 'http://localhost:8000/api/admin/products', method: 'GET', auth: true }
+    { name: 'Public Products', url: `${API_CONFIG.BASE_URL}/products`, method: 'GET', auth: false },
+    { name: 'User Profile', url: `${API_CONFIG.BASE_URL}/user`, method: 'GET', auth: true },
+    { name: 'Test Admin Access', url: `${API_CONFIG.BASE_URL}/admin/products`, method: 'GET', auth: true }
   ];
   
   const testApi = async (url: string, method: string, requiresAuth: boolean) => {

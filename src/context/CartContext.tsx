@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import type { Product, ProductSize } from '../types/product';
 import { useAuth } from './AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { CartApi } from '../services/ApiService';
 
 interface CartItem {
   product: Product;
@@ -51,21 +52,8 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setError(null);
     
     try {
-      const response = await fetch('http://localhost:8000/api/cart', {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Accept': 'application/json',
-        },
-        credentials: 'include',
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch cart');
-      }
-      
-      const data = await response.json();
-      setCartItems(data.data.items || []);
+      const response = await CartApi.getCart(token);
+      setCartItems(response.data.items || []);
     } catch (error) {
       console.error('Error fetching cart:', error);
       setError(error instanceof Error ? error.message : 'An error occurred while fetching the cart');
@@ -86,28 +74,8 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setError(null);
     
     try {
-      const response = await fetch('http://localhost:8000/api/cart/add', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-          'Accept': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          product_id: product.id,
-          size,
-          quantity,
-        }),
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to add item to cart');
-      }
-      
-      const data = await response.json();
-      setCartItems(data.data.items || []);
+      const response = await CartApi.addToCart(token, product.id, size, quantity);
+      setCartItems(response.data.items || []);
     } catch (error) {
       console.error('Error adding to cart:', error);
       setError(error instanceof Error ? error.message : 'An error occurred while adding to cart');
@@ -123,25 +91,8 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setError(null);
     
     try {
-      const response = await fetch('http://localhost:8000/api/cart/remove', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-          'Accept': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          cart_item_id: itemId,
-        }),
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to remove item from cart');
-      }
-      
-      const data = await response.json();
-      setCartItems(data.data.items || []);
+      const response = await CartApi.removeFromCart(token, itemId);
+      setCartItems(response.data.items || []);
     } catch (error) {
       console.error('Error removing from cart:', error);
       setError(error instanceof Error ? error.message : 'An error occurred while removing from cart');
@@ -157,26 +108,8 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setError(null);
     
     try {
-      const response = await fetch('http://localhost:8000/api/cart/update', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-          'Accept': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          cart_item_id: itemId,
-          quantity,
-        }),
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to update cart item');
-      }
-      
-      const data = await response.json();
-      setCartItems(data.data.items || []);
+      const response = await CartApi.updateCartItem(token, itemId, quantity);
+      setCartItems(response.data.items || []);
     } catch (error) {
       console.error('Error updating cart item:', error);
       setError(error instanceof Error ? error.message : 'An error occurred while updating cart');
@@ -192,20 +125,8 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setError(null);
     
     try {
-      const response = await fetch('http://localhost:8000/api/cart/clear', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Accept': 'application/json',
-        },
-        credentials: 'include',
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to clear cart');
-      }
-      
-      setCartItems([]);
+      const response = await CartApi.clearCart(token);
+      setCartItems(response.data.items || []);
     } catch (error) {
       console.error('Error clearing cart:', error);
       setError(error instanceof Error ? error.message : 'An error occurred while clearing cart');
