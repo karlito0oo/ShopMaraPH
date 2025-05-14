@@ -62,7 +62,14 @@ function App() {
               } />
               <Route path="/products" element={<AllProductsPage />} />
               <Route path="/product/:productId" element={<ProductDetailPage />} />
+              
+              {/* Admin routes with tab parameter */}
               <Route path="/admin" element={
+                <AdminRoute>
+                  <AdminPage />
+                </AdminRoute>
+              } />
+              <Route path="/admin/:tab" element={
                 <AdminRoute>
                   <AdminPage />
                 </AdminRoute>

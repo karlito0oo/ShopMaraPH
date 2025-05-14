@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 interface User {
   id: number;
@@ -16,6 +17,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>;
   register: (name: string, email: string, password: string, password_confirmation: string) => Promise<void>;
   logout: () => Promise<void>;
+  validateToken: () => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -30,15 +32,55 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   // Load user data from localStorage on initial load
   useEffect(() => {
-    const storedUser = localStorage.getItem('user');
-    const storedToken = localStorage.getItem('token');
+    const loadUserAndValidateToken = async () => {
+      try {
+        const storedUser = localStorage.getItem('user');
+        const storedToken = localStorage.getItem('token');
+        
+        if (storedUser && storedToken) {
+          // Set the user data and token first
+          setUser(JSON.parse(storedUser));
+          setToken(storedToken);
+          
+          // Validate token only once when app initializes
+          const response = await fetch(`${API_URL}/user`, {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${storedToken}`,
+              'Accept': 'application/json',
+            },
+            credentials: 'include',
+          });
+          
+          // If token is invalid, clear user data
+          if (!response.ok) {
+            setUser(null);
+            setToken(null);
+            localStorage.removeItem('user');
+            localStorage.removeItem('token');
+            console.log('Token validation failed during initialization');
+          } else {
+            // If token is valid, update user data if needed
+            const data = await response.json();
+            if (data.success && data.user) {
+              setUser(data.user);
+              localStorage.setItem('user', JSON.stringify(data.user));
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error loading user or validating token:', error);
+        // Clear user data on error
+        setUser(null);
+        setToken(null);
+        localStorage.removeItem('user');
+        localStorage.removeItem('token');
+      } finally {
+        setIsLoading(false);
+      }
+    };
     
-    if (storedUser && storedToken) {
-      setUser(JSON.parse(storedUser));
-      setToken(storedToken);
-    }
-    
-    setIsLoading(false);
+    loadUserAndValidateToken();
   }, []);
 
   // Check if user is authenticated
@@ -46,6 +88,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   
   // Check if user is admin
   const isAdmin = user?.role === 'admin';
+
+  // Validate token with the backend - now simplified to just check if token exists
+  // since we already validated it on initialization
+  const validateToken = async (): Promise<boolean> => {
+    return !!token; // Just return if we have a token, no additional validation
+  };
 
   // Register a new user
   const register = async (name: string, email: string, password: string, password_confirmation: string) => {
@@ -148,6 +196,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         login,
         register,
         logout,
+        validateToken,
       }}
     >
       {children}

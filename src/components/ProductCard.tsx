@@ -40,12 +40,19 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   
   return (
     <div className="product-card">
-      {/* Best Seller Badge */}
-      {product.isBestSeller && (
-        <div className="absolute top-0 right-0 bg-yellow-400 text-xs font-bold px-2 py-1 m-2 z-10">
-          Best Seller
-        </div>
-      )}
+      {/* Product Tags (Best Seller & New Arrival) */}
+      <div className="absolute top-0 right-0 z-10 flex flex-col gap-1 m-2">
+        {product.isBestSeller && (
+          <div className="bg-yellow-400 text-xs font-bold px-2 py-1 rounded">
+            Best Seller
+          </div>
+        )}
+        {product.isNewArrival && (
+          <div className="bg-green-500 text-white text-xs font-bold px-2 py-1 rounded">
+            New Arrival
+          </div>
+        )}
+      </div>
       
       {/* Product Image */}
       <Link to={`/product/${product.id}`} className="no-underline text-inherit block">

@@ -1,33 +1,82 @@
 import React, { useState, useEffect } from 'react';
-import { products } from '../data/products';
 import ProductFilter from '../components/ProductFilter';
 import ProductGrid from '../components/ProductGrid';
-import type { ProductCategory, ProductSize } from '../types/product';
+import type { ProductCategory, ProductSize, Product } from '../types/product';
 import { filterProducts } from '../types/product';
+import { getAllProducts } from '../services/ProductService';
 
 const AllProductsPage = () => {
   const [activeCategory, setActiveCategory] = useState<ProductCategory>('all');
   const [activeSize, setActiveSize] = useState<ProductSize>('all');
   const [bestSellerOnly, setBestSellerOnly] = useState(false);
+  const [showNewOnly, setShowNewOnly] = useState(false);
   const [searchKeyword, setSearchKeyword] = useState('');
-  const [filteredProducts, setFilteredProducts] = useState(products);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
+  // Fetch products from API
   useEffect(() => {
-    setFilteredProducts(filterProducts(
-      products, 
-      activeCategory, 
-      activeSize, 
-      bestSellerOnly,
-      searchKeyword
-    ));
-  }, [activeCategory, activeSize, bestSellerOnly, searchKeyword]);
+    const fetchProducts = async () => {
+      try {
+        setIsLoading(true);
+        const productsData = await getAllProducts();
+        setProducts(productsData);
+      } catch (err) {
+        console.error('Error fetching products:', err);
+        setError('Failed to load products');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchProducts();
+  }, []);
+
+  // Apply filters when products change or filter settings change
+  useEffect(() => {
+    if (products.length > 0) {
+      setFilteredProducts(filterProducts(
+        products, 
+        activeCategory, 
+        activeSize, 
+        bestSellerOnly,
+        searchKeyword,
+        showNewOnly
+      ));
+    }
+  }, [products, activeCategory, activeSize, bestSellerOnly, showNewOnly, searchKeyword]);
 
   const resetFilters = () => {
     setActiveCategory('all');
     setActiveSize('all');
     setBestSellerOnly(false);
+    setShowNewOnly(false);
     setSearchKeyword('');
   };
+
+  if (isLoading) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <h1 className="text-3xl font-bold mb-8">All Products</h1>
+        <div className="text-center py-12">
+          <p>Loading products...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <h1 className="text-3xl font-bold mb-8">All Products</h1>
+        <div className="text-center py-12">
+          <p className="text-red-500">{error}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -40,10 +89,12 @@ const AllProductsPage = () => {
             activeCategory={activeCategory}
             activeSize={activeSize}
             bestSellerOnly={bestSellerOnly}
+            showNewOnly={showNewOnly}
             searchKeyword={searchKeyword}
             onCategoryChange={setActiveCategory}
             onSizeChange={setActiveSize}
             onBestSellerChange={setBestSellerOnly}
+            onNewArrivalsChange={setShowNewOnly}
             onKeywordChange={setSearchKeyword}
           />
         </div>

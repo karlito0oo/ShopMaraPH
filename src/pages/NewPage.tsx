@@ -1,44 +1,82 @@
 import React, { useState, useEffect } from 'react';
-import { products } from '../data/products';
 import ProductFilter from '../components/ProductFilter';
 import ProductGrid from '../components/ProductGrid';
-import type { ProductCategory, ProductSize } from '../types/product';
+import type { ProductCategory, ProductSize, Product } from '../types/product';
 import { filterProducts } from '../types/product';
+import { getAllProducts } from '../services/ProductService';
 
 const NewPage = () => {
-  const [activeCategory, setActiveCategory] = useState<ProductCategory>('new');
+  const [activeCategory, setActiveCategory] = useState<ProductCategory>('all');
   const [activeSize, setActiveSize] = useState<ProductSize>('all');
   const [bestSellerOnly, setBestSellerOnly] = useState(false);
+  const [showNewOnly, setShowNewOnly] = useState(true);
   const [searchKeyword, setSearchKeyword] = useState('');
-  const [filteredProducts, setFilteredProducts] = useState(
-    products.filter(product => product.category === 'new')
-  );
+  const [products, setProducts] = useState<Product[]>([]);
+  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
+  // Fetch products from API
   useEffect(() => {
-    let productsToFilter = products;
+    const fetchProducts = async () => {
+      try {
+        setIsLoading(true);
+        const productsData = await getAllProducts();
+        setProducts(productsData);
+      } catch (err) {
+        console.error('Error fetching products:', err);
+        setError('Failed to load products');
+      } finally {
+        setIsLoading(false);
+      }
+    };
     
-    // If not showing all products, pre-filter to show only new products plus the selected category
-    if (activeCategory !== 'all') {
-      productsToFilter = products.filter(product => 
-        product.category === 'new' || product.category === activeCategory
-      );
+    fetchProducts();
+  }, []);
+
+  // Apply filters to products
+  useEffect(() => {
+    if (products.length > 0) {
+      setFilteredProducts(filterProducts(
+        products, 
+        activeCategory, 
+        activeSize, 
+        bestSellerOnly,
+        searchKeyword,
+        showNewOnly
+      ));
     }
-    
-    setFilteredProducts(filterProducts(
-      productsToFilter, 
-      activeCategory, 
-      activeSize, 
-      bestSellerOnly,
-      searchKeyword
-    ));
-  }, [activeCategory, activeSize, bestSellerOnly, searchKeyword]);
+  }, [products, activeCategory, activeSize, bestSellerOnly, showNewOnly, searchKeyword]);
 
   const resetFilters = () => {
-    setActiveCategory('new');
+    setActiveCategory('all');
     setActiveSize('all');
     setBestSellerOnly(false);
+    setShowNewOnly(true);
     setSearchKeyword('');
   };
+
+  if (isLoading) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <h1 className="text-3xl font-bold mb-8">New Arrivals</h1>
+        <div className="text-center py-12">
+          <p>Loading products...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <h1 className="text-3xl font-bold mb-8">New Arrivals</h1>
+        <div className="text-center py-12">
+          <p className="text-red-500">{error}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -51,10 +89,12 @@ const NewPage = () => {
             activeCategory={activeCategory}
             activeSize={activeSize}
             bestSellerOnly={bestSellerOnly}
+            showNewOnly={showNewOnly}
             searchKeyword={searchKeyword}
             onCategoryChange={setActiveCategory}
             onSizeChange={setActiveSize}
             onBestSellerChange={setBestSellerOnly}
+            onNewArrivalsChange={setShowNewOnly}
             onKeywordChange={setSearchKeyword}
           />
         </div>
@@ -63,7 +103,7 @@ const NewPage = () => {
         <ProductGrid 
           products={filteredProducts} 
           onResetFilters={resetFilters}
-          defaultCategory="new"
+          defaultCategory="all"
           searchKeyword={searchKeyword}
         />
       </div>

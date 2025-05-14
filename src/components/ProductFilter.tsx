@@ -6,10 +6,12 @@ interface ProductFilterProps {
   activeCategory: ProductCategory;
   activeSize: ProductSize;
   bestSellerOnly: boolean;
+  showNewOnly: boolean;
   searchKeyword: string;
   onCategoryChange: (category: ProductCategory) => void;
   onSizeChange: (size: ProductSize) => void;
   onBestSellerChange: (bestSellerOnly: boolean) => void;
+  onNewArrivalsChange: (showNewOnly: boolean) => void;
   onKeywordChange: (keyword: string) => void;
 }
 
@@ -17,10 +19,12 @@ const ProductFilter: React.FC<ProductFilterProps> = ({
   activeCategory, 
   activeSize, 
   bestSellerOnly,
+  showNewOnly,
   searchKeyword,
   onCategoryChange, 
   onSizeChange,
   onBestSellerChange,
+  onNewArrivalsChange,
   onKeywordChange
 }) => {
   return (
@@ -65,17 +69,6 @@ const ProductFilter: React.FC<ProductFilterProps> = ({
               className="mr-2"
             />
             <label htmlFor="all-products">All Products</label>
-          </div>
-          <div className="flex items-center">
-            <input 
-              type="radio" 
-              id="new" 
-              name="category" 
-              checked={activeCategory === 'new'}
-              onChange={() => onCategoryChange('new')}
-              className="mr-2"
-            />
-            <label htmlFor="new">New</label>
           </div>
           <div className="flex items-center">
             <input 
@@ -164,18 +157,30 @@ const ProductFilter: React.FC<ProductFilterProps> = ({
         </div>
       </div>
 
-      {/* Best Seller filter */}
+      {/* Special filters */}
       <div>
         <h3 className="font-medium text-sm mb-2">Special</h3>
-        <div className="flex items-center">
-          <input 
-            type="checkbox" 
-            id="best-seller" 
-            checked={bestSellerOnly}
-            onChange={(e) => onBestSellerChange(e.target.checked)}
-            className="mr-2"
-          />
-          <label htmlFor="best-seller">Best Sellers Only</label>
+        <div className="space-y-2">
+          <div className="flex items-center">
+            <input 
+              type="checkbox" 
+              id="best-seller" 
+              checked={bestSellerOnly}
+              onChange={(e) => onBestSellerChange(e.target.checked)}
+              className="mr-2"
+            />
+            <label htmlFor="best-seller">Best Sellers Only</label>
+          </div>
+          <div className="flex items-center">
+            <input 
+              type="checkbox" 
+              id="new-arrivals" 
+              checked={showNewOnly}
+              onChange={(e) => onNewArrivalsChange(e.target.checked)}
+              className="mr-2"
+            />
+            <label htmlFor="new-arrivals">New Arrivals Only</label>
+          </div>
         </div>
       </div>
     </div>

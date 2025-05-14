@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
-import { products } from '../data/products';
 import type { Product, ProductSize } from '../types/product';
+import { getProductById } from '../services/ProductService';
 
 const ProductDetailPage = () => {
   const { productId } = useParams<{ productId: string }>();
@@ -11,15 +11,31 @@ const ProductDetailPage = () => {
   const [quantity, setQuantity] = useState(1);
   const [error, setError] = useState('');
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const { addToCart } = useCart();
   const navigate = useNavigate();
 
   useEffect(() => {
-    const foundProduct = products.find(p => p.id.toString() === productId);
-    if (foundProduct) {
-      setProduct(foundProduct);
-      setCurrentImageIndex(0); // Reset to first image when product changes
-    }
+    const fetchProduct = async () => {
+      if (!productId) return;
+      
+      try {
+        setIsLoading(true);
+        setError('');
+        setLoadError(null);
+        const fetchedProduct = await getProductById(productId);
+        setProduct(fetchedProduct);
+        setCurrentImageIndex(0); // Reset to first image when product changes
+      } catch (err) {
+        console.error(`Error fetching product ${productId}:`, err);
+        setLoadError('Failed to load product details');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchProduct();
   }, [productId]);
 
   const handleAddToCart = () => {
@@ -69,7 +85,18 @@ const ProductDetailPage = () => {
   // Get product images array or create one from the single image
   const getProductImages = () => {
     if (!product) return [];
-    return product.images || [product.image];
+    
+    // Start with the main product image
+    const allImages = [product.image];
+    
+    // Add any additional images if they exist
+    if (product.images && product.images.length > 0) {
+      // Avoid duplicating the main image if it also appears in the images array
+      const additionalImages = product.images.filter(img => img !== product.image);
+      allImages.push(...additionalImages);
+    }
+    
+    return allImages;
   };
 
   // Handle thumbnail click to change main image
@@ -77,11 +104,23 @@ const ProductDetailPage = () => {
     setCurrentImageIndex(index);
   };
 
-  if (!product) {
+  if (isLoading) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="text-center">
+          <h1 className="text-3xl font-bold mb-4">Loading Product</h1>
+          <p>Please wait while we fetch the product details...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (loadError || !product) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="text-center">
           <h1 className="text-3xl font-bold mb-4">Product Not Found</h1>
+          <p className="text-red-500 mb-4">{loadError}</p>
           <Link 
             to="/products" 
             className="inline-block border border-black px-8 py-3 hover:bg-black hover:text-white transition-colors no-underline text-black"
@@ -142,11 +181,18 @@ const ProductDetailPage = () => {
           <div className="mb-6">
             <div className="flex justify-between items-start">
               <h1 className="text-2xl font-bold">{product.name}</h1>
-              {product.isBestSeller && (
-                <div className="bg-yellow-400 text-xs font-bold px-2 py-1 rounded">
-                  Best Seller
-                </div>
-              )}
+              <div className="flex space-x-2">
+                {product.isBestSeller && (
+                  <div className="bg-yellow-400 text-xs font-bold px-2 py-1 rounded">
+                    Best Seller
+                  </div>
+                )}
+                {product.isNewArrival && (
+                  <div className="bg-green-500 text-white text-xs font-bold px-2 py-1 rounded">
+                    New Arrival
+                  </div>
+                )}
+              </div>
             </div>
             <div className="flex items-center mt-2">
               <span className="text-gray-600 text-sm capitalize mr-2">Category: {product.category}</span>
@@ -244,17 +290,22 @@ const ProductDetailPage = () => {
           <div className="mt-8">
             <h2 className="text-lg font-medium mb-2">Product Description</h2>
             <p className="text-gray-600">
-              Premium quality t-shirt featuring a unique design. Made with 100% organic cotton 
-              for maximum comfort and durability. Machine washable.
+              {product.description || 'Premium quality t-shirt featuring a unique design. Made with 100% organic cotton for maximum comfort and durability. Machine washable.'}
             </p>
             
             <div className="mt-4">
               <h3 className="text-sm font-medium mb-1">Care Instructions:</h3>
-              <ul className="list-disc list-inside text-sm text-gray-600">
-                <li>Machine wash cold</li>
-                <li>Tumble dry low</li>
-                <li>Do not bleach</li>
-              </ul>
+              <div className="text-sm text-gray-600">
+                {product.careInstructions ? (
+                  <div dangerouslySetInnerHTML={{ __html: product.careInstructions }} />
+                ) : (
+                  <ul className="list-disc list-inside">
+                    <li>Machine wash cold</li>
+                    <li>Tumble dry low</li>
+                    <li>Do not bleach</li>
+                  </ul>
+                )}
+              </div>
             </div>
           </div>
         </div>
