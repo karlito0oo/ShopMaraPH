@@ -21,7 +21,7 @@ use App\Http\Middleware\AdminMiddleware;
 Route::post('register', [AuthController::class, 'register']);
 Route::post('login', [AuthController::class, 'login']);
 
-// Public product routes
+// Public product routes - read only
 Route::get('products', [ProductController::class, 'index']);
 Route::get('products/{id}', [ProductController::class, 'show']);
 
@@ -30,11 +30,21 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('user', [AuthController::class, 'user']);
     Route::post('logout', [AuthController::class, 'logout']);
     
-    // Admin routes
-    Route::middleware([AdminMiddleware::class])->prefix('admin')->group(function () {
-        // Product management (admin only)
+    // Admin routes for product management
+    Route::middleware([AdminMiddleware::class])->group(function () {
+        // Create a new product
         Route::post('products', [ProductController::class, 'store']);
-        Route::post('products/{id}', [ProductController::class, 'update']);
+        
+        // Update existing product - primary method using POST with _method=PUT spoofing
+        Route::post('products/{id}', [ProductController::class, 'store']); 
+        
+        // Keep direct PUT as a fallback for API clients that support it
+        Route::put('products/{id}', [ProductController::class, 'store']);
+        
+        // Delete a product
         Route::delete('products/{id}', [ProductController::class, 'destroy']);
+        
+        // Restock a product
+        Route::post('products/{id}/restock', [ProductController::class, 'restock']);
     });
 }); 

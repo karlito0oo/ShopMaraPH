@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import type { ProductSize, SizeStock } from '../../types/product';
 import { useAuth } from '../../context/AuthContext';
 
@@ -17,11 +18,14 @@ interface ManageProductsProps {
 
 const ManageProducts: React.FC<ManageProductsProps> = ({ onSuccess, onError }) => {
   const { token } = useAuth();
+  const navigate = useNavigate();
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isRestockModalOpen, setIsRestockModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [sizeRestockQuantities, setSizeRestockQuantities] = useState<{[key: string]: number}>({});
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editProductId, setEditProductId] = useState<string | number | null>(null);
   
   // Fetch products when the component mounts
   useEffect(() => {
@@ -78,10 +82,16 @@ const ManageProducts: React.FC<ManageProductsProps> = ({ onSuccess, onError }) =
     setIsLoading(true);
     
     try {
-      // In a real implementation, we would call the API to update the stock
-      // For example:
-      /*
-      const response = await fetch(`http://localhost:8000/api/admin/products/${selectedProduct.id}/restock`, {
+      // Prepare data for the API
+      const sizeStockForApi = Object.entries(sizeRestockQuantities)
+        .filter(([_, qty]) => qty > 0)
+        .map(([size, quantity]) => ({
+          size,
+          quantity
+        }));
+      
+      // Call the restock API endpoint
+      const response = await fetch(`http://localhost:8000/api/products/${selectedProduct.id}/restock`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -89,38 +99,22 @@ const ManageProducts: React.FC<ManageProductsProps> = ({ onSuccess, onError }) =
           'Accept': 'application/json',
         },
         credentials: 'include',
-        body: JSON.stringify({ sizeStock: sizeRestockQuantities }),
+        body: JSON.stringify({ sizeStock: sizeStockForApi }),
       });
       
       if (!response.ok) {
-        throw new Error('Failed to restock product');
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to restock product');
       }
       
       const data = await response.json();
-      */
       
-      // For now, just update the UI directly (you'd replace this with actual API call)
+      // Update the UI with the new stock information
       const updatedProducts = products.map(product => {
         if (product.id === selectedProduct.id) {
-          const updatedSizeStock = [...product.sizeStock];
-          
-          Object.entries(sizeRestockQuantities).forEach(([size, quantity]) => {
-            if (quantity > 0) {
-              const sizeIndex = updatedSizeStock.findIndex(s => s.size === size);
-              if (sizeIndex >= 0) {
-                updatedSizeStock[sizeIndex].stock += quantity;
-              } else {
-                updatedSizeStock.push({
-                  size: size as ProductSize,
-                  stock: quantity
-                });
-              }
-            }
-          });
-          
           return {
             ...product,
-            sizeStock: updatedSizeStock
+            sizeStock: data.data.sizeStock
           };
         }
         return product;
@@ -159,7 +153,7 @@ const ManageProducts: React.FC<ManageProductsProps> = ({ onSuccess, onError }) =
     
     try {
       // Make API call to delete the product
-      const response = await fetch(`http://localhost:8000/api/admin/products/${productId}`, {
+      const response = await fetch(`http://localhost:8000/api/products/${productId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -183,6 +177,33 @@ const ManageProducts: React.FC<ManageProductsProps> = ({ onSuccess, onError }) =
     }
   };
 
+  const openEditModal = (productId: string | number) => {
+    setEditProductId(productId);
+    setIsEditModalOpen(true);
+  };
+
+  const closeEditModal = () => {
+    setIsEditModalOpen(false);
+    setEditProductId(null);
+  };
+
+  const handleEditSuccess = (message: string) => {
+    onSuccess(message);
+    closeEditModal();
+    // Refresh the products list
+    fetchProducts();
+  };
+
+  // Navigate to add product page
+  const navigateToAddPage = () => {
+    navigate('/add-product');
+  };
+
+  // Navigate to edit product page
+  const navigateToEditPage = (productId: string | number) => {
+    navigate(`/edit-product/${productId}`);
+  };
+
   return (
     <div className="bg-white shadow rounded-lg p-6">
       <h2 className="text-xl font-semibold mb-6">Manage Products</h2>
@@ -195,9 +216,20 @@ const ManageProducts: React.FC<ManageProductsProps> = ({ onSuccess, onError }) =
             className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-black focus:border-black"
           />
         </div>
-        <button className="px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black">
-          Bulk Actions
-        </button>
+        <div className="flex space-x-3">
+          <button 
+            onClick={navigateToAddPage}
+            className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 flex items-center"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
+            </svg>
+            Add Product
+          </button>
+          <button className="px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black">
+            Bulk Actions
+          </button>
+        </div>
       </div>
       
       {isLoading && <p className="text-center py-4">Loading products...</p>}
@@ -258,7 +290,10 @@ const ManageProducts: React.FC<ManageProductsProps> = ({ onSuccess, onError }) =
                     >
                       Restock
                     </button>
-                    <button className="text-blue-600 hover:text-blue-900 mr-3">
+                    <button 
+                      onClick={() => navigateToEditPage(product.id)} 
+                      className="text-blue-600 hover:text-blue-900 mr-3"
+                    >
                       Edit
                     </button>
                     <button 

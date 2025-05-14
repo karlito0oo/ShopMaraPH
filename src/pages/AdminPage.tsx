@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import AddProductForm from '../components/admin/AddProductForm';
 import ManageProducts from '../components/admin/ManageProducts';
 import OrderManagement from '../components/admin/OrderManagement';
 import ApiTest from '../components/admin/ApiTest';
@@ -15,14 +14,14 @@ const AdminPage = () => {
   // Set default tab if none is provided in URL
   useEffect(() => {
     if (!tab) {
-      navigate('/admin/add-product', { replace: true });
+      navigate('/admin/manage-products', { replace: true });
     }
   }, [tab, navigate]);
 
   // Validate tab parameter
-  const activeTab = ['add-product', 'manage-products', 'orders', 'api-test'].includes(tab || '') 
+  const activeTab = ['manage-products', 'orders', 'api-test'].includes(tab || '') 
     ? tab 
-    : 'add-product';
+    : 'manage-products';
 
   const handleTabChange = (newTab: string) => {
     navigate(`/admin/${newTab}`);
@@ -62,12 +61,12 @@ const AdminPage = () => {
       
       {/* Authentication Debug Button */}
       <div className="mb-4 text-center">
-        <button 
+          <button
           onClick={checkAuthStatus}
           className="bg-gray-200 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-300 text-sm"
         >
           Check Auth Status
-        </button>
+          </button>
       </div>
       
       {/* Alert Message */}
@@ -79,17 +78,7 @@ const AdminPage = () => {
       
       {/* Tab Navigation */}
       <div className="flex mb-6 bg-gray-100 rounded-lg p-1 max-w-fit mx-auto">
-        <button
-          className={`py-2 px-6 font-medium rounded-md transition-colors duration-200 ${
-            activeTab === 'add-product' 
-              ? 'bg-black text-white shadow-md' 
-              : 'bg-transparent text-gray-700 hover:bg-gray-200'
-          }`}
-          onClick={() => handleTabChange('add-product')}
-        >
-          Add Product
-        </button>
-        <button
+                      <button
           className={`py-2 px-6 font-medium rounded-md transition-colors duration-200 ${
             activeTab === 'manage-products' 
               ? 'bg-black text-white shadow-md' 
@@ -98,8 +87,8 @@ const AdminPage = () => {
           onClick={() => handleTabChange('manage-products')}
         >
           Manage Products
-        </button>
-        <button
+                      </button>
+              <button
           className={`py-2 px-6 font-medium rounded-md transition-colors duration-200 ${
             activeTab === 'orders' 
               ? 'bg-black text-white shadow-md' 
@@ -108,8 +97,8 @@ const AdminPage = () => {
           onClick={() => handleTabChange('orders')}
         >
           Orders
-        </button>
-        <button
+            </button>
+                      <button 
           className={`py-2 px-6 font-medium rounded-md transition-colors duration-200 ${
             activeTab === 'api-test' 
               ? 'bg-black text-white shadow-md' 
@@ -118,16 +107,15 @@ const AdminPage = () => {
           onClick={() => handleTabChange('api-test')}
         >
           API Test
-        </button>
-      </div>
+              </button>
+            </div>
       
       {/* Tab Content */}
       <div className="mt-6">
-        {activeTab === 'add-product' && <AddProductForm onSuccess={handleSuccess} onError={handleError} />}
         {activeTab === 'manage-products' && <ManageProducts onSuccess={handleSuccess} onError={handleError} />}
         {activeTab === 'orders' && <OrderManagement onSuccess={handleSuccess} onError={handleError} />}
         {activeTab === 'api-test' && <ApiTest onSuccess={handleSuccess} onError={handleError} />}
-      </div>
+        </div>
     </div>
   );
 };

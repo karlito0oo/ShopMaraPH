@@ -12,6 +12,8 @@ import CartPage from './pages/CartPage'
 import AllProductsPage from './pages/AllProductsPage'
 import ProductDetailPage from './pages/ProductDetailPage'
 import AdminPage from './pages/AdminPage'
+import EditProductPage from './pages/EditProductPage'
+import AddProductPage from './pages/AddProductPage'
 import { CartProvider } from './context/CartContext'
 import { AuthProvider, useAuth } from './context/AuthContext'
 
@@ -72,6 +74,18 @@ function App() {
               <Route path="/admin/:tab" element={
                 <AdminRoute>
                   <AdminPage />
+                </AdminRoute>
+              } />
+              
+              {/* Product management routes */}
+              <Route path="/add-product" element={
+                <AdminRoute>
+                  <AddProductPage />
+                </AdminRoute>
+              } />
+              <Route path="/edit-product/:productId" element={
+                <AdminRoute>
+                  <EditProductPage />
                 </AdminRoute>
               } />
             </Routes>

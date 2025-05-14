@@ -8,6 +8,7 @@ export interface SizeStock {
 
 export interface Product {
   id: string | number;
+  sku?: string;  // SKU (Stock Keeping Unit) identifier
   name: string;
   price: number;
   description?: string;

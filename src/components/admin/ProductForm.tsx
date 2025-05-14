@@ -1,6 +1,8 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import type { ProductCategory, ProductSize, SizeStock } from '../../types/product';
 import { useAuth } from '../../context/AuthContext';
+import { getProductById } from '../../services/ProductService';
+import { saveProduct } from '../../services/AdminService';
 
 interface ProductFormData {
   sku: string;
@@ -19,12 +21,13 @@ interface ProductFormData {
   sizeStock: SizeStock[];
 }
 
-interface AddProductFormProps {
+interface ProductFormProps {
+  productId?: string | number; // Optional - if provided, edit mode is enabled
   onSuccess: (message: string) => void;
   onError: (message: string) => void;
 }
 
-const AddProductForm: React.FC<AddProductFormProps> = ({ onSuccess, onError }) => {
+const ProductForm: React.FC<ProductFormProps> = ({ productId, onSuccess, onError }) => {
   const { token } = useAuth();
   const [formData, setFormData] = useState<ProductFormData>({
     sku: '',
@@ -43,6 +46,8 @@ const AddProductForm: React.FC<AddProductFormProps> = ({ onSuccess, onError }) =
     sizeStock: []
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [isInitializing, setIsInitializing] = useState(!!productId);
+  const [originalImageUrls, setOriginalImageUrls] = useState<string[]>([]);
   
   const mainImageFileRef = useRef<HTMLInputElement>(null);
   const additionalImageFileRefs = [
@@ -53,6 +58,62 @@ const AddProductForm: React.FC<AddProductFormProps> = ({ onSuccess, onError }) =
 
   const availableSizes: ProductSize[] = ['small', 'medium', 'large', 'xlarge'];
   const availableCategories: ProductCategory[] = ['women', 'men'];
+
+  // Fetch product data if in edit mode
+  useEffect(() => {
+    const fetchProduct = async () => {
+      if (!productId) {
+        setIsInitializing(false);
+        return;
+      }
+
+      try {
+        setIsInitializing(true);
+        const product = await getProductById(productId);
+        
+        // Save original image URLs
+        const imageUrls = [product.image];
+        if (product.images && product.images.length > 0) {
+          imageUrls.push(...product.images);
+        }
+        setOriginalImageUrls(imageUrls);
+        
+        // Prepare additional images array
+        let additionalImgs = ['', '', ''];
+        if (product.images && product.images.length > 0) {
+          // Copy up to 3 additional images
+          for (let i = 0; i < Math.min(3, product.images.length); i++) {
+            additionalImgs[i] = product.images[i];
+          }
+        }
+        
+        // Update form data
+        setFormData({
+          sku: product.sku || '',
+          name: product.name,
+          price: product.price,
+          description: product.description || '',
+          careInstructions: product.careInstructions || '* Machine wash cold\n* Tumble dry low\n* Do not bleach',
+          image: product.image,
+          imageFile: null,
+          additionalImages: additionalImgs,
+          additionalImageFiles: [null, null, null],
+          category: product.category as ProductCategory,
+          sizes: product.sizes.filter(size => size !== 'all') as ProductSize[],
+          isBestSeller: product.isBestSeller || false,
+          isNewArrival: product.isNewArrival || false,
+          sizeStock: product.sizeStock || []
+        });
+      } catch (error) {
+        console.error('Error fetching product:', error);
+        onError('Failed to load product data. Please try again.');
+      } finally {
+        setIsInitializing(false);
+      }
+    };
+
+    fetchProduct();
+  }, [productId, onError]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target;
@@ -156,12 +217,10 @@ const AddProductForm: React.FC<AddProductFormProps> = ({ onSuccess, onError }) =
     setIsLoading(true);
     
     try {
-      // Debug authentication info
-      console.log('Auth Token:', token);
-      console.log('Is authenticated:', !!token);
-      
       // Create a FormData object for the multipart/form-data request
       const apiFormData = new FormData();
+      
+      // Add basic product data
       apiFormData.append('name', formData.name);
       apiFormData.append('price', formData.price.toString());
       apiFormData.append('category', formData.category);
@@ -173,116 +232,114 @@ const AddProductForm: React.FC<AddProductFormProps> = ({ onSuccess, onError }) =
         apiFormData.append('sku', formData.sku);
       }
       
-      // Add the main image file
+      // Add main image file if it was changed or this is a new product
       if (formData.imageFile) {
         apiFormData.append('image', formData.imageFile);
       }
       
-      // Add any additional image files
+      // Add any additional image files that were changed or this is a new product
       formData.additionalImageFiles.forEach((file, index) => {
         if (file) {
-          apiFormData.append(`additionalImages[${index}]`, file);
+          apiFormData.append(`additional_images[${index}]`, file);
         }
       });
+      
+      // In edit mode, keep track of original images that weren't changed
+      if (productId) {
+        apiFormData.append('original_image_urls', JSON.stringify(originalImageUrls));
+      }
       
       // Convert boolean fields to proper format
       apiFormData.append('is_best_seller', formData.isBestSeller ? 'true' : 'false');
       apiFormData.append('is_new_arrival', formData.isNewArrival ? 'true' : 'false');
       
-      // Fix 2: Ensure sizes is properly formatted as a JSON array
+      // Ensure sizes and sizeStock are properly formatted
       const sizesData = formData.sizeStock.filter(ss => formData.sizes.includes(ss.size));
-      apiFormData.append('sizes', JSON.stringify(sizesData));
+      apiFormData.append('sizes', JSON.stringify(formData.sizes));
+      apiFormData.append('size_stock', JSON.stringify(sizesData));
       
-      // Log the FormData to debug (cannot directly console.log FormData contents)
+      // Debug logging
       console.log('Form data being sent:');
       console.log('- name:', formData.name);
       console.log('- price:', formData.price);
       console.log('- category:', formData.category);
       console.log('- is_best_seller:', formData.isBestSeller);
       console.log('- is_new_arrival:', formData.isNewArrival);
-      console.log('- sizes:', JSON.stringify(sizesData));
+      console.log('- sizes:', JSON.stringify(formData.sizes));
       
-      // Make API call to create product
-      const response = await fetch('http://localhost:8000/api/admin/products', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Accept': 'application/json',
-        },
-        credentials: 'include',
-        body: apiFormData,
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error('API Error Response:', errorData);
-        
-        // Handle authentication errors
-        if (response.status === 401) {
-          // Token is invalid or expired
-          onError('Your session has expired. Please log in again.');
-          // Redirect to login page after a short delay
-          setTimeout(() => {
-            window.location.href = '/login?returnUrl=/admin/add-product';
-          }, 2000);
-          return;
-        }
-        
-        // Handle validation errors
-        if (response.status === 422 && errorData.errors) {
-          const errorMessages = Object.entries(errorData.errors)
-            .map(([field, messages]) => `${field}: ${(messages as string[]).join(', ')}`)
-            .join('\n');
-          throw new Error(`Validation failed:\n${errorMessages}`);
-        }
-        
-        throw new Error(errorData.message || 'Failed to create product');
+      if (!token) {
+        throw new Error('Authentication token is missing. Please log in again.');
       }
       
-      const data = await response.json();
+      // Use the unified saveProduct function for both creating and updating products
+      const data = await saveProduct(apiFormData, token, productId);
       
-      onSuccess('Product added successfully!');
+      console.log('API Success Response:', data);
       
-      // Clear form
-      setFormData({
-        sku: '',
-        name: '',
-        price: 0,
-        description: '',
-        careInstructions: '* Machine wash cold\n* Tumble dry low\n* Do not bleach',
-        image: '',
-        imageFile: null,
-        additionalImages: ['', '', ''],
-        additionalImageFiles: [null, null, null],
-        category: 'women',
-        sizes: [],
-        isBestSeller: false,
-        isNewArrival: false,
-        sizeStock: []
-      });
+      onSuccess(`Product ${productId ? 'updated' : 'added'} successfully!`);
+      
+      // Clear form if it's an add operation
+      if (!productId) {
+        setFormData({
+          sku: '',
+          name: '',
+          price: 0,
+          description: '',
+          careInstructions: '* Machine wash cold\n* Tumble dry low\n* Do not bleach',
+          image: '',
+          imageFile: null,
+          additionalImages: ['', '', ''],
+          additionalImageFiles: [null, null, null],
+          category: 'women',
+          sizes: [],
+          isBestSeller: false,
+          isNewArrival: false,
+          sizeStock: []
+        });
 
-      // Reset file input elements
-      if (mainImageFileRef.current) {
-        mainImageFileRef.current.value = '';
-      }
-      
-      additionalImageFileRefs.forEach(ref => {
-        if (ref.current) {
-          ref.current.value = '';
+        // Reset file input elements
+        if (mainImageFileRef.current) {
+          mainImageFileRef.current.value = '';
         }
-      });
-      
+        
+        additionalImageFileRefs.forEach(ref => {
+          if (ref.current) {
+            ref.current.value = '';
+          }
+        });
+      }
     } catch (error) {
-      console.error('Error adding product:', error);
-      onError(error instanceof Error ? error.message : 'An error occurred while adding the product');
+      console.error(`Error ${productId ? 'updating' : 'adding'} product:`, error);
+      onError(error instanceof Error ? error.message : `An error occurred while ${productId ? 'updating' : 'adding'} the product`);
     } finally {
       setIsLoading(false);
     }
   };
 
+  // If we're initializing in edit mode, show a loading indicator
+  if (isInitializing) {
+    return (
+      <div className="bg-white shadow rounded-lg p-6">
+        <div className="animate-pulse flex space-x-4">
+          <div className="flex-1 space-y-6 py-1">
+            <div className="h-6 bg-gray-200 rounded w-3/4"></div>
+            <div className="space-y-3">
+              <div className="grid grid-cols-3 gap-4">
+                <div className="h-10 bg-gray-200 rounded col-span-2"></div>
+                <div className="h-10 bg-gray-200 rounded col-span-1"></div>
+              </div>
+              <div className="h-10 bg-gray-200 rounded"></div>
+            </div>
+          </div>
+        </div>
+        <p className="text-center mt-4">Loading product data...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="bg-white shadow rounded-lg p-6">
-      <h2 className="text-xl font-semibold mb-6">Add New Product</h2>
+      <h2 className="text-xl font-semibold mb-6">{productId ? 'Edit Product' : 'Add New Product'}</h2>
       
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Basic Info Section */}
@@ -385,157 +442,151 @@ const AddProductForm: React.FC<AddProductFormProps> = ({ onSuccess, onError }) =
           <div className="space-y-4">
             <div>
               <label htmlFor="imageFile" className="block text-sm font-medium text-gray-700">Main Product Image*</label>
-              <input
-                type="file"
-                id="imageFile"
-                ref={mainImageFileRef}
-                onChange={handleMainImageChange}
-                className="mt-1 block w-full text-sm text-gray-500
-                  file:mr-4 file:py-2 file:px-4
-                  file:rounded-md file:border-0
-                  file:text-sm file:font-semibold
-                  file:bg-black file:text-white
-                  hover:file:bg-gray-700"
-                accept="image/*"
-              />
-              {formData.image && (
-                <div className="mt-2">
-                  <p className="text-sm text-gray-500 mb-1">Preview:</p>
-                  <img 
-                    src={formData.image} 
-                    alt="Product preview" 
-                    className="h-32 w-32 object-cover rounded-md border border-gray-200" 
-                  />
-                </div>
-              )}
+              <div className="mt-1 flex items-center">
+                {formData.image && (
+                  <div className="mr-3">
+                    <img 
+                      src={formData.image} 
+                      alt="Product preview" 
+                      className="h-32 w-32 object-cover rounded-md border border-gray-200" 
+                    />
+                  </div>
+                )}
+                <input
+                  type="file"
+                  id="imageFile"
+                  ref={mainImageFileRef}
+                  onChange={handleMainImageChange}
+                  className="block w-full text-sm text-gray-500
+                    file:mr-4 file:py-2 file:px-4
+                    file:rounded-md file:border-0
+                    file:text-sm file:font-semibold
+                    file:bg-black file:text-white
+                    hover:file:bg-gray-700"
+                  accept="image/*"
+                />
+              </div>
             </div>
             
             <div className="border-t border-gray-200 pt-4">
               <h4 className="text-sm font-medium text-gray-700 mb-2">Additional Images (Optional)</h4>
               
-              {formData.additionalImageFiles.map((_, index) => (
+              {formData.additionalImages.map((imgSrc, index) => (
                 <div key={index} className="mb-4">
-                  <label htmlFor={`additionalImageFile-${index}`} className="block text-sm font-medium text-gray-700 mb-1">
-                    Additional Image {index + 1}
-                  </label>
-                  <input
-                    type="file"
-                    id={`additionalImageFile-${index}`}
-                    ref={additionalImageFileRefs[index]}
-                    onChange={(e) => handleAdditionalImageFileChange(index, e)}
-                    className="block w-full text-sm text-gray-500
-                      file:mr-4 file:py-2 file:px-4
-                      file:rounded-md file:border-0
-                      file:text-sm file:font-semibold
-                      file:bg-black file:text-white
-                      hover:file:bg-gray-700"
-                    accept="image/*"
-                  />
-                  {formData.additionalImages[index] && (
-                    <div className="mt-2">
-                      <p className="text-sm text-gray-500 mb-1">Preview:</p>
-                      <img 
-                        src={formData.additionalImages[index]} 
-                        alt={`Additional image ${index + 1} preview`} 
-                        className="h-24 w-24 object-cover rounded-md border border-gray-200" 
-                      />
-                    </div>
-                  )}
+                  <label htmlFor={`additionalImageFile${index}`} className="block text-sm font-medium text-gray-700">Additional Image {index + 1}</label>
+                  <div className="mt-1 flex items-center">
+                    {imgSrc && (
+                      <div className="mr-3">
+                        <img 
+                          src={imgSrc} 
+                          alt={`Additional image ${index + 1} preview`} 
+                          className="h-32 w-32 object-cover rounded-md border border-gray-200" 
+                        />
+                      </div>
+                    )}
+                    <input
+                      type="file"
+                      id={`additionalImageFile${index}`}
+                      ref={additionalImageFileRefs[index]}
+                      onChange={(e) => handleAdditionalImageFileChange(index, e)}
+                      className="block w-full text-sm text-gray-500
+                        file:mr-4 file:py-2 file:px-4
+                        file:rounded-md file:border-0
+                        file:text-sm file:font-semibold
+                        file:bg-black file:text-white
+                        hover:file:bg-gray-700"
+                      accept="image/*"
+                    />
+                  </div>
                 </div>
               ))}
             </div>
           </div>
         </div>
         
-        {/* Attributes Section */}
+        {/* Sizes Section */}
         <div>
-          <h3 className="text-lg font-medium mb-4">Product Attributes</h3>
+          <h3 className="text-lg font-medium mb-4">Sizes and Stock</h3>
           
-          <div className="space-y-4">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Available Sizes*</label>
-              <div className="flex flex-wrap gap-3">
+              <h4 className="text-sm font-medium text-gray-700 mb-2">Available Sizes*</h4>
+              <div className="flex flex-wrap gap-2">
                 {availableSizes.map(size => (
-                  <button
-                    key={size}
-                    type="button"
-                    onClick={() => handleSizeToggle(size)}
-                    className={`px-4 py-2 text-sm font-medium rounded-md ${
-                      formData.sizes.includes(size)
-                        ? 'bg-black text-white border-2 border-black'
-                        : 'bg-white text-black border-2 border-gray-300 hover:border-gray-500'
-                    }`}
-                  >
-                    {size.toUpperCase()}
-                  </button>
+                  <label key={size} className="inline-flex items-center">
+                    <input
+                      type="checkbox"
+                      name="sizes"
+                      value={size}
+                      checked={formData.sizes.includes(size)}
+                      onChange={() => handleSizeToggle(size)}
+                      className="form-checkbox h-5 w-5 text-black"
+                    />
+                    <span className="ml-2 text-sm text-gray-700">{size.toUpperCase()}</span>
+                  </label>
                 ))}
               </div>
             </div>
             
-            {formData.sizes.length > 0 && (
-              <div className="mt-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Size-specific Stock</label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                  {formData.sizes.map(size => {
-                    const sizeStockItem = formData.sizeStock.find(item => item.size === size);
-                    const stockValue = sizeStockItem ? sizeStockItem.stock : 0;
-                    
-                    return (
-                      <div key={size} className="flex items-center border border-gray-300 rounded-md p-3">
-                        <span className="font-medium mr-2">{size.toUpperCase()}:</span>
-                        <input
-                          type="number"
-                          min="0"
-                          value={stockValue}
-                          onChange={(e) => handleSizeStockChange(size, parseInt(e.target.value) || 0)}
-                          className="w-20 border border-gray-300 rounded-md shadow-sm py-1 px-2 focus:outline-none focus:ring-black focus:border-black text-sm"
-                        />
-                        <span className="ml-1 text-sm text-gray-500">units</span>
-                      </div>
-                    );
-                  })}
-                </div>
+            <div>
+              <h4 className="text-sm font-medium text-gray-700 mb-2">Stock*</h4>
+              <div className="space-y-2">
+                {formData.sizes.map(size => (
+                  <div key={size} className="flex items-center">
+                    <span className="w-16 text-sm text-gray-700">{size.toUpperCase()}:</span>
+                    <input
+                      type="number"
+                      name={`stock-${size}`}
+                      value={formData.sizeStock.find(ss => ss.size === size)?.stock || 0}
+                      onChange={(e) => handleSizeStockChange(size, parseInt(e.target.value) || 0)}
+                      min="0"
+                      className="ml-2 block w-20 border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-black focus:border-black sm:text-sm"
+                    />
+                  </div>
+                ))}
               </div>
-            )}
-            
-            <div className="flex items-center">
+            </div>
+          </div>
+        </div>
+        
+        {/* Additional Info Section */}
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+          <div>
+            <label htmlFor="isBestSeller" className="inline-flex items-center">
               <input
                 type="checkbox"
                 id="isBestSeller"
                 name="isBestSeller"
                 checked={formData.isBestSeller}
                 onChange={handleChange}
-                className="h-4 w-4 text-black focus:ring-black border-gray-300 rounded"
+                className="form-checkbox h-5 w-5 text-black"
               />
-              <label htmlFor="isBestSeller" className="ml-2 block text-sm text-gray-700">
-                Mark as Best Seller
-              </label>
-            </div>
-
-            <div className="flex items-center mt-2">
+              <span className="ml-2 text-sm text-gray-700">Best Seller</span>
+            </label>
+          </div>
+          
+          <div>
+            <label htmlFor="isNewArrival" className="inline-flex items-center">
               <input
                 type="checkbox"
                 id="isNewArrival"
                 name="isNewArrival"
                 checked={formData.isNewArrival}
                 onChange={handleChange}
-                className="h-4 w-4 text-black focus:ring-black border-gray-300 rounded"
+                className="form-checkbox h-5 w-5 text-black"
               />
-              <label htmlFor="isNewArrival" className="ml-2 block text-sm text-gray-700">
-                Mark as New Arrival
-              </label>
-            </div>
+              <span className="ml-2 text-sm text-gray-700">New Arrival</span>
+            </label>
           </div>
         </div>
         
-        {/* Submit Button */}
-        <div className="flex justify-end">
+        <div className="mt-6">
           <button
             type="submit"
-            className={`inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-black hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black ${isLoading ? 'opacity-75 cursor-not-allowed' : ''}`}
             disabled={isLoading}
+            className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-black hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black"
           >
-            {isLoading ? 'Adding Product...' : 'Add Product'}
+            {isLoading ? (productId ? 'Saving...' : 'Adding...') : (productId ? 'Save Changes' : 'Add Product')}
           </button>
         </div>
       </form>
@@ -543,4 +594,4 @@ const AddProductForm: React.FC<AddProductFormProps> = ({ onSuccess, onError }) =
   );
 };
 
-export default AddProductForm; 
+export default ProductForm; 
