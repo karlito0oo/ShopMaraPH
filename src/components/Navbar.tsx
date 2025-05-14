@@ -1,13 +1,20 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { getTotalItems } = useCart();
+  const { user, isAuthenticated, isAdmin, logout } = useAuth();
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
+  };
+
+  const handleLogout = async () => {
+    await logout();
+    setIsMenuOpen(false);
   };
 
   return (
@@ -53,15 +60,38 @@ const Navbar = () => {
               Men
             </Link>
             
-            {/* Admin */}
-            <Link to="/admin" className="border-l border-gray-200 py-5 px-5 text-black no-underline hover:bg-gray-100 flex items-center gap-2">
-              <div className="w-5 h-5 rounded-full bg-gray-800 flex items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" className="w-3 h-3 text-white" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-6-3a2 2 0 11-4 0 2 2 0 014 0zm-2 4a5 5 0 00-4.546 2.916A5.986 5.986 0 005 10a6 6 0 0012 0c0-.352-.035-.696-.1-1.028A5.001 5.001 0 0010 11z" clipRule="evenodd" />
-                </svg>
+            {/* Admin - Only show for admin users */}
+            {isAdmin && (
+              <Link to="/admin" className="border-l border-gray-200 py-5 px-5 text-black no-underline hover:bg-gray-100 flex items-center gap-2">
+                <div className="w-5 h-5 rounded-full bg-gray-800 flex items-center justify-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="w-3 h-3 text-white" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-6-3a2 2 0 11-4 0 2 2 0 014 0zm-2 4a5 5 0 00-4.546 2.916A5.986 5.986 0 005 10a6 6 0 0012 0c0-.352-.035-.696-.1-1.028A5.001 5.001 0 0010 11z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <span className="text-sm">Admin</span>
+              </Link>
+            )}
+            
+            {/* Auth Links */}
+            {isAuthenticated ? (
+              <div className="border-l border-gray-200 py-5 px-5 text-black hover:bg-gray-100 flex items-center gap-2 cursor-pointer" onClick={handleLogout}>
+                <div className="w-5 h-5 rounded-full bg-gray-800 flex items-center justify-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="w-3 h-3 text-white" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 001 1h12a1 1 0 001-1V7.414l-4-4H3zm7 2a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1zm0 6a1 1 0 100 2 1 1 0 000-2z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <span className="text-sm">Logout</span>
               </div>
-              <span className="text-sm">Admin</span>
-            </Link>
+            ) : (
+              <Link to="/login" className="border-l border-gray-200 py-5 px-5 text-black no-underline hover:bg-gray-100 flex items-center gap-2">
+                <div className="w-5 h-5 rounded-full bg-gray-800 flex items-center justify-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="w-3 h-3 text-white" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-6-3a2 2 0 11-4 0 2 2 0 014 0zm-2 4a5 5 0 00-4.546 2.916A5.986 5.986 0 005 10a6 6 0 0012 0c0-.352-.035-.696-.1-1.028A5.001 5.001 0 0010 11z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <span className="text-sm">Login</span>
+              </Link>
+            )}
             
             {/* Cart */}
             <Link to="/cart" className="border-l border-gray-200 py-5 px-5 text-black no-underline hover:bg-gray-100 flex items-center justify-center relative">
@@ -96,15 +126,40 @@ const Navbar = () => {
             <Link to="/men" className="block py-3 px-4 border-b border-gray-200 text-black no-underline hover:bg-gray-100">
               Men
             </Link>
-            {/* Admin */}
-            <Link to="/admin" className="flex items-center gap-2 py-3 px-4 border-b border-gray-200 text-black no-underline hover:bg-gray-100">
-              <div className="w-5 h-5 rounded-full bg-gray-800 flex items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" className="w-3 h-3 text-white" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-6-3a2 2 0 11-4 0 2 2 0 014 0zm-2 4a5 5 0 00-4.546 2.916A5.986 5.986 0 005 10a6 6 0 0012 0c0-.352-.035-.696-.1-1.028A5.001 5.001 0 0010 11z" clipRule="evenodd" />
-                </svg>
+            
+            {/* Admin - Only show for admin users */}
+            {isAdmin && (
+              <Link to="/admin" className="flex items-center gap-2 py-3 px-4 border-b border-gray-200 text-black no-underline hover:bg-gray-100">
+                <div className="w-5 h-5 rounded-full bg-gray-800 flex items-center justify-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="w-3 h-3 text-white" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-6-3a2 2 0 11-4 0 2 2 0 014 0zm-2 4a5 5 0 00-4.546 2.916A5.986 5.986 0 005 10a6 6 0 0012 0c0-.352-.035-.696-.1-1.028A5.001 5.001 0 0010 11z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <span className="text-sm">Admin</span>
+              </Link>
+            )}
+            
+            {/* Auth Links */}
+            {isAuthenticated ? (
+              <div className="flex items-center gap-2 py-3 px-4 border-b border-gray-200 text-black hover:bg-gray-100 cursor-pointer" onClick={handleLogout}>
+                <div className="w-5 h-5 rounded-full bg-gray-800 flex items-center justify-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="w-3 h-3 text-white" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 001 1h12a1 1 0 001-1V7.414l-4-4H3zm7 2a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1zm0 6a1 1 0 100 2 1 1 0 000-2z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <span className="text-sm">Logout {user && `(${user.name})`}</span>
               </div>
-              <span className="text-sm">Admin</span>
-            </Link>
+            ) : (
+              <Link to="/login" className="flex items-center gap-2 py-3 px-4 border-b border-gray-200 text-black no-underline hover:bg-gray-100">
+                <div className="w-5 h-5 rounded-full bg-gray-800 flex items-center justify-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="w-3 h-3 text-white" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-6-3a2 2 0 11-4 0 2 2 0 014 0zm-2 4a5 5 0 00-4.546 2.916A5.986 5.986 0 005 10a6 6 0 0012 0c0-.352-.035-.696-.1-1.028A5.001 5.001 0 0010 11z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <span className="text-sm">Login</span>
+              </Link>
+            )}
+            
             <Link to="/cart" className="flex items-center gap-2 py-3 px-4 text-black no-underline hover:bg-gray-100">
               <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 20 20" fill="currentColor">
                 <path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3zM16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 18a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" />

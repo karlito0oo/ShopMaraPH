@@ -1,8 +1,41 @@
+import React, { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+
 const LoginPage = () => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  
+  const { login } = useAuth();
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setIsLoading(true);
+
+    try {
+      await login(email, password);
+      navigate('/'); // Redirect to homepage after successful login
+    } catch (err) {
+      setError('Invalid email or password');
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="max-w-md mx-auto px-4 py-16">
       <h1 className="text-3xl font-bold mb-6 text-center">Login</h1>
-      <form className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+      {error && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4" role="alert">
+          <p>{error}</p>
+        </div>
+      )}
+      <form className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4" onSubmit={handleSubmit}>
         <div className="mb-4">
           <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="email">
             Email
@@ -12,6 +45,9 @@ const LoginPage = () => {
             id="email"
             type="email"
             placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
           />
         </div>
         <div className="mb-6">
@@ -23,25 +59,29 @@ const LoginPage = () => {
             id="password"
             type="password"
             placeholder="******************"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
           />
         </div>
         <div className="flex items-center justify-between">
           <button
-            className="bg-black hover:bg-gray-800 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-            type="button"
+            className={`bg-black ${isLoading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-800'} text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline`}
+            type="submit"
+            disabled={isLoading}
           >
-            Sign In
+            {isLoading ? 'Signing In...' : 'Sign In'}
           </button>
-          <a className="inline-block align-baseline font-bold text-sm text-black hover:text-gray-800" href="#">
+          <Link className="inline-block align-baseline font-bold text-sm text-black hover:text-gray-800" to="/forgot-password">
             Forgot Password?
-          </a>
+          </Link>
         </div>
       </form>
       <p className="text-center text-gray-500 text-sm">
-        Don't have an account? <a href="#" className="text-black font-bold">Sign up</a>
+        Don't have an account? <Link to="/register" className="text-black font-bold">Sign up</Link>
       </p>
     </div>
-  )
-}
+  );
+};
 
-export default LoginPage 
+export default LoginPage; 
