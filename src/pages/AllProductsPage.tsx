@@ -9,16 +9,24 @@ const AllProductsPage = () => {
   const [activeCategory, setActiveCategory] = useState<ProductCategory>('all');
   const [activeSize, setActiveSize] = useState<ProductSize>('all');
   const [bestSellerOnly, setBestSellerOnly] = useState(false);
+  const [searchKeyword, setSearchKeyword] = useState('');
   const [filteredProducts, setFilteredProducts] = useState(products);
 
   useEffect(() => {
-    setFilteredProducts(filterProducts(products, activeCategory, activeSize, bestSellerOnly));
-  }, [activeCategory, activeSize, bestSellerOnly]);
+    setFilteredProducts(filterProducts(
+      products, 
+      activeCategory, 
+      activeSize, 
+      bestSellerOnly,
+      searchKeyword
+    ));
+  }, [activeCategory, activeSize, bestSellerOnly, searchKeyword]);
 
   const resetFilters = () => {
     setActiveCategory('all');
     setActiveSize('all');
     setBestSellerOnly(false);
+    setSearchKeyword('');
   };
 
   return (
@@ -32,9 +40,11 @@ const AllProductsPage = () => {
             activeCategory={activeCategory}
             activeSize={activeSize}
             bestSellerOnly={bestSellerOnly}
+            searchKeyword={searchKeyword}
             onCategoryChange={setActiveCategory}
             onSizeChange={setActiveSize}
             onBestSellerChange={setBestSellerOnly}
+            onKeywordChange={setSearchKeyword}
           />
         </div>
         
@@ -43,6 +53,7 @@ const AllProductsPage = () => {
           products={filteredProducts} 
           onResetFilters={resetFilters}
           defaultCategory="all"
+          searchKeyword={searchKeyword}
         />
       </div>
     </div>

@@ -53,14 +53,14 @@ const Navbar = () => {
               Men
             </Link>
             
-            {/* Login */}
-            <Link to="/login" className="border-l border-gray-200 py-5 px-5 text-black no-underline hover:bg-gray-100 flex items-center gap-2">
+            {/* Admin */}
+            <Link to="/admin" className="border-l border-gray-200 py-5 px-5 text-black no-underline hover:bg-gray-100 flex items-center gap-2">
               <div className="w-5 h-5 rounded-full bg-gray-800 flex items-center justify-center">
                 <svg xmlns="http://www.w3.org/2000/svg" className="w-3 h-3 text-white" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-6-3a2 2 0 11-4 0 2 2 0 014 0zm-2 4a5 5 0 00-4.546 2.916A5.986 5.986 0 005 10a6 6 0 0012 0c0-.352-.035-.696-.1-1.028A5.001 5.001 0 0010 11z" clipRule="evenodd" />
                 </svg>
               </div>
-              <span className="text-sm">Log In</span>
+              <span className="text-sm">Admin</span>
             </Link>
             
             {/* Cart */}
@@ -96,13 +96,14 @@ const Navbar = () => {
             <Link to="/men" className="block py-3 px-4 border-b border-gray-200 text-black no-underline hover:bg-gray-100">
               Men
             </Link>
-            <Link to="/login" className="flex items-center gap-2 py-3 px-4 border-b border-gray-200 text-black no-underline hover:bg-gray-100">
+            {/* Admin */}
+            <Link to="/admin" className="flex items-center gap-2 py-3 px-4 border-b border-gray-200 text-black no-underline hover:bg-gray-100">
               <div className="w-5 h-5 rounded-full bg-gray-800 flex items-center justify-center">
                 <svg xmlns="http://www.w3.org/2000/svg" className="w-3 h-3 text-white" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-6-3a2 2 0 11-4 0 2 2 0 014 0zm-2 4a5 5 0 00-4.546 2.916A5.986 5.986 0 005 10a6 6 0 0012 0c0-.352-.035-.696-.1-1.028A5.001 5.001 0 0010 11z" clipRule="evenodd" />
                 </svg>
               </div>
-              <span className="text-sm">Log In</span>
+              <span className="text-sm">Admin</span>
             </Link>
             <Link to="/cart" className="flex items-center gap-2 py-3 px-4 text-black no-underline hover:bg-gray-100">
               <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 20 20" fill="currentColor">

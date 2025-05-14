@@ -1,4 +1,4 @@
-import type { Product } from '../types/product';
+import type { Product, SizeStock } from '../types/product';
 
 export const products: Product[] = [
   // Men's products
@@ -13,7 +13,13 @@ export const products: Product[] = [
       "https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80"
     ],
     category: "men",
-    sizes: ['small', 'medium', 'large', 'xlarge']
+    sizes: ['small', 'medium', 'large', 'xlarge'],
+    sizeStock: [
+      { size: 'small', stock: 5 },
+      { size: 'medium', stock: 8 },
+      { size: 'large', stock: 7 },
+      { size: 'xlarge', stock: 5 }
+    ]
   },
   { 
     id: 'm2', 
@@ -21,7 +27,12 @@ export const products: Product[] = [
     price: 39.99, 
     image: "https://images.unsplash.com/photo-1622445275576-721325763afe?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80", 
     category: "men",
-    sizes: ['small', 'medium', 'large'] 
+    sizes: ['small', 'medium', 'large'],
+    sizeStock: [
+      { size: 'small', stock: 10 },
+      { size: 'medium', stock: 12 },
+      { size: 'large', stock: 10 }
+    ]
   },
   { 
     id: 'm3', 
@@ -29,7 +40,12 @@ export const products: Product[] = [
     price: 45.99, 
     image: "https://images.unsplash.com/photo-1523381294911-8d3cead13475?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80", 
     category: "men",
-    sizes: ['medium', 'large', 'xlarge'] 
+    sizes: ['medium', 'large', 'xlarge'],
+    sizeStock: [
+      { size: 'medium', stock: 6 },
+      { size: 'large', stock: 6 },
+      { size: 'xlarge', stock: 6 }
+    ]
   },
   { 
     id: 'm4', 
@@ -37,7 +53,13 @@ export const products: Product[] = [
     price: 39.99, 
     image: "https://images.unsplash.com/photo-1586363104862-3a5e2ab60d99?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80", 
     category: "men",
-    sizes: ['small', 'medium', 'large', 'xlarge'] 
+    sizes: ['small', 'medium', 'large', 'xlarge'],
+    sizeStock: [
+      { size: 'small', stock: 5 },
+      { size: 'medium', stock: 7 },
+      { size: 'large', stock: 6 },
+      { size: 'xlarge', stock: 4 }
+    ]
   },
   
   // Women's products
@@ -52,7 +74,12 @@ export const products: Product[] = [
       "https://images.unsplash.com/photo-1588359348347-9bc6cbbb689e?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80"
     ],
     category: "women",
-    sizes: ['small', 'medium', 'large'] 
+    sizes: ['small', 'medium', 'large'],
+    sizeStock: [
+      { size: 'small', stock: 6 },
+      { size: 'medium', stock: 8 },
+      { size: 'large', stock: 4 }
+    ]
   },
   { 
     id: 'w2', 
@@ -60,7 +87,11 @@ export const products: Product[] = [
     price: 44.99, 
     image: "https://images.unsplash.com/photo-1503185912284-5271ff81b9a8?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80", 
     category: "women",
-    sizes: ['small', 'medium']
+    sizes: ['small', 'medium'],
+    sizeStock: [
+      { size: 'small', stock: 8 },
+      { size: 'medium', stock: 7 }
+    ]
   },
   { 
     id: 'w3', 
@@ -68,7 +99,12 @@ export const products: Product[] = [
     price: 49.99, 
     image: "https://images.unsplash.com/photo-1554568218-22fb0944c8cc?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80", 
     category: "women",
-    sizes: ['medium', 'large', 'xlarge'] 
+    sizes: ['medium', 'large', 'xlarge'],
+    sizeStock: [
+      { size: 'medium', stock: 7 },
+      { size: 'large', stock: 7 },
+      { size: 'xlarge', stock: 6 }
+    ]
   },
   { 
     id: 'w4', 
@@ -76,7 +112,11 @@ export const products: Product[] = [
     price: 42.99, 
     image: "https://images.unsplash.com/photo-1529502669403-c073b74fcefb?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80", 
     category: "women",
-    sizes: ['small', 'medium'] 
+    sizes: ['small', 'medium'],
+    sizeStock: [
+      { size: 'small', stock: 5 },
+      { size: 'medium', stock: 7 }
+    ]
   },
   
   // New arrivals
@@ -93,7 +133,12 @@ export const products: Product[] = [
     ],
     category: "new", 
     isBestSeller: true,
-    sizes: ['medium', 'large', 'xlarge']
+    sizes: ['medium', 'large', 'xlarge'],
+    sizeStock: [
+      { size: 'medium', stock: 3 },
+      { size: 'large', stock: 4 },
+      { size: 'xlarge', stock: 3 }
+    ]
   },
   { 
     id: 'n2', 
@@ -101,7 +146,12 @@ export const products: Product[] = [
     price: 49.99, 
     image: "https://images.unsplash.com/photo-1562157873-818bc0726f68?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80", 
     category: "new",
-    sizes: ['small', 'medium', 'large']
+    sizes: ['small', 'medium', 'large'],
+    sizeStock: [
+      { size: 'small', stock: 4 },
+      { size: 'medium', stock: 5 },
+      { size: 'large', stock: 5 }
+    ]
   },
   { 
     id: 'n3', 
@@ -115,7 +165,13 @@ export const products: Product[] = [
     ],
     category: "new", 
     isBestSeller: true,
-    sizes: ['small', 'medium', 'large', 'xlarge']
+    sizes: ['small', 'medium', 'large', 'xlarge'],
+    sizeStock: [
+      { size: 'small', stock: 2 },
+      { size: 'medium', stock: 2 },
+      { size: 'large', stock: 0 },
+      { size: 'xlarge', stock: 2 }
+    ]
   },
   { 
     id: 'n4', 
@@ -123,6 +179,10 @@ export const products: Product[] = [
     price: 54.99, 
     image: "https://images.unsplash.com/photo-1598032895397-b9472444bf93?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80", 
     category: "new",
-    sizes: ['medium', 'large']
+    sizes: ['medium', 'large'],
+    sizeStock: [
+      { size: 'medium', stock: 8 },
+      { size: 'large', stock: 8 }
+    ]
   },
 ]; 

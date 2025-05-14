@@ -30,6 +30,15 @@ const ProductDetailPage = () => {
       return;
     }
 
+    // Get available stock for selected size
+    const availableStock = getStockForSize(product, selectedSize);
+    
+    // Ensure quantity doesn't exceed available stock
+    if (quantity > availableStock) {
+      setError(`Sorry, only ${availableStock} items available in this size`);
+      return;
+    }
+
     addToCart(product, selectedSize, quantity);
     navigate('/cart');
   };
@@ -37,6 +46,24 @@ const ProductDetailPage = () => {
   const handleSizeChange = (size: ProductSize) => {
     setSelectedSize(size);
     setError('');
+    
+    // Reset quantity to 1 or max available stock if less than 1
+    const stockForSize = getStockForSize(product, size);
+    setQuantity(Math.min(1, stockForSize));
+  };
+
+  // Get stock for a specific size
+  const getStockForSize = (product: Product | null, size: ProductSize): number => {
+    if (!product) return 0;
+    
+    const sizeStockItem = product.sizeStock.find(item => item.size === size);
+    return sizeStockItem ? sizeStockItem.stock : 0;
+  };
+
+  // Get total stock across all sizes
+  const getTotalStock = (product: Product | null): number => {
+    if (!product) return 0;
+    return product.sizeStock.reduce((total, item) => total + item.stock, 0);
   };
 
   // Get product images array or create one from the single image
@@ -67,6 +94,8 @@ const ProductDetailPage = () => {
   }
 
   const productImages = getProductImages();
+  const selectedSizeStock = selectedSize ? getStockForSize(product, selectedSize) : 0;
+  const totalStock = getTotalStock(product);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -124,6 +153,7 @@ const ProductDetailPage = () => {
             </div>
             <div className="mt-4">
               <p className="text-xl font-semibold">₱{product.price.toFixed(2)}</p>
+              <p className="text-sm text-gray-500 mt-1">Total Stock: {totalStock} items</p>
             </div>
           </div>
 
@@ -131,21 +161,42 @@ const ProductDetailPage = () => {
           <div className="mb-6">
             <h2 className="text-sm font-medium mb-2">Select Size</h2>
             <div className="flex flex-wrap gap-2">
-              {product.sizes.filter(size => size !== 'all').map((size) => (
-                <button
-                  key={size}
-                  onClick={() => handleSizeChange(size)}
-                  className={`px-4 py-2 text-sm font-medium rounded-md ${
-                    selectedSize === size
-                      ? 'bg-black text-white border-2 border-black'
-                      : 'bg-white text-black border-2 border-gray-300 hover:border-gray-500'
-                  }`}
-                >
-                  {size.toUpperCase()}
-                </button>
-              ))}
+              {product.sizes.filter(size => size !== 'all').map((size) => {
+                const sizeStock = getStockForSize(product, size);
+                const isOutOfStock = sizeStock <= 0;
+                
+                return (
+                  <button
+                    key={size}
+                    onClick={() => !isOutOfStock && handleSizeChange(size)}
+                    disabled={isOutOfStock}
+                    className={`px-4 py-2 text-sm font-medium rounded-md ${
+                      selectedSize === size
+                        ? 'bg-black text-white border-2 border-black'
+                        : isOutOfStock
+                          ? 'bg-gray-100 text-gray-400 border-2 border-gray-200 cursor-not-allowed'
+                          : 'bg-white text-black border-2 border-gray-300 hover:border-gray-500'
+                    }`}
+                  >
+                    {size.toUpperCase()} {isOutOfStock 
+                      ? '(Out of Stock)' 
+                      : `(${sizeStock} left)`}
+                  </button>
+                );
+              })}
             </div>
             {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
+            
+            {selectedSize && (
+              <div className="mt-3">
+                <p className="text-sm text-gray-700">
+                  {selectedSizeStock > 0
+                    ? `${selectedSizeStock} items available in size ${selectedSize.toUpperCase()}`
+                    : `Size ${selectedSize.toUpperCase()} is currently out of stock`
+                  }
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Quantity Selector */}
@@ -155,6 +206,7 @@ const ProductDetailPage = () => {
               <button 
                 className="w-10 h-10 flex items-center justify-center rounded-l border-2 border-gray-300 bg-white text-black hover:border-gray-500 font-medium"
                 onClick={() => setQuantity(prev => Math.max(1, prev - 1))}
+                disabled={!selectedSize || selectedSizeStock <= 0}
               >
                 -
               </button>
@@ -163,7 +215,8 @@ const ProductDetailPage = () => {
               </span>
               <button 
                 className="w-10 h-10 flex items-center justify-center rounded-r border-2 border-gray-300 bg-white text-black hover:border-gray-500 font-medium"
-                onClick={() => setQuantity(prev => prev + 1)}
+                onClick={() => setQuantity(prev => Math.min(selectedSizeStock, prev + 1))}
+                disabled={!selectedSize || quantity >= selectedSizeStock || selectedSizeStock <= 0}
               >
                 +
               </button>
@@ -173,9 +226,18 @@ const ProductDetailPage = () => {
           {/* Add to Cart Button */}
           <button
             onClick={handleAddToCart}
-            className="w-full bg-black text-white px-4 py-3 rounded font-medium hover:bg-gray-800 transition-colors"
+            disabled={!selectedSize || selectedSizeStock <= 0}
+            className={`w-full px-4 py-3 rounded font-medium transition-colors ${
+              !selectedSize || selectedSizeStock <= 0
+                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                : 'bg-black text-white hover:bg-gray-800'
+            }`}
           >
-            Add to Cart
+            {!selectedSize 
+              ? 'Please Select a Size' 
+              : selectedSizeStock <= 0 
+                ? 'Out of Stock' 
+                : 'Add to Cart'}
           </button>
 
           {/* Product Description */}

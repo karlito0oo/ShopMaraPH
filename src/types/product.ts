@@ -1,6 +1,11 @@
 export type ProductSize = 'small' | 'medium' | 'large' | 'xlarge' | 'all';
 export type ProductCategory = 'all' | 'new' | 'women' | 'men';
 
+export interface SizeStock {
+  size: ProductSize;
+  stock: number;
+}
+
 export interface Product {
   id: string | number;
   name: string;
@@ -10,6 +15,7 @@ export interface Product {
   category: ProductCategory;
   sizes: ProductSize[];
   isBestSeller?: boolean;
+  sizeStock: SizeStock[];  // Size-specific stock quantities (now required)
 }
 
 export const getAvailableSizes = (product: Product, selectedSize: ProductSize): ProductSize[] => {
@@ -23,12 +29,16 @@ export const filterProducts = (
   products: Product[], 
   category: ProductCategory, 
   size: ProductSize,
-  bestSellerOnly: boolean = false
+  bestSellerOnly: boolean = false,
+  keyword: string = ''
 ): Product[] => {
   return products.filter(product => {
     const categoryMatch = category === 'all' || product.category === category;
     const sizeMatch = size === 'all' || product.sizes.includes(size);
     const bestSellerMatch = bestSellerOnly ? product.isBestSeller === true : true;
-    return categoryMatch && sizeMatch && bestSellerMatch;
+    const keywordMatch = keyword === '' || 
+      product.name.toLowerCase().includes(keyword.toLowerCase());
+    
+    return categoryMatch && sizeMatch && bestSellerMatch && keywordMatch;
   });
 }; 

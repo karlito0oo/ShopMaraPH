@@ -9,6 +9,7 @@ const MenPage = () => {
   const [activeCategory, setActiveCategory] = useState<ProductCategory>('men');
   const [activeSize, setActiveSize] = useState<ProductSize>('all');
   const [bestSellerOnly, setBestSellerOnly] = useState(false);
+  const [searchKeyword, setSearchKeyword] = useState('');
   const [filteredProducts, setFilteredProducts] = useState(
     products.filter(product => product.category === 'men')
   );
@@ -23,13 +24,20 @@ const MenPage = () => {
       );
     }
     
-    setFilteredProducts(filterProducts(productsToFilter, activeCategory, activeSize, bestSellerOnly));
-  }, [activeCategory, activeSize, bestSellerOnly]);
+    setFilteredProducts(filterProducts(
+      productsToFilter, 
+      activeCategory, 
+      activeSize, 
+      bestSellerOnly,
+      searchKeyword
+    ));
+  }, [activeCategory, activeSize, bestSellerOnly, searchKeyword]);
 
   const resetFilters = () => {
     setActiveCategory('men');
     setActiveSize('all');
     setBestSellerOnly(false);
+    setSearchKeyword('');
   };
 
   return (
@@ -43,9 +51,11 @@ const MenPage = () => {
             activeCategory={activeCategory}
             activeSize={activeSize}
             bestSellerOnly={bestSellerOnly}
+            searchKeyword={searchKeyword}
             onCategoryChange={setActiveCategory}
             onSizeChange={setActiveSize}
             onBestSellerChange={setBestSellerOnly}
+            onKeywordChange={setSearchKeyword}
           />
         </div>
         
@@ -54,6 +64,7 @@ const MenPage = () => {
           products={filteredProducts} 
           onResetFilters={resetFilters}
           defaultCategory="men"
+          searchKeyword={searchKeyword}
         />
       </div>
     </div>

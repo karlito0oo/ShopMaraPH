@@ -9,6 +9,7 @@ const NewPage = () => {
   const [activeCategory, setActiveCategory] = useState<ProductCategory>('new');
   const [activeSize, setActiveSize] = useState<ProductSize>('all');
   const [bestSellerOnly, setBestSellerOnly] = useState(false);
+  const [searchKeyword, setSearchKeyword] = useState('');
   const [filteredProducts, setFilteredProducts] = useState(
     products.filter(product => product.category === 'new')
   );
@@ -23,13 +24,20 @@ const NewPage = () => {
       );
     }
     
-    setFilteredProducts(filterProducts(productsToFilter, activeCategory, activeSize, bestSellerOnly));
-  }, [activeCategory, activeSize, bestSellerOnly]);
+    setFilteredProducts(filterProducts(
+      productsToFilter, 
+      activeCategory, 
+      activeSize, 
+      bestSellerOnly,
+      searchKeyword
+    ));
+  }, [activeCategory, activeSize, bestSellerOnly, searchKeyword]);
 
   const resetFilters = () => {
     setActiveCategory('new');
     setActiveSize('all');
     setBestSellerOnly(false);
+    setSearchKeyword('');
   };
 
   return (
@@ -43,9 +51,11 @@ const NewPage = () => {
             activeCategory={activeCategory}
             activeSize={activeSize}
             bestSellerOnly={bestSellerOnly}
+            searchKeyword={searchKeyword}
             onCategoryChange={setActiveCategory}
             onSizeChange={setActiveSize}
             onBestSellerChange={setBestSellerOnly}
+            onKeywordChange={setSearchKeyword}
           />
         </div>
         
@@ -54,6 +64,7 @@ const NewPage = () => {
           products={filteredProducts} 
           onResetFilters={resetFilters}
           defaultCategory="new"
+          searchKeyword={searchKeyword}
         />
       </div>
     </div>

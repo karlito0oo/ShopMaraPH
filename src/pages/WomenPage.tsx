@@ -9,6 +9,7 @@ const WomenPage = () => {
   const [activeCategory, setActiveCategory] = useState<ProductCategory>('women');
   const [activeSize, setActiveSize] = useState<ProductSize>('all');
   const [bestSellerOnly, setBestSellerOnly] = useState(false);
+  const [searchKeyword, setSearchKeyword] = useState('');
   const [filteredProducts, setFilteredProducts] = useState(
     products.filter(product => product.category === 'women')
   );
@@ -23,13 +24,20 @@ const WomenPage = () => {
       );
     }
     
-    setFilteredProducts(filterProducts(productsToFilter, activeCategory, activeSize, bestSellerOnly));
-  }, [activeCategory, activeSize, bestSellerOnly]);
+    setFilteredProducts(filterProducts(
+      productsToFilter,
+      activeCategory, 
+      activeSize, 
+      bestSellerOnly,
+      searchKeyword
+    ));
+  }, [activeCategory, activeSize, bestSellerOnly, searchKeyword]);
 
   const resetFilters = () => {
     setActiveCategory('women');
     setActiveSize('all');
     setBestSellerOnly(false);
+    setSearchKeyword('');
   };
 
   return (
@@ -43,9 +51,11 @@ const WomenPage = () => {
             activeCategory={activeCategory}
             activeSize={activeSize}
             bestSellerOnly={bestSellerOnly}
+            searchKeyword={searchKeyword}
             onCategoryChange={setActiveCategory}
             onSizeChange={setActiveSize}
             onBestSellerChange={setBestSellerOnly}
+            onKeywordChange={setSearchKeyword}
           />
         </div>
         
@@ -54,6 +64,7 @@ const WomenPage = () => {
           products={filteredProducts} 
           onResetFilters={resetFilters}
           defaultCategory="women"
+          searchKeyword={searchKeyword}
         />
       </div>
     </div>

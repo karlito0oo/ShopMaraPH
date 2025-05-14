@@ -42,9 +42,16 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
       if (existingItemIndex >= 0) {
         // Item already exists, update quantity
-        const updatedItems = [...prevItems];
-        updatedItems[existingItemIndex].quantity += quantity;
-        return updatedItems;
+        const newItems = prevItems.map((item, index) => {
+          if (index === existingItemIndex) {
+            return {
+              ...item,
+              quantity: item.quantity + quantity
+            };
+          }
+          return item;
+        });
+        return newItems;
       } else {
         // Item doesn't exist, add it to cart
         return [...prevItems, { product, size, quantity }];
