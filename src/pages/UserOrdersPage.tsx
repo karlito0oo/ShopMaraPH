@@ -63,8 +63,42 @@ const UserOrdersPage: React.FC = () => {
   useEffect(() => {
     if (orders.length > 0) {
       filterOrdersByStatus();
+      updateTabsWithCounts();
     }
   }, [orders, activeTab]);
+
+  // Add a function to count orders by status
+  const getStatusCounts = () => {
+    const counts = {
+      all: orders.length,
+      pending: 0,
+      approved: 0,
+      shipped: 0,
+      delivered: 0,
+      cancelled: 0
+    };
+    
+    orders.forEach(order => {
+      if (counts[order.status as keyof typeof counts] !== undefined) {
+        counts[order.status as keyof typeof counts]++;
+      }
+    });
+    
+    return counts;
+  };
+
+  // Add a state for tabs with counts
+  const [tabsWithCounts, setTabsWithCounts] = useState(tabs);
+
+  // Add a function to update tabs with counts
+  const updateTabsWithCounts = () => {
+    const counts = getStatusCounts();
+    const updatedTabs = tabs.map(tab => ({
+      ...tab,
+      count: counts[tab.id as keyof typeof counts]
+    }));
+    setTabsWithCounts(updatedTabs);
+  };
 
   const fetchOrders = async () => {
     if (!token) return;
@@ -183,10 +217,10 @@ const UserOrdersPage: React.FC = () => {
         </div>
       ) : (
         <>
-          {/* Status tabs */}
+          {/* Status tabs with counts */}
           <div className="bg-gray-900 shadow rounded mb-6">
             <TabButton 
-              tabs={tabs} 
+              tabs={tabsWithCounts} 
               activeTab={activeTab} 
               onTabChange={handleTabChange}
               darkMode={true}
@@ -210,7 +244,7 @@ const UserOrdersPage: React.FC = () => {
                   )}
                 </div>
               ) : (
-                <div className="space-y-3">
+                <div className="space-y-3 overflow-y-auto max-h-[calc(100vh-300px)]">
                   {filteredOrders.map(order => (
                     <div 
                       key={order.id}
@@ -294,7 +328,8 @@ const UserOrdersPage: React.FC = () => {
                   
                   <div className="mb-6">
                     <h3 className="text-md font-medium mb-2">Order Items</h3>
-                    <div className="overflow-x-auto">
+                    {/* Desktop order items table - hidden on mobile */}
+                    <div className="hidden md:block overflow-x-auto">
                       <table className="min-w-full divide-y divide-gray-200">
                         <thead className="bg-gray-50">
                           <tr>
@@ -347,6 +382,38 @@ const UserOrdersPage: React.FC = () => {
                           </tr>
                         </tfoot>
                       </table>
+                    </div>
+                    
+                    {/* Mobile order items - only visible on small screens */}
+                    <div className="md:hidden mt-4 space-y-4">
+                      {selectedOrder.items && selectedOrder.items.map(item => (
+                        <div key={item.id} className="border rounded p-3">
+                          <div className="font-medium text-sm">{item.product_name}</div>
+                          <div className="grid grid-cols-3 text-sm mt-2">
+                            <div>
+                              <span className="text-gray-500">Size:</span> 
+                              <span className="ml-1 font-medium">{item.size.toUpperCase()}</span>
+                            </div>
+                            <div>
+                              <span className="text-gray-500">Qty:</span> 
+                              <span className="ml-1 font-medium">{item.quantity}</span>
+                            </div>
+                            <div>
+                              <span className="text-gray-500">Price:</span> 
+                              <span className="ml-1 font-medium">₱{parseFloat(item.price.toString()).toFixed(2)}</span>
+                            </div>
+                          </div>
+                          <div className="text-right mt-2 font-medium text-sm">
+                            Item Total: ₱{(parseFloat(item.price.toString()) * item.quantity).toFixed(2)}
+                          </div>
+                        </div>
+                      ))}
+                      <div className="border-t pt-3 mt-4">
+                        <div className="flex justify-between items-center font-medium">
+                          <span>Order Total:</span>
+                          <span>₱{parseFloat(selectedOrder.total_amount.toString()).toFixed(2)}</span>
+                        </div>
+                      </div>
                     </div>
                   </div>
                   
