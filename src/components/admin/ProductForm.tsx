@@ -322,13 +322,12 @@ const ProductForm: React.FC<ProductFormProps> = ({ productId, onSuccess, onError
       }
       
       // Submit the form data
-      let result;
       if (productId) {
         // Update existing product
-        result = await ProductApi.updateProduct(token, productId, apiFormData);
+        await ProductApi.updateProduct(token, productId, apiFormData);
       } else {
         // Create new product
-        result = await ProductApi.createProduct(token, apiFormData);
+        await ProductApi.createProduct(token, apiFormData);
       }
       
       // Show success message

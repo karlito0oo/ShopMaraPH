@@ -5,14 +5,12 @@ import ProductCard from './ProductCard';
 interface ProductGridProps {
   products: Product[];
   onResetFilters: () => void;
-  defaultCategory: ProductCategory;
   searchKeyword?: string;
 }
 
 const ProductGrid: React.FC<ProductGridProps> = ({ 
   products, 
   onResetFilters,
-  defaultCategory,
   searchKeyword = ''
 }) => {
   return (

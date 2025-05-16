@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import ProductFilter from '../components/ProductFilter';
 import ProductGrid from '../components/ProductGrid';
 import type { ProductCategory, ProductSize, Product } from '../types/product';
@@ -112,7 +112,6 @@ const MenPage = () => {
         <ProductGrid 
           products={filteredProducts} 
           onResetFilters={resetFilters}
-          defaultCategory="men"
           searchKeyword={searchKeyword}
         />
       </div>

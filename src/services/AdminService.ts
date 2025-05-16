@@ -1,4 +1,3 @@
-import { useAuth } from '../context/AuthContext';
 import { API_CONFIG } from '../config';
 
 const API_URL = API_CONFIG.BASE_URL;

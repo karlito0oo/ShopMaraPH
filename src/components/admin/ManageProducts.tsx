@@ -28,8 +28,6 @@ const ManageProducts: React.FC<ManageProductsProps> = ({ onSuccess, onError }) =
   const [isRestockModalOpen, setIsRestockModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [sizeRestockQuantities, setSizeRestockQuantities] = useState<{[key: string]: number}>({});
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [editProductId, setEditProductId] = useState<string | number | null>(null);
   
   // Fetch products when the component mounts
   useEffect(() => {
@@ -170,28 +168,6 @@ const ManageProducts: React.FC<ManageProductsProps> = ({ onSuccess, onError }) =
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const openEditModal = (productId: string | number) => {
-    setEditProductId(productId);
-    setIsEditModalOpen(true);
-  };
-
-  const closeEditModal = () => {
-    setIsEditModalOpen(false);
-    setEditProductId(null);
-  };
-
-  const handleEditSuccess = (message: string) => {
-    onSuccess(message);
-    closeEditModal();
-    // Refresh the products list
-    fetchProducts();
-  };
-
-  // Navigate to add product page
-  const navigateToAddPage = () => {
-    navigate('/add-product');
   };
 
   // Navigate to edit product page

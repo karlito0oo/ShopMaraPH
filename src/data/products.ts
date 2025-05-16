@@ -1,4 +1,4 @@
-import type { Product, SizeStock } from '../types/product';
+import type { Product } from '../types/product';
 
 export const products: Product[] = [
   // Men's products
@@ -131,7 +131,7 @@ export const products: Product[] = [
       "https://images.unsplash.com/photo-1561365452-adb940139ffa?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80",
       "https://images.unsplash.com/photo-1544642899-f0d6e5f6ed6f?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80"
     ],
-    category: "new", 
+    category: "men", 
     isBestSeller: true,
     sizes: ['medium', 'large', 'xlarge'],
     sizeStock: [
@@ -145,7 +145,7 @@ export const products: Product[] = [
     name: "Organic Cotton Tee", 
     price: 49.99, 
     image: "https://images.unsplash.com/photo-1562157873-818bc0726f68?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80", 
-    category: "new",
+    category: "men",
     sizes: ['small', 'medium', 'large'],
     sizeStock: [
       { size: 'small', stock: 4 },
@@ -163,7 +163,7 @@ export const products: Product[] = [
       "https://images.unsplash.com/photo-1627225924765-552d49cf47ad?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80",
       "https://images.unsplash.com/photo-1581655353564-df123a1eb820?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80"
     ],
-    category: "new", 
+    category: "men", 
     isBestSeller: true,
     sizes: ['small', 'medium', 'large', 'xlarge'],
     sizeStock: [
@@ -178,7 +178,7 @@ export const products: Product[] = [
     name: "Sustainable Print Tee", 
     price: 54.99, 
     image: "https://images.unsplash.com/photo-1598032895397-b9472444bf93?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80", 
-    category: "new",
+    category: "men",
     sizes: ['medium', 'large'],
     sizeStock: [
       { size: 'medium', stock: 8 },
