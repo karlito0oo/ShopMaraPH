@@ -51,14 +51,7 @@ const AdminPage: React.FC = () => {
   
   const ActionButton = () => {
     if (activeTab === 'products') {
-      return (
-        <Link 
-          to="/add-product" 
-          className="mt-4 sm:mt-0 inline-block bg-black text-white px-4 py-2 rounded"
-        >
-          Add New Product
-        </Link>
-      );
+      return null;
     }
     
     if (activeTab === 'orders') {

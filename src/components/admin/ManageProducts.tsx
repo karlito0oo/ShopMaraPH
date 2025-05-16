@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import type { ProductSize, SizeStock } from '../../types/product';
 import { useAuth } from '../../context/AuthContext';
 import { ProductApi } from '../../services/ApiService';
@@ -214,15 +214,12 @@ const ManageProducts: React.FC<ManageProductsProps> = ({ onSuccess, onError }) =
           />
         </div>
         <div className="flex space-x-3">
-          <button 
-            onClick={navigateToAddPage}
-            className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 flex items-center"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
-            </svg>
-            Add Product
-          </button>
+        <Link 
+          to="/add-product" 
+          className="mt-4 sm:mt-0 inline-block bg-black text-white px-4 py-2 rounded"
+        >
+          Add New Product
+        </Link>
         </div>
       </div>
       
