@@ -472,9 +472,9 @@ const ProductForm: React.FC<ProductFormProps> = ({ productId, onSuccess, onError
           <div className="space-y-4">
             <div>
               <label htmlFor="imageFile" className="block text-sm font-medium text-gray-700">Main Product Image*</label>
-              <div className="mt-1 flex items-center">
+              <div className="mt-1 flex flex-col sm:flex-row items-start sm:items-center gap-3">
                 {formData.image && (
-                  <div className="mr-3">
+                  <div className="mb-2 sm:mb-0 sm:mr-3">
                     <img 
                       src={formData.image} 
                       alt="Product preview" 
@@ -504,9 +504,9 @@ const ProductForm: React.FC<ProductFormProps> = ({ productId, onSuccess, onError
               {formData.additionalImages.map((imgSrc, index) => (
                 <div key={index} className="mb-4">
                   <label htmlFor={`additionalImageFile${index}`} className="block text-sm font-medium text-gray-700">Additional Image {index + 1}</label>
-                  <div className="mt-1 flex items-center">
+                  <div className="mt-1 flex flex-col sm:flex-row items-start sm:items-center gap-3">
                     {imgSrc && (
-                      <div className="mr-3">
+                      <div className="mb-2 sm:mb-0 sm:mr-3">
                         <img 
                           src={imgSrc} 
                           alt={`Additional image ${index + 1} preview`} 
@@ -538,11 +538,11 @@ const ProductForm: React.FC<ProductFormProps> = ({ productId, onSuccess, onError
         <div>
           <h3 className="text-lg font-medium mb-4">Sizes and Stock</h3>
           
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
             <div>
               <h4 className="text-sm font-medium text-gray-700 mb-2">Available Sizes*</h4>
               <div className="flex flex-wrap gap-2">
-                {availableSizes.map(size => (
+                {availableSizes.map((size: ProductSize) => (
                   <label key={size} className="inline-flex items-center">
                     <input
                       type="checkbox"
@@ -561,7 +561,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ productId, onSuccess, onError
             <div>
               <h4 className="text-sm font-medium text-gray-700 mb-2">Stock*</h4>
               <div className="space-y-2">
-                {formData.sizes.map(size => (
+                {formData.sizes.map((size: ProductSize) => (
                   <div key={size} className="flex items-center">
                     <span className="w-16 text-sm text-gray-700">{size.toUpperCase()}:</span>
                     <input

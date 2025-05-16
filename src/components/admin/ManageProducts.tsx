@@ -203,8 +203,8 @@ const ManageProducts: React.FC<ManageProductsProps> = ({ onSuccess, onError }) =
     <div className="bg-white shadow rounded-lg p-6">
       <h2 className="text-xl font-semibold mb-6">Manage Products</h2>
       
-      <div className="flex justify-between mb-4">
-        <div className="w-64">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-4">
+        <div className="w-full sm:w-64">
           <input
             type="text"
             placeholder="Search products..."
@@ -213,13 +213,13 @@ const ManageProducts: React.FC<ManageProductsProps> = ({ onSuccess, onError }) =
             className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-black focus:border-black"
           />
         </div>
-        <div className="flex space-x-3">
-        <Link 
-          to="/add-product" 
-          className="mt-4 sm:mt-0 inline-block bg-black text-white px-4 py-2 rounded"
-        >
-          Add New Product
-        </Link>
+        <div>
+          <Link 
+            to="/add-product" 
+            className="w-full sm:w-auto inline-block bg-black text-white px-4 py-2 rounded text-center"
+          >
+            Add New Product
+          </Link>
         </div>
       </div>
       

@@ -34,11 +34,11 @@ const AddProductPage: React.FC = () => {
   
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <h1 className="text-2xl font-bold">Add Product</h1>
         <Link
           to="/admin/products"
-          className="bg-black text-white px-4 py-2 rounded whitespace-nowrap"
+          className="bg-black text-white px-4 py-2 rounded whitespace-nowrap w-full sm:w-auto text-center"
         >
           Back to Products
         </Link>
@@ -56,7 +56,7 @@ const AddProductPage: React.FC = () => {
         </div>
       )}
       
-      <div className="bg-white shadow rounded p-6">
+      <div className="bg-white shadow rounded p-4 sm:p-6">
         <ProductForm 
           onSuccess={handleSuccess}
           onError={handleError}
