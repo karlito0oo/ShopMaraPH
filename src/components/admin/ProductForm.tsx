@@ -275,20 +275,19 @@ const ProductForm: React.FC<ProductFormProps> = ({ productId, onSuccess, onError
       apiFormData.append('name', formData.name);
       apiFormData.append('price', formData.price.toString());
       apiFormData.append('description', formData.description);
-      apiFormData.append('careInstructions', formData.careInstructions);
+      apiFormData.append('care_instructions', formData.careInstructions);
       apiFormData.append('category', formData.category);
       apiFormData.append('sku', formData.sku || '');
-      apiFormData.append('isBestSeller', formData.isBestSeller ? '1' : '0');
-      apiFormData.append('isNewArrival', formData.isNewArrival ? '1' : '0');
       
-      // Append sizes
-      formData.sizes.forEach((size: ProductSize) => apiFormData.append('sizes[]', size));
+      // Use the expected field names for the API
+      apiFormData.append('is_best_seller', formData.isBestSeller ? 'true' : 'false');
+      apiFormData.append('is_new_arrival', formData.isNewArrival ? 'true' : 'false');
       
-      // Append size stock data
-      formData.sizeStock.forEach((item, index) => {
-        apiFormData.append(`sizeStock[${index}][size]`, item.size);
-        apiFormData.append(`sizeStock[${index}][stock]`, item.stock.toString());
-      });
+      // Convert the sizes array to a JSON string
+      apiFormData.append('sizes', JSON.stringify(formData.sizes));
+      
+      // Convert size stock to a JSON string
+      apiFormData.append('size_stock', JSON.stringify(formData.sizeStock));
       
       // Append images
       if (formData.imageFile) {
