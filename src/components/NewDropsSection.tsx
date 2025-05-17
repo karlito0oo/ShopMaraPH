@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import type { Product } from '../types/product';
 import { getNewArrivalProducts } from '../services/ProductService';

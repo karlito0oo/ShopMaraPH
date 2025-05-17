@@ -38,7 +38,7 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, totalAmo
   const [orderSuccess, setOrderSuccess] = useState(false);
   const [orderError, setOrderError] = useState<string | null>(null);
 
-  const { clearCart, cartItems, token } = useCart();
+  const { clearCart, token } = useCart();
 
   // Pre-fill form data with user profile information when the modal opens
   useEffect(() => {

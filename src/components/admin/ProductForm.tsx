@@ -99,7 +99,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ productId, onSuccess, onError
           additionalImages: additionalImgs,
           additionalImageFiles: [null, null, null],
           category: product.category as ProductCategory,
-          sizes: product.sizes.filter(size => size !== 'all') as ProductSize[],
+          sizes: product.sizes.filter((size: string) => size !== 'all') as ProductSize[],
           isBestSeller: product.isBestSeller || false,
           isNewArrival: product.isNewArrival || false,
           sizeStock: product.sizeStock || []

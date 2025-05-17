@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import type { Product, ProductSize } from '../types/product';
-import AddToCartButton from './AddToCartButton';
 import { useCart } from '../context/CartContext';
 
 interface ProductCardProps {
