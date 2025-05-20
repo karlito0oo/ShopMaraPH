@@ -8,7 +8,6 @@ const ProductDetailPage = () => {
   const { productId } = useParams<{ productId: string }>();
   const [product, setProduct] = useState<Product | null>(null);
   const [selectedSize, setSelectedSize] = useState<ProductSize | null>(null);
-  const [quantity, setQuantity] = useState(1);
   const [error, setError] = useState('');
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
@@ -49,11 +48,14 @@ const ProductDetailPage = () => {
     // Get available stock for selected size
     const availableStock = getStockForSize(product, selectedSize);
     
-    // Ensure quantity doesn't exceed available stock
-    if (quantity > availableStock) {
-      setError(`Sorry, only ${availableStock} items available in this size`);
+    // Check if item is in stock
+    if (availableStock <= 0) {
+      setError(`Sorry, this item is out of stock`);
       return;
     }
+
+    // Always add quantity of 1
+    const quantity = 1;
 
     // The addToCart function will redirect to login if user is not authenticated
     // If user is authenticated, add to cart and then navigate to cart page
@@ -72,10 +74,6 @@ const ProductDetailPage = () => {
   const handleSizeChange = (size: ProductSize) => {
     setSelectedSize(size);
     setError('');
-    
-    // Reset quantity to 1 or max available stock if less than 1
-    const stockForSize = getStockForSize(product, size);
-    setQuantity(Math.min(1, stockForSize));
   };
 
   // Get stock for a specific size
@@ -84,12 +82,6 @@ const ProductDetailPage = () => {
     
     const sizeStockItem = product.sizeStock.find(item => item.size === size);
     return sizeStockItem ? sizeStockItem.stock : 0;
-  };
-
-  // Get total stock across all sizes
-  const getTotalStock = (product: Product | null): number => {
-    if (!product) return 0;
-    return product.sizeStock.reduce((total, item) => total + item.stock, 0);
   };
 
   // Get product images array or create one from the single image
@@ -144,7 +136,6 @@ const ProductDetailPage = () => {
 
   const productImages = getProductImages();
   const selectedSizeStock = selectedSize ? getStockForSize(product, selectedSize) : 0;
-  const totalStock = getTotalStock(product);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -209,7 +200,6 @@ const ProductDetailPage = () => {
             </div>
             <div className="mt-4">
               <p className="text-xl font-semibold">₱{product.price.toFixed(2)}</p>
-              <p className="text-sm text-gray-500 mt-1">Total Stock: {totalStock} items</p>
             </div>
           </div>
 
@@ -253,30 +243,6 @@ const ProductDetailPage = () => {
                 </p>
               </div>
             )}
-          </div>
-
-          {/* Quantity Selector */}
-          <div className="mb-6">
-            <h2 className="text-sm font-medium mb-2">Quantity</h2>
-            <div className="flex items-center">
-              <button 
-                className="w-10 h-10 flex items-center justify-center rounded-l border-2 border-gray-300 bg-white text-black hover:border-gray-500 font-medium"
-                onClick={() => setQuantity(prev => Math.max(1, prev - 1))}
-                disabled={!selectedSize || selectedSizeStock <= 0}
-              >
-                -
-              </button>
-              <span className="w-12 h-10 flex items-center justify-center border-t-2 border-b-2 border-gray-300 bg-white">
-                {quantity}
-              </span>
-              <button 
-                className="w-10 h-10 flex items-center justify-center rounded-r border-2 border-gray-300 bg-white text-black hover:border-gray-500 font-medium"
-                onClick={() => setQuantity(prev => Math.min(selectedSizeStock, prev + 1))}
-                disabled={!selectedSize || quantity >= selectedSizeStock || selectedSizeStock <= 0}
-              >
-                +
-              </button>
-            </div>
           </div>
 
           {/* Add to Cart Button */}
