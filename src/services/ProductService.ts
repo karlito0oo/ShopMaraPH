@@ -58,6 +58,7 @@ export const getProductsByCategory = async (category: string): Promise<Product[]
 
 /**
  * Fetches all best-seller products
+ * @deprecated This function is no longer used as the Best Seller feature has been removed
  */
 export const getBestSellerProducts = async (): Promise<Product[]> => {
   try {
@@ -75,7 +76,7 @@ export const getBestSellerProducts = async (): Promise<Product[]> => {
 export const getNewArrivalProducts = async (): Promise<Product[]> => {
   try {
     const products = await getAllProducts();
-    return products.filter(product => product.isNewArrival);
+    return products.filter(product => product.isNewArrival || product.category === 'new_arrival');
   } catch (error) {
     console.error('Error fetching new arrival products:', error);
     throw error;

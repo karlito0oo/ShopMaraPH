@@ -74,12 +74,6 @@ const Navbar = () => {
             <Link to="/new" className="border-l border-gray-200 py-5 px-10 text-black no-underline hover:bg-gray-100">
               New
             </Link>
-            <Link to="/women" className="border-l border-gray-200 py-5 px-10 text-black no-underline hover:bg-gray-100">
-              Women
-            </Link>
-            <Link to="/men" className="border-l border-gray-200 py-5 px-10 text-black no-underline hover:bg-gray-100">
-              Men
-            </Link>
             
             {/* Cart */}
             <Link to="/cart" className="border-l border-gray-200 py-5 px-5 text-black no-underline hover:bg-gray-100 flex items-center justify-center relative">
@@ -169,12 +163,6 @@ const Navbar = () => {
             </Link>
             <Link to="/new" className="block py-3 px-4 border-b border-gray-200 text-black no-underline hover:bg-gray-100">
               New
-            </Link>
-            <Link to="/women" className="block py-3 px-4 border-b border-gray-200 text-black no-underline hover:bg-gray-100">
-              Women
-            </Link>
-            <Link to="/men" className="block py-3 px-4 border-b border-gray-200 text-black no-underline hover:bg-gray-100">
-              Men
             </Link>
             
             <Link to="/cart" className="flex items-center gap-2 py-3 px-4 border-b border-gray-200 text-black no-underline hover:bg-gray-100">

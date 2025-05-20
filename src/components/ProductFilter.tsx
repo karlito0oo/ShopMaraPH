@@ -72,24 +72,13 @@ const ProductFilter: React.FC<ProductFilterProps> = ({
           <div className="flex items-center">
             <input 
               type="radio" 
-              id="women" 
+              id="new-arrival" 
               name="category" 
-              checked={activeCategory === 'women'}
-              onChange={() => onCategoryChange('women')}
+              checked={activeCategory === 'new_arrival'}
+              onChange={() => onCategoryChange('new_arrival')}
               className="mr-2"
             />
-            <label htmlFor="women">Women</label>
-          </div>
-          <div className="flex items-center">
-            <input 
-              type="radio" 
-              id="men" 
-              name="category" 
-              checked={activeCategory === 'men'}
-              onChange={() => onCategoryChange('men')}
-              className="mr-2"
-            />
-            <label htmlFor="men">Men</label>
+            <label htmlFor="new-arrival">New Arrival</label>
           </div>
         </div>
       </div>
@@ -152,33 +141,6 @@ const ProductFilter: React.FC<ProductFilterProps> = ({
               className="mr-2"
             />
             <label htmlFor="xlarge">Extra Large</label>
-          </div>
-        </div>
-      </div>
-
-      {/* Special filters */}
-      <div>
-        <h3 className="font-medium text-sm mb-2">Special</h3>
-        <div className="space-y-2">
-          <div className="flex items-center">
-            <input 
-              type="checkbox" 
-              id="best-seller" 
-              checked={bestSellerOnly}
-              onChange={(e) => onBestSellerChange(e.target.checked)}
-              className="mr-2"
-            />
-            <label htmlFor="best-seller">Best Sellers Only</label>
-          </div>
-          <div className="flex items-center">
-            <input 
-              type="checkbox" 
-              id="new-arrivals" 
-              checked={showNewOnly}
-              onChange={(e) => onNewArrivalsChange(e.target.checked)}
-              className="mr-2"
-            />
-            <label htmlFor="new-arrivals">New Arrivals Only</label>
           </div>
         </div>
       </div>

@@ -15,7 +15,6 @@ interface ProductFormData {
   additionalImageFiles: (File | null)[];
   category: ProductCategory;
   sizes: ProductSize[];
-  isBestSeller: boolean;
   isNewArrival: boolean;
   sizeStock: SizeStock[];
 }
@@ -38,9 +37,8 @@ const ProductForm: React.FC<ProductFormProps> = ({ productId, onSuccess, onError
     imageFile: null,
     additionalImages: ['', '', ''],
     additionalImageFiles: [null, null, null],
-    category: 'women',
+    category: 'all',
     sizes: [],
-    isBestSeller: false,
     isNewArrival: false,
     sizeStock: []
   });
@@ -56,7 +54,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ productId, onSuccess, onError
   ];
 
   const availableSizes: ProductSize[] = ['small', 'medium', 'large', 'xlarge'];
-  const availableCategories: ProductCategory[] = ['women', 'men'];
+  const availableCategories: ProductCategory[] = ['all', 'new_arrival'];
 
   // Fetch product data if in edit mode
   useEffect(() => {
@@ -100,7 +98,6 @@ const ProductForm: React.FC<ProductFormProps> = ({ productId, onSuccess, onError
           additionalImageFiles: [null, null, null],
           category: product.category as ProductCategory,
           sizes: product.sizes.filter((size: string) => size !== 'all') as ProductSize[],
-          isBestSeller: product.isBestSeller || false,
           isNewArrival: product.isNewArrival || false,
           sizeStock: product.sizeStock || []
         });
@@ -168,9 +165,8 @@ const ProductForm: React.FC<ProductFormProps> = ({ productId, onSuccess, onError
       imageFile: null,
       additionalImages: ['', '', ''],
       additionalImageFiles: [null, null, null],
-      category: 'women',
+      category: 'all',
       sizes: [],
-      isBestSeller: false,
       isNewArrival: false,
       sizeStock: []
     });
@@ -280,7 +276,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ productId, onSuccess, onError
       apiFormData.append('sku', formData.sku || '');
       
       // Use the expected field names for the API
-      apiFormData.append('is_best_seller', formData.isBestSeller ? 'true' : 'false');
+      apiFormData.append('is_best_seller', 'false'); // Always false since feature is deprecated
       apiFormData.append('is_new_arrival', formData.isNewArrival ? 'true' : 'false');
       
       // Convert the sizes array to a JSON string
@@ -579,20 +575,6 @@ const ProductForm: React.FC<ProductFormProps> = ({ productId, onSuccess, onError
         
         {/* Additional Info Section */}
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-          <div>
-            <label htmlFor="isBestSeller" className="inline-flex items-center">
-              <input
-                type="checkbox"
-                id="isBestSeller"
-                name="isBestSeller"
-                checked={formData.isBestSeller}
-                onChange={handleChange}
-                className="form-checkbox h-5 w-5 text-black"
-              />
-              <span className="ml-2 text-sm text-gray-700">Best Seller</span>
-            </label>
-          </div>
-          
           <div>
             <label htmlFor="isNewArrival" className="inline-flex items-center">
               <input

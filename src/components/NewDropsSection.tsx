@@ -73,11 +73,6 @@ const NewDropsSection = () => {
           {newProducts.map((product) => (
             <div key={product.id} className="group relative">
               <Link to={`/product/${product.id}`} className="block no-underline text-inherit">
-                {product.isBestSeller && (
-                  <div className="absolute top-0 right-0 z-10 bg-yellow-400 text-xs font-bold px-2 py-1 m-2">
-                    Best Seller
-                  </div>
-                )}
                 <div className="aspect-h-1 aspect-w-1 w-full overflow-hidden bg-gray-200 group-hover:opacity-90">
                   <img
                     src={product.image}

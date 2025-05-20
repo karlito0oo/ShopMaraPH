@@ -1,5 +1,5 @@
 export type ProductSize = 'small' | 'medium' | 'large' | 'xlarge' | 'all';
-export type ProductCategory = 'all' | 'women' | 'men';
+export type ProductCategory = 'all' | 'new_arrival';
 
 export interface SizeStock {
   size: ProductSize;
@@ -17,7 +17,7 @@ export interface Product {
   images?: string[];  // Optional array of additional images
   category: ProductCategory;
   sizes: ProductSize[];
-  isBestSeller?: boolean;
+  isBestSeller?: boolean; // DEPRECATED: No longer used in UI
   isNewArrival?: boolean;
   sizeStock: SizeStock[];  // Size-specific stock quantities (now required)
 }
@@ -33,18 +33,25 @@ export const filterProducts = (
   products: Product[], 
   category: ProductCategory, 
   size: ProductSize,
-  bestSellerOnly: boolean = false,
   keyword: string = '',
   showNewOnly: boolean = false
 ): Product[] => {
   return products.filter(product => {
-    const categoryMatch = category === 'all' || product.category === category;
+    // If category is 'new_arrival', we'll show only new arrival products
+    // If showNewOnly is true, we'll also filter for new arrival products
+    const isNewArrivalProduct = product.isNewArrival || product.category === 'new_arrival';
+    
+    // Category match logic: 
+    // - If 'all', show everything unless showNewOnly is true
+    // - If 'new_arrival', match with isNewArrivalProduct
+    const categoryMatch = 
+      (category === 'all' && (!showNewOnly || isNewArrivalProduct)) || 
+      (category === 'new_arrival' && isNewArrivalProduct);
+    
     const sizeMatch = size === 'all' || product.sizes.includes(size);
-    const bestSellerMatch = bestSellerOnly ? product.isBestSeller === true : true;
-    const newArrivalMatch = showNewOnly ? product.isNewArrival === true : true;
     const keywordMatch = keyword === '' || 
       product.name.toLowerCase().includes(keyword.toLowerCase());
     
-    return categoryMatch && sizeMatch && bestSellerMatch && newArrivalMatch && keywordMatch;
+    return categoryMatch && sizeMatch && keywordMatch;
   });
 }; 

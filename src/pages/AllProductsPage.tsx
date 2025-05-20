@@ -8,7 +8,6 @@ import { getAllProducts } from '../services/ProductService';
 const AllProductsPage = () => {
   const [activeCategory, setActiveCategory] = useState<ProductCategory>('all');
   const [activeSize, setActiveSize] = useState<ProductSize>('all');
-  const [bestSellerOnly, setBestSellerOnly] = useState(false);
   const [showNewOnly, setShowNewOnly] = useState(false);
   const [searchKeyword, setSearchKeyword] = useState('');
   const [products, setProducts] = useState<Product[]>([]);
@@ -41,17 +40,15 @@ const AllProductsPage = () => {
         products, 
         activeCategory, 
         activeSize, 
-        bestSellerOnly,
         searchKeyword,
         showNewOnly
       ));
     }
-  }, [products, activeCategory, activeSize, bestSellerOnly, showNewOnly, searchKeyword]);
+  }, [products, activeCategory, activeSize, showNewOnly, searchKeyword]);
 
   const resetFilters = () => {
     setActiveCategory('all');
     setActiveSize('all');
-    setBestSellerOnly(false);
     setShowNewOnly(false);
     setSearchKeyword('');
   };
@@ -88,12 +85,12 @@ const AllProductsPage = () => {
           <ProductFilter 
             activeCategory={activeCategory}
             activeSize={activeSize}
-            bestSellerOnly={bestSellerOnly}
+            bestSellerOnly={false}
             showNewOnly={showNewOnly}
             searchKeyword={searchKeyword}
             onCategoryChange={setActiveCategory}
             onSizeChange={setActiveSize}
-            onBestSellerChange={setBestSellerOnly}
+            onBestSellerChange={() => {}}
             onNewArrivalsChange={setShowNewOnly}
             onKeywordChange={setSearchKeyword}
           />
