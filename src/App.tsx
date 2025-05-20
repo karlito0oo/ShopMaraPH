@@ -14,6 +14,7 @@ import EditProductPage from './pages/admin/EditProductPage'
 import AddProductPage from './pages/admin/AddProductPage'
 import AdminOrdersPage from './pages/admin/AdminOrdersPage'
 import UserOrdersPage from './pages/UserOrdersPage'
+import AboutPage from './pages/AboutPage'
 import { CartProvider } from './context/CartContext'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import { ProfileProvider } from './context/ProfileContext'
@@ -55,6 +56,7 @@ function App() {
               <Routes>
                 <Route path="/" element={<HomePage />} />
                 <Route path="/new" element={<NewPage />} />
+                <Route path="/about" element={<AboutPage />} />
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/register" element={<RegisterPage />} />
                 <Route path="/cart" element={
