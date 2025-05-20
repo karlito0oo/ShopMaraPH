@@ -18,7 +18,8 @@ const HeroSection = () => {
       </div>
       <div className="max-w-2xl text-center px-4">
         <p className="text-gray-600 mb-8 font-como font-light">
-          Welcome to ShopMara PH, where fashion meets comfort. Our curated collection offers stylish options for every occasion, ensuring you always find the perfect fit.
+        ShopMaraPH is a passion project rooted in timeless style and conscious living. We offer carefully handpicked vintage polos—elegant, versatile pieces made for modern women who lead,
+        whether in the office or off-duty. Beautifully curated, sustainably sourced.
         </p>
         <div className="flex flex-wrap justify-center gap-4">
           <a 
