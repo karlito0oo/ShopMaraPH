@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
@@ -97,22 +97,16 @@ const CartPage = () => {
             console.error("Error adding item to cart:", error);
           }
         }
-        
       }
       
       
-      // Refresh cart from server
-      console.log("7. Fetching updated cart");
-      await fetchCart();
-      // Close the prompt modal
-      console.log("8. Closing prompt modal");
-      setIsPromptModalOpen(false);
+      // Store success flag in sessionStorage to show checkout modal after reload
+      sessionStorage.setItem('showCheckoutAfterReload', 'true');
       
-      // Open the regular checkout modal
-      console.log("9. Opening checkout modal");
-      setIsCheckoutModalOpen(true);
+      // Reload the page to ensure cart is properly loaded with the new user's data
+      console.log("9. Reloading page to refresh cart data");
+      window.location.reload();
       
-      setIsProcessing(false);
     } catch (error) {
       console.error("Error in handleCreateAccount:", error);
       setIsProcessing(false);
