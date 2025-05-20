@@ -49,15 +49,15 @@ const Navbar = () => {
       <nav className="border-b border-gray-200 relative">
         <div className="flex">
           {/* Logo */}
-          <div className="bg-yellow-300 py-4 px-8">
-            <Link to="/" className="font-bold text-lg text-black no-underline">
+          <div className="bg-[#ad688f] py-4 px-8">
+            <Link to="/" className="font-bold text-lg text-white no-underline">
              ShopMara PH
             </Link>
           </div>
           
           {/* Mobile Menu Button */}
           <button
-            className={`md:hidden ml-auto flex items-center justify-center px-4 py-4 h-full transition-colors ${isMenuOpen ? 'bg-black text-yellow-300' : 'bg-yellow-300 text-black'}`}
+            className={`md:hidden ml-auto flex items-center justify-center px-4 py-4 h-full transition-colors ${isMenuOpen ? 'bg-black text-[#ad688f]' : 'bg-[#ad688f] text-black'}`}
             onClick={toggleMenu}
             aria-label="Toggle navigation menu"
           >

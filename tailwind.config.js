@@ -6,6 +6,12 @@ export default {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        'como': ['"Work Sans"', 'sans-serif'], // Work Sans as a substitute for Como Light
+      },
+      colors: {
+        'brand-pink': '#ad688f',
+      },
       // Add utility classes for scrollbar customization
       utilities: {
         '.hide-scrollbar': {
