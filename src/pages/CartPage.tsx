@@ -5,20 +5,25 @@ import { Link } from 'react-router-dom';
 import CheckoutModal from '../components/CheckoutModal';
 import CheckoutPromptModal from '../components/CheckoutPromptModal';
 import GuestCheckoutModal from '../components/GuestCheckoutModal';
-import { OrderApi } from '../services/ApiService';
+import { OrderApi, CartApi } from '../services/ApiService';
 
 const CartPage = () => {
-  const { isAuthenticated, register } = useAuth();
+  const { isAuthenticated, register, migrateGuestCart } = useAuth();
   const [isCheckoutModalOpen, setIsCheckoutModalOpen] = useState(false);
   const [isPromptModalOpen, setIsPromptModalOpen] = useState(false);
   const [isGuestCheckoutModalOpen, setIsGuestCheckoutModalOpen] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
   
   const { 
     cartItems, 
     removeFromCart, 
     updateQuantity, 
     getTotalPrice,
-    clearCart
+    clearCart,
+    fetchCart,
+    backupGuestCart,
+    restoreGuestCart,
+    addToCart
   } = useCart();
 
   const subtotal = getTotalPrice();
@@ -54,15 +59,63 @@ const CartPage = () => {
 
   const handleCreateAccount = async (name: string, email: string, password: string) => {
     try {
-      // Register the user
-      await register(name, email, password, password);
+      setIsProcessing(true);
+      console.log("1. Starting account creation process");
       
+      // Backup the guest cart
+      const guestCartItems = backupGuestCart();
+      console.log("2. Guest cart items backed up:", guestCartItems.length);
+      
+      // Register the user
+      console.log("3. Calling register function");
+      const userData = await register(name, email, password, password);
+      console.log("4. Registration successful, token:", userData.token ? "received" : "missing");
+      
+      // Use the token directly from registration response
+      const token = userData.token;
+      
+      // Add a small delay to ensure authentication state is updated
+      console.log("5. Waiting for auth state to update");
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Load cart items directly using the CartApi service
+      if (guestCartItems.length > 0 && token) {
+        console.log("6. Manually adding cart items using CartApi");
+        
+        // Process each item one by one using the API directly
+        for (const item of guestCartItems) {
+          console.log("Adding item to user cart via API:", item.product.id, item.size, item.quantity);
+          try {
+            const response = await CartApi.addToCart(
+              token, 
+              item.product.id, 
+              item.size, 
+              item.quantity
+            );
+            console.log("Cart API response:", response.success ? "success" : "failed");
+          } catch (error) {
+            console.error("Error adding item to cart:", error);
+          }
+        }
+        
+      }
+      
+      
+      // Refresh cart from server
+      console.log("7. Fetching updated cart");
+      await fetchCart();
       // Close the prompt modal
+      console.log("8. Closing prompt modal");
       setIsPromptModalOpen(false);
       
       // Open the regular checkout modal
+      console.log("9. Opening checkout modal");
       setIsCheckoutModalOpen(true);
+      
+      setIsProcessing(false);
     } catch (error) {
+      console.error("Error in handleCreateAccount:", error);
+      setIsProcessing(false);
       // Error handling is done inside the CheckoutPromptModal component
       throw error;
     }
@@ -232,9 +285,10 @@ const CartPage = () => {
               </div>
               <button
                 onClick={handleCheckoutClick}
-                className="w-full bg-[#ad688f] text-white py-3 px-4 font-medium rounded hover:bg-[#96577b] transition-colors"
+                disabled={isProcessing}
+                className="w-full bg-[#ad688f] text-white py-3 px-4 font-medium rounded hover:bg-[#96577b] transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
               >
-                Checkout
+                {isProcessing ? 'Processing...' : 'Checkout'}
               </button>
               {isAuthenticated && (
                 <Link

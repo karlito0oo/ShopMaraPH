@@ -24,12 +24,17 @@ interface CartContextType {
   isLoading: boolean;
   error: string | null;
   token: string | null;
+  fetchCart: () => Promise<void>;
+  backupGuestCart: () => CartItem[];
+  restoreGuestCart: (items: CartItem[]) => Promise<void>;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 // Key for guest cart in localStorage
 const GUEST_CART_KEY = 'guest_cart';
+// Key for backup guest cart in localStorage
+const BACKUP_GUEST_CART_KEY = 'backup_guest_cart';
 
 export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const { token, isAuthenticated } = useAuth();
@@ -71,6 +76,49 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       localStorage.setItem(GUEST_CART_KEY, JSON.stringify(items));
     } catch (error) {
       console.error('Error saving guest cart to localStorage:', error);
+    }
+  };
+
+  // Backup guest cart before registration
+  const backupGuestCart = (): CartItem[] => {
+    try {
+      const currentCartItems = [...cartItems];
+      localStorage.setItem(BACKUP_GUEST_CART_KEY, JSON.stringify(currentCartItems));
+      console.log('Guest cart backed up:', currentCartItems.length, 'items');
+      return currentCartItems;
+    } catch (error) {
+      console.error('Error backing up guest cart:', error);
+      return [];
+    }
+  };
+
+  // Restore guest cart after registration (if migration fails)
+  const restoreGuestCart = async (items: CartItem[]): Promise<void> => {
+    if (!isAuthenticated || !token) {
+      console.log('Not authenticated, cannot restore cart');
+      return;
+    }
+
+    console.log('Restoring', items.length, 'items to user cart');
+    setIsLoading(true);
+    
+    try {
+      // Add each item to the user's cart via API
+      for (const item of items) {
+        console.log('Manually adding item to cart:', item.product.id, item.size, item.quantity);
+        await CartApi.addToCart(token, item.product.id, item.size, item.quantity);
+      }
+      
+      // After adding all items, fetch the cart to get updated state
+      const response = await CartApi.getCart(token);
+      setCartItems(response.data.items || []);
+      console.log('Cart restored successfully');
+    } catch (error) {
+      console.error('Error restoring cart items:', error);
+    } finally {
+      setIsLoading(false);
+      // Clear the backup
+      localStorage.removeItem(BACKUP_GUEST_CART_KEY);
     }
   };
 
@@ -237,7 +285,10 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         isInCart,
         isLoading,
         error,
-        token
+        token,
+        fetchCart,
+        backupGuestCart,
+        restoreGuestCart
       }}
     >
       {children}

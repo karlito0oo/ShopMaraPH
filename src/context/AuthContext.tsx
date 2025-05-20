@@ -15,9 +15,10 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isAdmin: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (name: string, email: string, password: string, password_confirmation: string) => Promise<void>;
+  register: (name: string, email: string, password: string, password_confirmation: string) => Promise<{ user: User; token: string }>;
   logout: () => Promise<void>;
   validateToken: () => Promise<boolean>;
+  migrateGuestCart: () => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -120,6 +121,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       setToken(data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
       localStorage.setItem('token', data.token);
+
+      // Return the data for immediate use
+      return { user: data.user, token: data.token };
     } catch (error) {
       console.error('Registration error:', error);
       throw error;
@@ -182,6 +186,64 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     localStorage.removeItem('token');
   };
 
+  // Migrate guest cart to the authenticated user's cart
+  const migrateGuestCart = async (): Promise<boolean> => {
+    console.log("migrateGuestCart called, token:", token ? token.substring(0, 10) + "..." : "missing");
+    
+    if (!token) {
+      console.log("No token available, cannot migrate cart");
+      return false;
+    }
+    
+    try {
+      // Get guest cart from localStorage
+      const guestCartKey = 'guest_cart';
+      const guestCartString = localStorage.getItem(guestCartKey);
+      
+      console.log("Guest cart from localStorage:", guestCartString ? "found" : "not found", "Key:", guestCartKey);
+      
+      if (!guestCartString) return false;
+      
+      const guestCart = JSON.parse(guestCartString);
+      
+      console.log("Parsed guest cart:", guestCart.length, "items");
+      
+      if (!guestCart || !guestCart.length) return false;
+      
+      // For each item in the guest cart, add it to the user's cart
+      for (const item of guestCart) {
+        console.log("Adding item to cart:", item.product.id, item.size, item.quantity);
+        
+        const response = await fetch(`${API_URL}/cart/add`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+          credentials: 'include',
+          body: JSON.stringify({
+            product_id: item.product.id,
+            size: item.size,
+            quantity: item.quantity
+          }),
+        });
+        
+        const responseData = await response.json();
+        console.log("API response:", responseData.success ? "success" : "failed", responseData);
+      }
+      
+      // Clear the guest cart
+      localStorage.removeItem(guestCartKey);
+      console.log("Guest cart cleared from localStorage");
+      
+      return true;
+    } catch (error) {
+      console.error('Error migrating guest cart:', error);
+      return false;
+    }
+  };
+
   if (isLoading) {
     return <div>Loading...</div>;
   }
@@ -197,6 +259,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         register,
         logout,
         validateToken,
+        migrateGuestCart
       }}
     >
       {children}
