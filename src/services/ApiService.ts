@@ -157,6 +157,10 @@ export const OrderApi = {
   createOrder: (token: string, orderData: FormData) => 
     apiRequest('/orders', 'POST', orderData, token, true),
   
+  // Guest checkout does not require token
+  createGuestOrder: (orderData: FormData) => 
+    apiRequest('/guest-orders', 'POST', orderData, null, true),
+  
   getUserOrders: (token: string) => 
     apiRequest('/orders', 'GET', null, token),
   

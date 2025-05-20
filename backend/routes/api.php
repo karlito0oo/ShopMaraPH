@@ -28,6 +28,9 @@ Route::post('login', [AuthController::class, 'login']);
 Route::get('products', [ProductController::class, 'index']);
 Route::get('products/{id}', [ProductController::class, 'show']);
 
+// Guest checkout routes
+Route::post('guest-orders', [OrderController::class, 'createGuestOrder']);
+
 // Protected routes
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('user', [AuthController::class, 'user']);

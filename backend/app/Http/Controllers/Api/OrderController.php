@@ -126,6 +126,147 @@ class OrderController extends Controller
     }
 
     /**
+     * Create a new order from a guest cart.
+     */
+    public function createGuestOrder(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'customer_name' => 'required|string|max:255',
+            'email' => 'required|email|max:255',
+            'instagram_username' => 'required|string|max:255',
+            'address_line1' => 'required|string|max:255',
+            'barangay' => 'required|string|max:255',
+            'city' => 'required|string|max:255',
+            'mobile_number' => 'required|string|max:255',
+            'payment_proof' => 'required|image|max:5120', // 5MB max
+            'cart_items' => 'required|json',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        try {
+            DB::beginTransaction();
+
+            // Parse the cart items from JSON
+            $cartItems = json_decode($request->cart_items, true);
+            
+            if (empty($cartItems)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Your cart is empty',
+                ], 422);
+            }
+
+            // Calculate total amount and verify products
+            $totalAmount = 0;
+            $orderItems = [];
+            
+            foreach ($cartItems as $item) {
+                $product = Product::find($item['product_id']);
+                
+                if (!$product) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Product not found: ' . $item['product_id'],
+                    ], 422);
+                }
+                
+                // Check if the product has the requested size available
+                $productSize = ProductSize::where('product_id', $item['product_id'])
+                    ->where('size', $item['size'])
+                    ->where('stock', '>=', $item['quantity'])
+                    ->first();
+                
+                if (!$productSize) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => "Insufficient stock for {$product->name} (Size: {$item['size']})",
+                    ], 422);
+                }
+                
+                $totalAmount += $product->price * $item['quantity'];
+                
+                // Build order item data
+                $orderItems[] = [
+                    'product_id' => $product->id,
+                    'product_name' => $product->name,
+                    'size' => $item['size'],
+                    'quantity' => $item['quantity'],
+                    'price' => $product->price,
+                ];
+            }
+
+            // Handle payment proof upload
+            $paymentProofPath = null;
+            if ($request->hasFile('payment_proof')) {
+                $file = $request->file('payment_proof');
+                $paymentProofPath = $file->store('payment_proofs', 'public');
+            }
+
+            // Create order
+            $order = new Order([
+                'user_id' => null, // Guest order, no user ID
+                'status' => Order::STATUS_PENDING,
+                'customer_name' => $request->customer_name,
+                'email' => $request->email,
+                'instagram_username' => $request->instagram_username,
+                'address_line1' => $request->address_line1,
+                'barangay' => $request->barangay,
+                'city' => $request->city,
+                'mobile_number' => $request->mobile_number,
+                'payment_method' => 'bank_transfer', // Currently only supporting bank transfers
+                'payment_proof' => $paymentProofPath,
+                'total_amount' => $totalAmount,
+            ]);
+            $order->save();
+
+            // Create order items
+            foreach ($orderItems as $itemData) {
+                $orderItem = new OrderItem([
+                    'order_id' => $order->id,
+                    'product_id' => $itemData['product_id'],
+                    'product_name' => $itemData['product_name'],
+                    'size' => $itemData['size'],
+                    'quantity' => $itemData['quantity'],
+                    'price' => $itemData['price'],
+                ]);
+                $orderItem->save();
+
+                // Put the product on hold by reducing available stock
+                $productSize = ProductSize::where('product_id', $itemData['product_id'])
+                    ->where('size', $itemData['size'])
+                    ->first();
+
+                if ($productSize) {
+                    $productSize->stock -= $itemData['quantity'];
+                    $productSize->save();
+                }
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Guest order created successfully',
+                'data' => [
+                    'order' => $order->load('items'),
+                ],
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to create guest order: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
      * Get all orders for the authenticated user.
      */
     public function getUserOrders()

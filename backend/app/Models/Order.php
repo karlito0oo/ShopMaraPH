@@ -29,6 +29,7 @@ class Order extends Model
         'user_id',
         'status',
         'customer_name',
+        'email',
         'instagram_username',
         'address_line1',
         'barangay',

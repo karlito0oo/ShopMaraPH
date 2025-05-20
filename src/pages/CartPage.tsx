@@ -1,10 +1,18 @@
 import { useState } from 'react';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
 import CheckoutModal from '../components/CheckoutModal';
+import CheckoutPromptModal from '../components/CheckoutPromptModal';
+import GuestCheckoutModal from '../components/GuestCheckoutModal';
+import { OrderApi } from '../services/ApiService';
 
 const CartPage = () => {
+  const { isAuthenticated, register } = useAuth();
   const [isCheckoutModalOpen, setIsCheckoutModalOpen] = useState(false);
+  const [isPromptModalOpen, setIsPromptModalOpen] = useState(false);
+  const [isGuestCheckoutModalOpen, setIsGuestCheckoutModalOpen] = useState(false);
+  
   const { 
     cartItems, 
     removeFromCart, 
@@ -17,12 +25,82 @@ const CartPage = () => {
   const shipping = subtotal > 0 ? 5.99 : 0;
   const total = subtotal + shipping;
 
-  const openCheckoutModal = () => {
-    setIsCheckoutModalOpen(true);
+  const handleCheckoutClick = () => {
+    if (isAuthenticated) {
+      // If user is logged in, go straight to checkout
+      setIsCheckoutModalOpen(true);
+    } else {
+      // If user is not logged in, show the prompt
+      setIsPromptModalOpen(true);
+    }
   };
 
   const closeCheckoutModal = () => {
     setIsCheckoutModalOpen(false);
+  };
+
+  const closePromptModal = () => {
+    setIsPromptModalOpen(false);
+  };
+
+  const closeGuestCheckoutModal = () => {
+    setIsGuestCheckoutModalOpen(false);
+  };
+
+  const handleContinueAsGuest = () => {
+    setIsPromptModalOpen(false);
+    setIsGuestCheckoutModalOpen(true);
+  };
+
+  const handleCreateAccount = async (name: string, email: string, password: string) => {
+    try {
+      // Register the user
+      await register(name, email, password, password);
+      
+      // Close the prompt modal
+      setIsPromptModalOpen(false);
+      
+      // Open the regular checkout modal
+      setIsCheckoutModalOpen(true);
+    } catch (error) {
+      // Error handling is done inside the CheckoutPromptModal component
+      throw error;
+    }
+  };
+
+  const handleGuestOrderSubmit = async (formData: any) => {
+    try {
+      // Create a FormData object to send the order data
+      const orderData = new FormData();
+      orderData.append('customer_name', formData.name);
+      orderData.append('email', formData.email);
+      orderData.append('instagram_username', formData.instagramUsername);
+      orderData.append('address_line1', formData.addressLine1);
+      orderData.append('barangay', formData.barangay);
+      orderData.append('city', formData.city);
+      orderData.append('mobile_number', formData.mobileNumber);
+      
+      if (formData.paymentProof) {
+        orderData.append('payment_proof', formData.paymentProof);
+      }
+      
+      // Add cart items to the order data
+      orderData.append('cart_items', JSON.stringify(cartItems.map(item => ({
+        product_id: item.product.id,
+        size: item.size,
+        quantity: item.quantity,
+        price: item.product.price
+      }))));
+      
+      // Submit the guest order
+      await OrderApi.createGuestOrder(orderData);
+      
+      // Clear the cart after successful order
+      clearCart();
+    } catch (error) {
+      console.error('Error submitting guest order:', error);
+      throw error;
+    }
   };
 
   return (
@@ -153,27 +231,45 @@ const CartPage = () => {
                 <span className="font-medium text-lg">₱{total.toFixed(2)}</span>
               </div>
               <button
-                onClick={openCheckoutModal}
-                className="w-full bg-black text-white py-3 px-4 font-medium rounded hover:bg-gray-800 transition-colors"
+                onClick={handleCheckoutClick}
+                className="w-full bg-[#ad688f] text-white py-3 px-4 font-medium rounded hover:bg-[#96577b] transition-colors"
               >
                 Checkout
               </button>
-              <Link
-                to="/my-orders"
-                className="w-full text-center block text-gray-700 hover:text-black py-2 text-sm font-medium"
-              >
-                View Your Orders
-              </Link>
+              {isAuthenticated && (
+                <Link
+                  to="/my-orders"
+                  className="w-full text-center block text-gray-700 hover:text-black py-2 text-sm font-medium"
+                >
+                  View Your Orders
+                </Link>
+              )}
             </div>
           </div>
         </div>
       )}
 
-      {/* Checkout Modal */}
+      {/* For logged-in users */}
       <CheckoutModal 
         isOpen={isCheckoutModalOpen} 
         onClose={closeCheckoutModal} 
         totalAmount={total}
+      />
+
+      {/* For non-logged-in users - prompt to login or continue as guest */}
+      <CheckoutPromptModal
+        isOpen={isPromptModalOpen}
+        onClose={closePromptModal}
+        onContinueAsGuest={handleContinueAsGuest}
+        onCreateAccount={handleCreateAccount}
+      />
+
+      {/* For guest checkout */}
+      <GuestCheckoutModal 
+        isOpen={isGuestCheckoutModalOpen}
+        onClose={closeGuestCheckoutModal}
+        totalAmount={total}
+        onSubmitOrder={handleGuestOrderSubmit}
       />
     </div>
   )

@@ -9,14 +9,14 @@ interface CartItem {
   product: Product;
   quantity: number;
   size: ProductSize;
-  id?: number; // Cart item ID from the database
+  id?: number | string; // Cart item ID from the database or string ID for guest cart
 }
 
 interface CartContextType {
   cartItems: CartItem[];
   addToCart: (product: Product, size: ProductSize, quantity: number) => Promise<void>;
-  removeFromCart: (itemId: number) => Promise<void>;
-  updateQuantity: (itemId: number, quantity: number) => Promise<void>;
+  removeFromCart: (itemId: number | string) => Promise<void>;
+  updateQuantity: (itemId: number | string, quantity: number) => Promise<void>;
   clearCart: () => Promise<void>;
   getTotalItems: () => number;
   getTotalPrice: () => number;
@@ -28,6 +28,9 @@ interface CartContextType {
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
+// Key for guest cart in localStorage
+const GUEST_CART_KEY = 'guest_cart';
+
 export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const { token, isAuthenticated } = useAuth();
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
@@ -35,15 +38,41 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
-  // Fetch cart from API when user logs in
+  // Fetch cart data when component mounts or auth state changes
   useEffect(() => {
     if (isAuthenticated && token) {
+      // If authenticated, fetch cart from API
       fetchCart();
     } else {
-      // Clear the cart when the user logs out
-      setCartItems([]);
+      // If not authenticated, load cart from localStorage
+      loadGuestCart();
     }
   }, [isAuthenticated, token]);
+
+  // Load cart from localStorage for guest users
+  const loadGuestCart = () => {
+    try {
+      const guestCartJSON = localStorage.getItem(GUEST_CART_KEY);
+      if (guestCartJSON) {
+        const guestCart = JSON.parse(guestCartJSON);
+        setCartItems(guestCart);
+      } else {
+        setCartItems([]);
+      }
+    } catch (error) {
+      console.error('Error loading guest cart from localStorage:', error);
+      setCartItems([]);
+    }
+  };
+
+  // Save cart to localStorage for guest users
+  const saveGuestCart = (items: CartItem[]) => {
+    try {
+      localStorage.setItem(GUEST_CART_KEY, JSON.stringify(items));
+    } catch (error) {
+      console.error('Error saving guest cart to localStorage:', error);
+    }
+  };
 
   const fetchCart = async () => {
     if (!isAuthenticated || !token) return;
@@ -63,75 +92,120 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   const addToCart = async (product: Product, size: ProductSize, quantity: number = 1) => {
-    // If not authenticated, redirect to login page
-    if (!isAuthenticated || !token) {
-      // Redirect to login page
-      navigate('/login');
-      return;
-    }
-    
-    setIsLoading(true);
-    setError(null);
-    
-    try {
-      const response = await CartApi.addToCart(token, product.id, size, quantity);
-      setCartItems(response.data.items || []);
-    } catch (error) {
-      console.error('Error adding to cart:', error);
-      setError(error instanceof Error ? error.message : 'An error occurred while adding to cart');
-    } finally {
-      setIsLoading(false);
+    // For authenticated users, use the API
+    if (isAuthenticated && token) {
+      setIsLoading(true);
+      setError(null);
+      
+      try {
+        const response = await CartApi.addToCart(token, product.id, size, quantity);
+        setCartItems(response.data.items || []);
+      } catch (error) {
+        console.error('Error adding to cart:', error);
+        setError(error instanceof Error ? error.message : 'An error occurred while adding to cart');
+      } finally {
+        setIsLoading(false);
+      }
+    } else {
+      // For guest users, store in localStorage
+      const newCartItems = [...cartItems];
+      
+      // Check if item already exists in cart
+      const existingItemIndex = newCartItems.findIndex(
+        item => item.product.id === product.id && item.size === size
+      );
+      
+      if (existingItemIndex !== -1) {
+        // Update quantity of existing item
+        newCartItems[existingItemIndex].quantity += quantity;
+      } else {
+        // Add new item with a unique string ID for guest cart items
+        newCartItems.push({
+          product,
+          size,
+          quantity,
+          id: `guest-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`
+        } as CartItem); // Use type assertion to satisfy TypeScript
+      }
+      
+      setCartItems(newCartItems);
+      saveGuestCart(newCartItems);
     }
   };
 
-  const removeFromCart = async (itemId: number) => {
-    if (!isAuthenticated || !token) return;
-    
-    setIsLoading(true);
-    setError(null);
-    
-    try {
-      const response = await CartApi.removeFromCart(token, itemId);
-      setCartItems(response.data.items || []);
-    } catch (error) {
-      console.error('Error removing from cart:', error);
-      setError(error instanceof Error ? error.message : 'An error occurred while removing from cart');
-    } finally {
-      setIsLoading(false);
+  const removeFromCart = async (itemId: number | string) => {
+    // For authenticated users, use the API
+    if (isAuthenticated && token && typeof itemId === 'number') {
+      setIsLoading(true);
+      setError(null);
+      
+      try {
+        const response = await CartApi.removeFromCart(token, itemId);
+        setCartItems(response.data.items || []);
+      } catch (error) {
+        console.error('Error removing from cart:', error);
+        setError(error instanceof Error ? error.message : 'An error occurred while removing from cart');
+      } finally {
+        setIsLoading(false);
+      }
+    } else {
+      // For guest users, update localStorage
+      const newCartItems = cartItems.filter(item => item.id !== itemId);
+      setCartItems(newCartItems);
+      saveGuestCart(newCartItems);
     }
   };
 
-  const updateQuantity = async (itemId: number, quantity: number) => {
-    if (!isAuthenticated || !token) return;
-    
-    setIsLoading(true);
-    setError(null);
-    
-    try {
-      const response = await CartApi.updateCartItem(token, itemId, quantity);
-      setCartItems(response.data.items || []);
-    } catch (error) {
-      console.error('Error updating cart item:', error);
-      setError(error instanceof Error ? error.message : 'An error occurred while updating cart');
-    } finally {
-      setIsLoading(false);
+  const updateQuantity = async (itemId: number | string, quantity: number) => {
+    // For authenticated users, use the API
+    if (isAuthenticated && token && typeof itemId === 'number') {
+      setIsLoading(true);
+      setError(null);
+      
+      try {
+        const response = await CartApi.updateCartItem(token, itemId, quantity);
+        setCartItems(response.data.items || []);
+      } catch (error) {
+        console.error('Error updating cart item:', error);
+        setError(error instanceof Error ? error.message : 'An error occurred while updating cart');
+      } finally {
+        setIsLoading(false);
+      }
+    } else {
+      // For guest users, update localStorage
+      if (quantity <= 0) {
+        // Remove item if quantity is zero or negative
+        return removeFromCart(itemId);
+      }
+      
+      const newCartItems = cartItems.map(item => 
+        item.id === itemId ? { ...item, quantity } : item
+      );
+      
+      setCartItems(newCartItems);
+      saveGuestCart(newCartItems);
     }
   };
 
   const clearCart = async () => {
-    if (!isAuthenticated || !token) return;
-    
-    setIsLoading(true);
-    setError(null);
-    
-    try {
-      const response = await CartApi.clearCart(token);
-      setCartItems(response.data.items || []);
-    } catch (error) {
-      console.error('Error clearing cart:', error);
-      setError(error instanceof Error ? error.message : 'An error occurred while clearing cart');
-    } finally {
-      setIsLoading(false);
+    // For authenticated users, use the API
+    if (isAuthenticated && token) {
+      setIsLoading(true);
+      setError(null);
+      
+      try {
+        const response = await CartApi.clearCart(token);
+        setCartItems(response.data.items || []);
+      } catch (error) {
+        console.error('Error clearing cart:', error);
+        setError(error instanceof Error ? error.message : 'An error occurred while clearing cart');
+      } finally {
+        setIsLoading(false);
+      }
+    } else {
+      // For guest users, clear localStorage
+      setCartItems([]);
+      localStorage.removeItem(GUEST_CART_KEY);
     }
   };
 
