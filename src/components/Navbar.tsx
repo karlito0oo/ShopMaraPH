@@ -42,7 +42,7 @@ const Navbar = () => {
     <>
       {/* Promotional Banner */}
       <div className="bg-black text-white text-center py-2 text-sm">
-        Sale is on! 25% off sitewide using SHOPMARAPH25 at checkout
+      Welcome, Fairies! Score Exclusive Launch Savings with Code: SHOPMARANEW
       </div>
       
       {/* Main Navbar */}
