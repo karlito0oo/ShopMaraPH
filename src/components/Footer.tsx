@@ -11,7 +11,7 @@ const Footer = () => {
           <div>
             <h3 className="font-bold text-lg mb-4">ShopMara PH</h3>
             <p className="text-sm text-gray-600 mb-4">
-              Quality t-shirts with unique designs for everyone.
+            ShopMaraPH curates stylish, sustainable vintage pieces that empower modern women to wear confidence and elegance—from office to everyday. With ShopMaraPH, wear your story.
             </p>
             <div className="flex space-x-4">
               <a href="#" className="text-gray-500 hover:text-black">
