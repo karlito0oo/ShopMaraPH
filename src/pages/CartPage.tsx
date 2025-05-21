@@ -164,50 +164,107 @@ const CartPage = () => {
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2">
-            {/* Cart Items */}
+            {/* Cart Items - Desktop View */}
             <div className="bg-white shadow rounded overflow-hidden">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Product
-                    </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Price
-                    </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Quantity
-                    </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Total
-                    </th>
-                    <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Action
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+              <div className="hidden md:block">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Product
+                      </th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Price
+                      </th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Quantity
+                      </th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Total
+                      </th>
+                      <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Action
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {cartItems.map((item) => (
+                      <tr key={`desktop-${item.product.id}-${item.size}`}>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center">
+                            <div className="h-16 w-16 bg-gray-200 rounded flex-shrink-0 overflow-hidden">
+                              <img 
+                                src={item.product.image} 
+                                alt={item.product.name} 
+                                className="h-full w-full object-cover"
+                              />
+                            </div>
+                            <div className="ml-4">
+                              <div className="text-sm font-medium text-gray-900">{item.product.name}</div>
+                              <div className="text-sm text-gray-500">Size: {item.size.toUpperCase()}</div>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm font-medium text-gray-900">₱{item.product.price.toFixed(2)}</div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center">
+                            <button 
+                              className="w-8 h-8 flex items-center justify-center rounded-l border-2 border-gray-300 bg-white text-black hover:border-gray-500 font-medium" 
+                              onClick={() => item.id !== undefined ? updateQuantity(item.id, item.quantity - 1) : null}
+                            >
+                              -
+                            </button>
+                            <span className="w-10 h-8 flex items-center justify-center border-t-2 border-b-2 border-gray-300 bg-white">
+                              {item.quantity}
+                            </span>
+                            <button 
+                              className="w-8 h-8 flex items-center justify-center rounded-r border-2 border-gray-300 bg-white text-black hover:border-gray-500 font-medium"
+                              onClick={() => item.id !== undefined ? updateQuantity(item.id, item.quantity + 1) : null}
+                            >
+                              +
+                            </button>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm font-medium text-gray-900">₱{(item.product.price * item.quantity).toFixed(2)}</div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                          <button 
+                            className="text-red-600 hover:text-red-800 font-medium"
+                            onClick={() => item.id !== undefined ? removeFromCart(item.id) : null}
+                          >
+                            Remove
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              
+              {/* Cart Items - Mobile View */}
+              <div className="md:hidden">
+                <div className="divide-y divide-gray-200">
                   {cartItems.map((item) => (
-                    <tr key={`${item.product.id}-${item.size}`}>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center">
-                          <div className="h-16 w-16 bg-gray-200 rounded flex-shrink-0 overflow-hidden">
-                            <img 
-                              src={item.product.image} 
-                              alt={item.product.name} 
-                              className="h-full w-full object-cover"
-                            />
-                          </div>
-                          <div className="ml-4">
-                            <div className="text-sm font-medium text-gray-900">{item.product.name}</div>
-                            <div className="text-sm text-gray-500">Size: {item.size.toUpperCase()}</div>
-                          </div>
+                    <div key={`mobile-${item.product.id}-${item.size}`} className="p-4">
+                      <div className="flex mb-4">
+                        <div className="h-20 w-20 bg-gray-200 rounded flex-shrink-0 overflow-hidden">
+                          <img 
+                            src={item.product.image} 
+                            alt={item.product.name} 
+                            className="h-full w-full object-cover"
+                          />
                         </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">₱{item.product.price.toFixed(2)}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="ml-4 flex-grow">
+                          <div className="text-sm font-medium text-gray-900">{item.product.name}</div>
+                          <div className="text-sm text-gray-500">Size: {item.size.toUpperCase()}</div>
+                          <div className="text-sm font-medium text-gray-900 mt-1">₱{item.product.price.toFixed(2)}</div>
+                        </div>
+                      </div>
+                      
+                      <div className="flex justify-between items-center mt-2">
                         <div className="flex items-center">
                           <button 
                             className="w-8 h-8 flex items-center justify-center rounded-l border-2 border-gray-300 bg-white text-black hover:border-gray-500 font-medium" 
@@ -225,22 +282,24 @@ const CartPage = () => {
                             +
                           </button>
                         </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">₱{(item.product.price * item.quantity).toFixed(2)}</div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <button 
-                          className="text-red-600 hover:text-red-800 font-medium"
-                          onClick={() => item.id !== undefined ? removeFromCart(item.id) : null}
-                        >
-                          Remove
-                        </button>
-                      </td>
-                    </tr>
+                        
+                        <div className="flex items-center">
+                          <div className="text-sm font-medium text-gray-900 mr-4">
+                            Total: ₱{(item.product.price * item.quantity).toFixed(2)}
+                          </div>
+                          <button 
+                            className="text-red-600 hover:text-red-800 font-medium"
+                            onClick={() => item.id !== undefined ? removeFromCart(item.id) : null}
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      </div>
+                    </div>
                   ))}
-                </tbody>
-              </table>
+                </div>
+              </div>
+              
               <div className="p-4 flex justify-between border-t border-gray-200">
                 <Link 
                   to="/products" 
