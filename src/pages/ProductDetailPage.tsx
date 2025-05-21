@@ -34,7 +34,7 @@ const ProductDetailPage = () => {
     fetchProduct();
   }, [productId]);
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     if (!product) return;
 
     const size = product.sizes[0]; // Get the single size
@@ -48,17 +48,13 @@ const ProductDetailPage = () => {
     // Always add quantity of 1
     const quantity = 1;
 
-    addToCart(product, size, quantity)
-      .then(() => {
-        // Only navigate to cart if there was no error
-        if (!cartError) {
-          navigate('/cart');
-        }
-      })
-      .catch((err) => {
-        // Error handling is now done in CartContext with toast notifications
-        console.error('Error adding to cart:', err);
-      });
+    try {
+      await addToCart(product, size, quantity);
+      // No need to navigate to cart - we show a toast notification instead
+    } catch (err) {
+      // Error handling is now done in CartContext with toast notifications
+      console.error('Error adding to cart:', err);
+    }
   };
 
   // Get product images array or create one from the single image
@@ -209,17 +205,22 @@ const ProductDetailPage = () => {
           )}
 
           {/* Add to Cart Button */}
-          <button
-            onClick={handleAddToCart}
-            disabled={isOutOfStock}
-            className={`w-full py-3 px-4 rounded-md font-medium ${
-              isOutOfStock
-                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                : 'bg-black text-white hover:bg-gray-800'
-            }`}
-          >
-            {isOutOfStock ? 'Sold' : 'Add to Cart'}
-          </button>
+          <div>
+            <button
+              onClick={handleAddToCart}
+              disabled={isOutOfStock}
+              className={`w-full py-3 px-4 rounded-md font-medium ${
+                isOutOfStock
+                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  : 'bg-black text-white hover:bg-gray-800'
+              }`}
+            >
+              {isOutOfStock ? 'Sold' : 'Add to Cart'}
+            </button>
+            <p className="text-xs text-gray-500 mt-2 text-center">
+              Note: Only one of each product can be added to cart
+            </p>
+          </div>
         </div>
       </div>
     </div>

@@ -16,16 +16,17 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   // Check if product is out of stock
   const isOutOfStock = product.sizeStock[0]?.stock <= 0;
   
-  const handleAddToCart = (e: React.MouseEvent) => {
+  const handleAddToCart = async (e: React.MouseEvent) => {
     e.preventDefault(); // Prevent navigation to product page
     e.stopPropagation(); // Stop event propagation
     
     if (!isOutOfStock) {
-      addToCart(product, size, 1)
-        .catch((err) => {
-          console.error('Error adding to cart:', err);
-          // Error handling is now done in CartContext with toast notifications
-        });
+      try {
+        await addToCart(product, size, 1);
+      } catch (err) {
+        console.error('Error adding to cart:', err);
+        // Error handling is now done in CartContext with toast notifications
+      }
     }
   };
   
@@ -85,7 +86,6 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         
         {/* Buttons - Fixed height area */}
         <div className="product-card__actions">
-          
           <button
             type="button"
             onClick={handleAddToCart}

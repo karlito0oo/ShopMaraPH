@@ -176,12 +176,6 @@ const CartPage = () => {
                       <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Price
                       </th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Quantity
-                      </th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Total
-                      </th>
                       <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Action
                       </th>
@@ -207,28 +201,6 @@ const CartPage = () => {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm font-medium text-gray-900">₱{item.product.price.toFixed(2)}</div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center">
-                            <button 
-                              className="w-8 h-8 flex items-center justify-center rounded-l border-2 border-gray-300 bg-white text-black hover:border-gray-500 font-medium" 
-                              onClick={() => item.id !== undefined ? updateQuantity(item.id, item.quantity - 1) : null}
-                            >
-                              -
-                            </button>
-                            <span className="w-10 h-8 flex items-center justify-center border-t-2 border-b-2 border-gray-300 bg-white">
-                              {item.quantity}
-                            </span>
-                            <button 
-                              className="w-8 h-8 flex items-center justify-center rounded-r border-2 border-gray-300 bg-white text-black hover:border-gray-500 font-medium"
-                              onClick={() => item.id !== undefined ? updateQuantity(item.id, item.quantity + 1) : null}
-                            >
-                              +
-                            </button>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-medium text-gray-900">₱{(item.product.price * item.quantity).toFixed(2)}</div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                           <button 
@@ -264,36 +236,13 @@ const CartPage = () => {
                         </div>
                       </div>
                       
-                      <div className="flex justify-between items-center mt-2">
-                        <div className="flex items-center">
-                          <button 
-                            className="w-8 h-8 flex items-center justify-center rounded-l border-2 border-gray-300 bg-white text-black hover:border-gray-500 font-medium" 
-                            onClick={() => item.id !== undefined ? updateQuantity(item.id, item.quantity - 1) : null}
-                          >
-                            -
-                          </button>
-                          <span className="w-10 h-8 flex items-center justify-center border-t-2 border-b-2 border-gray-300 bg-white">
-                            {item.quantity}
-                          </span>
-                          <button 
-                            className="w-8 h-8 flex items-center justify-center rounded-r border-2 border-gray-300 bg-white text-black hover:border-gray-500 font-medium"
-                            onClick={() => item.id !== undefined ? updateQuantity(item.id, item.quantity + 1) : null}
-                          >
-                            +
-                          </button>
-                        </div>
-                        
-                        <div className="flex items-center">
-                          <div className="text-sm font-medium text-gray-900 mr-4">
-                            Total: ₱{(item.product.price * item.quantity).toFixed(2)}
-                          </div>
-                          <button 
-                            className="text-red-600 hover:text-red-800 font-medium"
-                            onClick={() => item.id !== undefined ? removeFromCart(item.id) : null}
-                          >
-                            Remove
-                          </button>
-                        </div>
+                      <div className="flex justify-end items-center mt-2">
+                        <button 
+                          className="text-red-600 hover:text-red-800 font-medium"
+                          onClick={() => item.id !== undefined ? removeFromCart(item.id) : null}
+                        >
+                          Remove
+                        </button>
                       </div>
                     </div>
                   ))}
@@ -322,7 +271,7 @@ const CartPage = () => {
             <h2 className="text-lg font-medium mb-4">Order Summary</h2>
             <div className="space-y-4">
               <div className="flex justify-between">
-                <span className="text-gray-600">Subtotal</span>
+                <span className="text-gray-600">Subtotal ({cartItems.length} {cartItems.length === 1 ? 'item' : 'items'})</span>
                 <span className="font-medium">₱{subtotal.toFixed(2)}</span>
               </div>
               <div className="flex justify-between">

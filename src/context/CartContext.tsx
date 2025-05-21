@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import type { Product, ProductSize } from '../types/product';
 import { useAuth } from './AuthContext';
 import { CartApi } from '../services/ApiService';
+import { useToast } from './ToastContext';
 
 interface CartItem {
   product: Product;
@@ -40,6 +41,7 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const { showToast } = useToast();
 
   // Fetch cart data when component mounts or auth state changes
   useEffect(() => {
@@ -138,6 +140,20 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   const addToCart = async (product: Product, size: ProductSize, quantity: number = 1) => {
+    // Check if product is already in cart
+    const isProductInCart = cartItems.some(item => 
+      item.product.id === product.id && item.size === size
+    );
+    
+    if (isProductInCart) {
+      // Show toast notification instead of alert
+      showToast(`${product.name} (Size: ${size.toUpperCase()}) is already in your cart.`, 'warning');
+      return;
+    }
+    
+    // Always set quantity to 1, regardless of what was passed
+    quantity = 1;
+    
     // For authenticated users, use the API
     if (isAuthenticated && token) {
       setIsLoading(true);
@@ -146,9 +162,11 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       try {
         const response = await CartApi.addToCart(token, product.id, size, quantity);
         setCartItems(response.data.items || []);
+        showToast(`${product.name} added to cart!`, 'success');
       } catch (error) {
         console.error('Error adding to cart:', error);
         setError(error instanceof Error ? error.message : 'An error occurred while adding to cart');
+        showToast('Failed to add item to cart', 'error');
       } finally {
         setIsLoading(false);
       }
@@ -156,26 +174,29 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       // For guest users, store in localStorage
       const newCartItems = [...cartItems];
       
-      // Check if item already exists in cart
+      // Check if item already exists in cart - this should not happen due to our check above,
+      // but keeping as a safeguard
       const existingItemIndex = newCartItems.findIndex(
         item => item.product.id === product.id && item.size === size
       );
       
       if (existingItemIndex !== -1) {
-        // Update quantity of existing item
-        newCartItems[existingItemIndex].quantity += quantity;
+        // Show toast notification instead of alert
+        showToast(`${product.name} (Size: ${size.toUpperCase()}) is already in your cart.`, 'warning');
+        return;
       } else {
         // Add new item with a unique string ID for guest cart items
         newCartItems.push({
           product,
           size,
-          quantity,
+          quantity, // This will always be 1
           id: `guest-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`
         } as CartItem); // Use type assertion to satisfy TypeScript
       }
       
       setCartItems(newCartItems);
       saveGuestCart(newCartItems);
+      showToast(`${product.name} added to cart!`, 'success');
     }
   };
 
@@ -188,49 +209,35 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       try {
         const response = await CartApi.removeFromCart(token, itemId);
         setCartItems(response.data.items || []);
+        showToast('Item removed from cart', 'info');
       } catch (error) {
         console.error('Error removing from cart:', error);
         setError(error instanceof Error ? error.message : 'An error occurred while removing from cart');
+        showToast('Failed to remove item from cart', 'error');
       } finally {
         setIsLoading(false);
       }
     } else {
       // For guest users, update localStorage
+      const itemToRemove = cartItems.find(item => item.id === itemId);
       const newCartItems = cartItems.filter(item => item.id !== itemId);
       setCartItems(newCartItems);
       saveGuestCart(newCartItems);
+      if (itemToRemove) {
+        showToast('Item removed from cart', 'info');
+      }
     }
   };
 
   const updateQuantity = async (itemId: number | string, quantity: number) => {
-    // For authenticated users, use the API
-    if (isAuthenticated && token && typeof itemId === 'number') {
-      setIsLoading(true);
-      setError(null);
-      
-      try {
-        const response = await CartApi.updateCartItem(token, itemId, quantity);
-        setCartItems(response.data.items || []);
-      } catch (error) {
-        console.error('Error updating cart item:', error);
-        setError(error instanceof Error ? error.message : 'An error occurred while updating cart');
-      } finally {
-        setIsLoading(false);
-      }
-    } else {
-      // For guest users, update localStorage
-      if (quantity <= 0) {
-        // Remove item if quantity is zero or negative
-        return removeFromCart(itemId);
-      }
-      
-      const newCartItems = cartItems.map(item => 
-        item.id === itemId ? { ...item, quantity } : item
-      );
-      
-      setCartItems(newCartItems);
-      saveGuestCart(newCartItems);
+    // Since we're restricting users to 1 item per product, we'll only allow removing items
+    // If quantity is 0 or less, we'll remove the item
+    if (quantity <= 0) {
+      return removeFromCart(itemId);
     }
+    
+    // Otherwise, we'll ignore quantity changes as we're enforcing 1 item per product
+    return;
   };
 
   const clearCart = async () => {
@@ -242,9 +249,11 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       try {
         const response = await CartApi.clearCart(token);
         setCartItems(response.data.items || []);
+        showToast('Cart cleared successfully', 'info');
       } catch (error) {
         console.error('Error clearing cart:', error);
         setError(error instanceof Error ? error.message : 'An error occurred while clearing cart');
+        showToast('Failed to clear cart', 'error');
       } finally {
         setIsLoading(false);
       }
@@ -252,6 +261,7 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       // For guest users, clear localStorage
       setCartItems([]);
       localStorage.removeItem(GUEST_CART_KEY);
+      showToast('Cart cleared successfully', 'info');
     }
   };
 
