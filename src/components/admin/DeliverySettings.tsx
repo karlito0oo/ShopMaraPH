@@ -13,8 +13,6 @@ const DeliverySettings = ({ onSuccess, onError }: DeliverySettingsProps) => {
   const [freeDeliveryThreshold, setFreeDeliveryThreshold] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(true);
   const [saving, setSaving] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
 
   // Fetch settings on component mount
   useEffect(() => {
@@ -36,11 +34,8 @@ const DeliverySettings = ({ onSuccess, onError }: DeliverySettingsProps) => {
         if (thresholdSetting) {
           setFreeDeliveryThreshold(parseInt(thresholdSetting.value));
         }
-        
-        setError(null);
       } catch (err) {
         const errorMessage = 'Failed to load delivery settings';
-        setError(errorMessage);
         if (onError) onError(errorMessage);
         console.error('Error fetching settings:', err);
       } finally {
@@ -59,8 +54,6 @@ const DeliverySettings = ({ onSuccess, onError }: DeliverySettingsProps) => {
     
     try {
       setSaving(true);
-      setError(null);
-      setSuccess(null);
       
       // Update both settings at once
       const response = await SettingService.updateMultipleSettings(token, [
@@ -71,7 +64,6 @@ const DeliverySettings = ({ onSuccess, onError }: DeliverySettingsProps) => {
       // Check if the response indicates success
       if (response && !Boolean(response.errors?.length)) {
         const successMessage = 'Delivery settings updated successfully';
-        setSuccess(successMessage);
         if (onSuccess) onSuccess(successMessage);
       } else {
         // If there are specific errors in the response, show them
@@ -85,7 +77,6 @@ const DeliverySettings = ({ onSuccess, onError }: DeliverySettingsProps) => {
       }
     } catch (err: any) {
       const errorMessage = err.message || 'Failed to update delivery settings';
-      setError(errorMessage);
       if (onError) onError(errorMessage);
       console.error('Error updating settings:', err);
     } finally {

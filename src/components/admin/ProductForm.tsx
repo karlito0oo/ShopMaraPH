@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import type { ProductCategory, ProductSize, SizeStock } from '../../types/product';
+import type { ProductSize, SizeStock } from '../../types/product';
 import { useAuth } from '../../context/AuthContext';
 import { ProductApi } from '../../services/ApiService';
 
@@ -281,7 +281,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ productId, onSuccess, onError
       let additionalImagesCount = 0;
       
       // Add new additional image files
-      formData.additionalImageFiles.forEach((file, index) => {
+      formData.additionalImageFiles.forEach((file) => {
         if (file) {
           apiFormData.append(`additional_images[${additionalImagesCount}]`, file);
           additionalImagesCount++;

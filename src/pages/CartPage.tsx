@@ -17,7 +17,6 @@ const CartPage = () => {
   const { 
     cartItems, 
     removeFromCart, 
-    updateQuantity, 
     getTotalPrice,
     clearCart,
     backupGuestCart
