@@ -14,7 +14,7 @@ const HeroSection = () => {
       </div>
       <h1 className="text-5xl md:text-7xl font-como font-light mb-4 text-center">ShopMara PH</h1>
       <div className="bg-[#ad688f] px-6 py-2 mb-8">
-        <p className="text-lg font-como font-light text-white">There's One for Everyone</p>
+        <p className="text-lg font-como font-light text-white">Timeless Finds, Consciously Curated</p>
       </div>
       <div className="max-w-2xl text-center px-4">
         <p className="text-gray-600 mb-8 font-como font-light">

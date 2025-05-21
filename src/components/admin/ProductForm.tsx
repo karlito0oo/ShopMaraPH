@@ -13,7 +13,6 @@ interface ProductFormData {
   imageFile: File | null;
   additionalImages: string[];
   additionalImageFiles: (File | null)[];
-  category: ProductCategory;
   sizes: ProductSize[];
   isNewArrival: boolean;
   sizeStock: SizeStock[];
@@ -37,7 +36,6 @@ const ProductForm: React.FC<ProductFormProps> = ({ productId, onSuccess, onError
     imageFile: null,
     additionalImages: ['', '', ''],
     additionalImageFiles: [null, null, null],
-    category: 'all',
     sizes: [],
     isNewArrival: false,
     sizeStock: []
@@ -54,7 +52,6 @@ const ProductForm: React.FC<ProductFormProps> = ({ productId, onSuccess, onError
   ];
 
   const availableSizes: ProductSize[] = ['small', 'medium', 'large', 'xlarge'];
-  const availableCategories: ProductCategory[] = ['all', 'new_arrival'];
 
   // Fetch product data if in edit mode
   useEffect(() => {
@@ -85,6 +82,9 @@ const ProductForm: React.FC<ProductFormProps> = ({ productId, onSuccess, onError
           }
         }
         
+        // Determine if product is a new arrival (either from category or explicit flag)
+        const isNewArrival = product.category === 'new_arrival' || product.isNewArrival || false;
+        
         // Update form data
         setFormData({
           sku: product.sku || '',
@@ -96,9 +96,8 @@ const ProductForm: React.FC<ProductFormProps> = ({ productId, onSuccess, onError
           imageFile: null,
           additionalImages: additionalImgs,
           additionalImageFiles: [null, null, null],
-          category: product.category as ProductCategory,
           sizes: product.sizes.filter((size: string) => size !== 'all') as ProductSize[],
-          isNewArrival: product.isNewArrival || false,
+          isNewArrival: isNewArrival,
           sizeStock: product.sizeStock || []
         });
       } catch (error) {
@@ -165,7 +164,6 @@ const ProductForm: React.FC<ProductFormProps> = ({ productId, onSuccess, onError
       imageFile: null,
       additionalImages: ['', '', ''],
       additionalImageFiles: [null, null, null],
-      category: 'all',
       sizes: [],
       isNewArrival: false,
       sizeStock: []
@@ -272,8 +270,11 @@ const ProductForm: React.FC<ProductFormProps> = ({ productId, onSuccess, onError
       apiFormData.append('price', formData.price.toString());
       apiFormData.append('description', formData.description);
       apiFormData.append('care_instructions', formData.careInstructions);
-      apiFormData.append('category', formData.category);
       apiFormData.append('sku', formData.sku || '');
+      
+      // Set category based on isNewArrival flag
+      const category = formData.isNewArrival ? 'new_arrival' : 'all';
+      apiFormData.append('category', category);
       
       // Use the expected field names for the API
       apiFormData.append('is_best_seller', 'false'); // Always false since feature is deprecated
@@ -285,7 +286,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ productId, onSuccess, onError
       // Convert size stock to a JSON string
       apiFormData.append('size_stock', JSON.stringify(formData.sizeStock));
       
-      // Append images
+      // Append main image
       if (formData.imageFile) {
         apiFormData.append('image', formData.imageFile);
       } else if (productId && formData.image) {
@@ -294,26 +295,35 @@ const ProductForm: React.FC<ProductFormProps> = ({ productId, onSuccess, onError
       }
       
       // Handle additional images
-      const newAdditionalImages = [];
-      const keepAdditionalImages = [];
+      let additionalImagesCount = 0;
       
-      for (let i = 0; i < 3; i++) {
-        const imageFile = formData.additionalImageFiles[i];
-        const imageUrl = formData.additionalImages[i];
-        
-        if (imageFile) {
-          apiFormData.append(`additionalImages[${newAdditionalImages.length}]`, imageFile);
-          newAdditionalImages.push(i);
-        } else if (productId && imageUrl && originalImageUrls.includes(imageUrl)) {
-          // Keep existing additional image
-          keepAdditionalImages.push(i + 1); // +1 because index 0 is the main image in originalImageUrls
+      // Add new additional image files
+      formData.additionalImageFiles.forEach((file, index) => {
+        if (file) {
+          apiFormData.append(`additional_images[${additionalImagesCount}]`, file);
+          additionalImagesCount++;
         }
-      }
+      });
       
-      if (keepAdditionalImages.length > 0) {
-        keepAdditionalImages.forEach(index => {
-          apiFormData.append('keepAdditionalImages[]', index.toString());
+      // Keep track of existing additional images to preserve
+      if (productId) {
+        const keepAdditionalImages: number[] = [];
+        
+        formData.additionalImages.forEach((imageUrl, index) => {
+          // If this is an existing image (not a new file) and has a URL
+          if (!formData.additionalImageFiles[index] && imageUrl && originalImageUrls.includes(imageUrl)) {
+            // Find the index in originalImageUrls (add 1 because index 0 is main image)
+            const originalIndex = originalImageUrls.indexOf(imageUrl);
+            if (originalIndex > 0) {
+              keepAdditionalImages.push(originalIndex);
+            }
+          }
         });
+        
+        // Add indices of additional images to keep
+        if (keepAdditionalImages.length > 0) {
+          apiFormData.append('keep_additional_images', JSON.stringify(keepAdditionalImages));
+        }
       }
       
       // Submit the form data
@@ -414,21 +424,19 @@ const ProductForm: React.FC<ProductFormProps> = ({ productId, onSuccess, onError
           </div>
           
           <div>
-            <label htmlFor="category" className="block text-sm font-medium text-gray-700">Category*</label>
-            <select
-              id="category"
-              name="category"
-              value={formData.category}
-              onChange={handleChange}
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-black focus:border-black sm:text-sm"
-              required
-            >
-              {availableCategories.map(category => (
-                <option key={category} value={category}>
-                  {category.charAt(0).toUpperCase() + category.slice(1)}
-                </option>
-              ))}
-            </select>
+            <label htmlFor="isNewArrival" className="block text-sm font-medium text-gray-700 mb-1">Product Type</label>
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                id="isNewArrival"
+                name="isNewArrival"
+                checked={formData.isNewArrival}
+                onChange={handleChange}
+                className="form-checkbox h-5 w-5 text-black"
+              />
+              <span className="ml-2 text-sm text-gray-700">New Arrival</span>
+            </div>
+            <p className="mt-1 text-xs text-gray-500">Mark this product as a new arrival</p>
           </div>
           
           <div className="md:col-span-2">
@@ -445,7 +453,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ productId, onSuccess, onError
           </div>
           
           <div className="md:col-span-2">
-            <label htmlFor="careInstructions" className="block text-sm font-medium text-gray-700">Care Instructions</label>
+            <label htmlFor="careInstructions" className="block text-sm font-medium text-gray-700">Before You Buy</label>
             <textarea
               id="careInstructions"
               name="careInstructions"
@@ -570,23 +578,6 @@ const ProductForm: React.FC<ProductFormProps> = ({ productId, onSuccess, onError
                 ))}
               </div>
             </div>
-          </div>
-        </div>
-        
-        {/* Additional Info Section */}
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-          <div>
-            <label htmlFor="isNewArrival" className="inline-flex items-center">
-              <input
-                type="checkbox"
-                id="isNewArrival"
-                name="isNewArrival"
-                checked={formData.isNewArrival}
-                onChange={handleChange}
-                className="form-checkbox h-5 w-5 text-black"
-              />
-              <span className="ml-2 text-sm text-gray-700">New Arrival</span>
-            </label>
           </div>
         </div>
         

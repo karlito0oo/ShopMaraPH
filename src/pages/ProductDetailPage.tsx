@@ -270,7 +270,7 @@ const ProductDetailPage = () => {
             </p>
             
             <div className="mt-4">
-              <h3 className="text-sm font-medium mb-1">Care Instructions:</h3>
+              <h3 className="text-sm font-medium mb-1">Before You Buy:</h3>
               <div className="text-sm text-gray-600">
                 {product.careInstructions ? (
                   <div dangerouslySetInnerHTML={{ __html: product.careInstructions }} />
