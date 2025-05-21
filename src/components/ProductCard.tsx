@@ -16,11 +16,15 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   // Check if product is out of stock
   const isOutOfStock = product.sizeStock[0]?.stock <= 0;
   
-  const handleAddToCart = () => {
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.preventDefault(); // Prevent navigation to product page
+    e.stopPropagation(); // Stop event propagation
+    
     if (!isOutOfStock) {
       addToCart(product, size, 1)
         .catch((err) => {
           console.error('Error adding to cart:', err);
+          // Error handling is now done in CartContext with toast notifications
         });
     }
   };

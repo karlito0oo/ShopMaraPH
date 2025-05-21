@@ -4,6 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import ManageProducts from '../../components/admin/ManageProducts';
 import OrderManagement from '../../components/admin/OrderManagement';
 import ManageAnnouncements from '../../components/admin/ManageAnnouncements';
+import DeliverySettings from '../../components/admin/DeliverySettings';
 import AdminLayout from '../../components/layouts/AdminLayout';
 
 const AdminPage: React.FC = () => {
@@ -19,6 +20,7 @@ const AdminPage: React.FC = () => {
     { id: 'products', label: 'Products' },
     { id: 'orders', label: 'Orders' },
     { id: 'announcements', label: 'Announcements' },
+    { id: 'settings', label: 'Settings' },
   ];
   
   // Check URL parameter for active tab
@@ -67,6 +69,16 @@ const AdminPage: React.FC = () => {
       );
     }
     
+    if (activeTab === 'announcements') {
+      return (
+        <Link 
+          to="/admin/announcements/new" 
+          className="mt-4 sm:mt-0 inline-block bg-black text-white px-4 py-2"
+        >
+          Create New Announcement
+        </Link>
+      );
+    }
     
     return null;
   };
@@ -115,6 +127,14 @@ const AdminPage: React.FC = () => {
         )}
         {activeTab === 'orders' && <OrderManagement />}
         {activeTab === 'announcements' && <ManageAnnouncements token={token || ''} />}
+        {activeTab === 'settings' && (
+          <div className="space-y-8">
+            <DeliverySettings 
+              onSuccess={handleSuccess}
+              onError={handleError}
+            />
+          </div>
+        )}
       </div>
     </AdminLayout>
   );

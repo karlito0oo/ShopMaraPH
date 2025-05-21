@@ -10,7 +10,7 @@ const ProductDetailPage = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
-  const { addToCart } = useCart();
+  const { addToCart, error: cartError } = useCart();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -48,16 +48,15 @@ const ProductDetailPage = () => {
     // Always add quantity of 1
     const quantity = 1;
 
-    // The addToCart function will redirect to login if user is not authenticated
-    // If user is authenticated, add to cart and then navigate to cart page
     addToCart(product, size, quantity)
       .then(() => {
-        // Only navigate to cart if the addToCart promise resolves
-        // This won't happen if the user was redirected to login
-        navigate('/cart');
+        // Only navigate to cart if there was no error
+        if (!cartError) {
+          navigate('/cart');
+        }
       })
       .catch((err) => {
-        // Handle any errors that might occur during addToCart
+        // Error handling is now done in CartContext with toast notifications
         console.error('Error adding to cart:', err);
       });
   };

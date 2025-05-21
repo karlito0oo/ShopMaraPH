@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\CartController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\UserProfileController;
 use App\Http\Controllers\Api\OrderController;
+use App\Http\Controllers\Api\SettingController;
 use App\Http\Controllers\AnnouncementController;
 use App\Http\Middleware\AdminMiddleware;
 
@@ -31,6 +32,9 @@ Route::get('products/{id}', [ProductController::class, 'show']);
 
 // Public announcements route - read only
 Route::get('announcements', [AnnouncementController::class, 'index']);
+
+// Public settings route
+Route::get('settings', [SettingController::class, 'getPublicSettings']);
 
 // Guest checkout routes
 Route::post('guest-orders', [OrderController::class, 'createGuestOrder']);
@@ -85,5 +89,10 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('admin/announcements/{id}', [AnnouncementController::class, 'update']);
         Route::delete('admin/announcements/{id}', [AnnouncementController::class, 'destroy']);
         Route::post('admin/announcements/{id}/toggle', [AnnouncementController::class, 'toggleStatus']);
+        
+        // Settings management
+        Route::get('admin/settings', [SettingController::class, 'index']);
+        Route::put('admin/settings/{key}', [SettingController::class, 'update']);
+        Route::post('admin/settings', [SettingController::class, 'updateMultiple']);
     });
 }); 

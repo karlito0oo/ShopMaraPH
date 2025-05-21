@@ -20,6 +20,8 @@ import AnnouncementFormPage from './pages/admin/AnnouncementFormPage'
 import { CartProvider } from './context/CartContext'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import { ProfileProvider } from './context/ProfileContext'
+import { SettingsProvider } from './context/SettingsContext'
+import { ToastProvider } from './context/ToastContext'
 
 // Protected route component for authentication
 const ProtectedRoute = ({ children }: { children: React.ReactElement }) => {
@@ -51,71 +53,75 @@ function App() {
   return (
     <AuthProvider>
       <ProfileProvider>
-        <CartProvider>
-          <div className="min-h-screen bg-white flex flex-col">
-            <Navbar />
-            <main className="flex-grow">
-              <Routes>
-                <Route path="/" element={<HomePage />} />
-                <Route path="/new" element={<NewPage />} />
-                <Route path="/sale" element={<SalePage />} />
-                <Route path="/about" element={<AboutPage />} />
-                <Route path="/login" element={<LoginPage />} />
-                <Route path="/register" element={<RegisterPage />} />
-                <Route path="/cart" element={<CartPage />} />
-                <Route path="/my-orders" element={
-                  <ProtectedRoute>
-                    <UserOrdersPage />
-                  </ProtectedRoute>
-                } />
-                <Route path="/products" element={<AllProductsPage />} />
-                <Route path="/product/:productId" element={<ProductDetailPage />} />
-                
-                {/* Admin routes with tab parameter */}
-                <Route path="/admin" element={
-                  <AdminRoute>
-                    <AdminPage />
-                  </AdminRoute>
-                } />
-                <Route path="/admin/:tab" element={
-                  <AdminRoute>
-                    <AdminPage />
-                  </AdminRoute>
-                } />
-                
-                {/* Product management routes */}
-                <Route path="/add-product" element={
-                  <AdminRoute>
-                    <AddProductPage />
-                  </AdminRoute>
-                } />
-                <Route path="/edit-product/:productId" element={
-                  <AdminRoute>
-                    <EditProductPage />
-                  </AdminRoute>
-                } />
-                <Route path="/admin-orders" element={
-                  <AdminRoute>
-                    <AdminOrdersPage />
-                  </AdminRoute>
-                } />
-                
-                {/* Announcement management routes */}
-                <Route path="/admin/announcements/new" element={
-                  <AdminRoute>
-                    <AnnouncementFormPage />
-                  </AdminRoute>
-                } />
-                <Route path="/admin/announcements/edit/:id" element={
-                  <AdminRoute>
-                    <AnnouncementFormPage />
-                  </AdminRoute>
-                } />
-              </Routes>
-            </main>
-            <Footer />
-          </div>
-        </CartProvider>
+        <ToastProvider>
+          <SettingsProvider>
+            <CartProvider>
+              <div className="min-h-screen bg-white flex flex-col">
+                <Navbar />
+                <main className="flex-grow">
+                  <Routes>
+                    <Route path="/" element={<HomePage />} />
+                    <Route path="/new" element={<NewPage />} />
+                    <Route path="/sale" element={<SalePage />} />
+                    <Route path="/about" element={<AboutPage />} />
+                    <Route path="/login" element={<LoginPage />} />
+                    <Route path="/register" element={<RegisterPage />} />
+                    <Route path="/cart" element={<CartPage />} />
+                    <Route path="/my-orders" element={
+                      <ProtectedRoute>
+                        <UserOrdersPage />
+                      </ProtectedRoute>
+                    } />
+                    <Route path="/products" element={<AllProductsPage />} />
+                    <Route path="/product/:productId" element={<ProductDetailPage />} />
+                    
+                    {/* Admin routes with tab parameter */}
+                    <Route path="/admin" element={
+                      <AdminRoute>
+                        <AdminPage />
+                      </AdminRoute>
+                    } />
+                    <Route path="/admin/:tab" element={
+                      <AdminRoute>
+                        <AdminPage />
+                      </AdminRoute>
+                    } />
+                    
+                    {/* Product management routes */}
+                    <Route path="/add-product" element={
+                      <AdminRoute>
+                        <AddProductPage />
+                      </AdminRoute>
+                    } />
+                    <Route path="/edit-product/:productId" element={
+                      <AdminRoute>
+                        <EditProductPage />
+                      </AdminRoute>
+                    } />
+                    <Route path="/admin-orders" element={
+                      <AdminRoute>
+                        <AdminOrdersPage />
+                      </AdminRoute>
+                    } />
+                    
+                    {/* Announcement management routes */}
+                    <Route path="/admin/announcements/new" element={
+                      <AdminRoute>
+                        <AnnouncementFormPage />
+                      </AdminRoute>
+                    } />
+                    <Route path="/admin/announcements/edit/:id" element={
+                      <AdminRoute>
+                        <AnnouncementFormPage />
+                      </AdminRoute>
+                    } />
+                  </Routes>
+                </main>
+                <Footer />
+              </div>
+            </CartProvider>
+          </SettingsProvider>
+        </ToastProvider>
       </ProfileProvider>
     </AuthProvider>
   )
