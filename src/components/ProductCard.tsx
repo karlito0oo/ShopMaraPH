@@ -74,18 +74,6 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           ₱{product.price.toFixed(2)}
         </div>
         
-        {/* Stock information */}
-        <div className={`product-card__stock ${
-          !isOutOfStock 
-            ? 'product-card__stock--in' 
-            : 'product-card__stock--out'
-        }`}>
-          {!isOutOfStock ? (
-            <>In Stock</>
-          ) : (
-            <>Sold</>
-          )}
-        </div>
         
         {/* Buttons - Fixed height area */}
         <div className="product-card__actions">
