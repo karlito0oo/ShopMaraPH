@@ -1,5 +1,5 @@
 export type ProductSize = 'small' | 'medium' | 'large' | 'xlarge' | 'all';
-export type ProductCategory = 'all' | 'new_arrival';
+export type ProductCategory = 'all' | 'new_arrival' | 'men' | 'women';
 
 export interface SizeStock {
   size: ProductSize;
@@ -33,7 +33,7 @@ export const filterProducts = (
   products: Product[], 
   category: ProductCategory, 
   size: ProductSize,
-  keyword: string = '',
+  searchKeyword: string = '',
   showNewOnly: boolean = false
 ): Product[] => {
   return products.filter(product => {
@@ -44,13 +44,15 @@ export const filterProducts = (
     // Category match logic: 
     // - If 'all', show everything unless showNewOnly is true
     // - If 'new_arrival', match with isNewArrivalProduct
+    // - If 'men' or 'women', match with the product's category
     const categoryMatch = 
       (category === 'all' && (!showNewOnly || isNewArrivalProduct)) || 
-      (category === 'new_arrival' && isNewArrivalProduct);
+      (category === 'new_arrival' && isNewArrivalProduct) ||
+      (category === product.category);
     
     const sizeMatch = size === 'all' || product.sizes.includes(size);
-    const keywordMatch = keyword === '' || 
-      product.name.toLowerCase().includes(keyword.toLowerCase());
+    const keywordMatch = searchKeyword === '' || 
+      product.name.toLowerCase().includes(searchKeyword.toLowerCase());
     
     return categoryMatch && sizeMatch && keywordMatch;
   });

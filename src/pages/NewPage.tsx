@@ -85,13 +85,9 @@ const NewPage = () => {
           <ProductFilter 
             activeCategory={activeCategory}
             activeSize={activeSize}
-            bestSellerOnly={false}
-            showNewOnly={showNewOnly}
             searchKeyword={searchKeyword}
             onCategoryChange={setActiveCategory}
             onSizeChange={setActiveSize}
-            onBestSellerChange={() => {}}
-            onNewArrivalsChange={setShowNewOnly}
             onKeywordChange={setSearchKeyword}
           />
         </div>

@@ -50,7 +50,6 @@ const WomenPage = () => {
         productsToFilter,
         activeCategory, 
         activeSize, 
-        bestSellerOnly,
         searchKeyword,
         showNewOnly
       ));
@@ -97,13 +96,9 @@ const WomenPage = () => {
           <ProductFilter 
             activeCategory={activeCategory}
             activeSize={activeSize}
-            bestSellerOnly={bestSellerOnly}
-            showNewOnly={showNewOnly}
             searchKeyword={searchKeyword}
             onCategoryChange={setActiveCategory}
             onSizeChange={setActiveSize}
-            onBestSellerChange={setBestSellerOnly}
-            onNewArrivalsChange={setShowNewOnly}
             onKeywordChange={setSearchKeyword}
           />
         </div>

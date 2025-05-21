@@ -2,7 +2,6 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import type { Product, ProductSize } from '../types/product';
 import { useAuth } from './AuthContext';
-import { useNavigate } from 'react-router-dom';
 import { CartApi } from '../services/ApiService';
 
 interface CartItem {
@@ -41,7 +40,6 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const navigate = useNavigate();
 
   // Fetch cart data when component mounts or auth state changes
   useEffect(() => {

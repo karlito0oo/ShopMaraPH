@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { useAuth } from '../context/AuthContext';
 
 interface CheckoutPromptModalProps {
   isOpen: boolean;

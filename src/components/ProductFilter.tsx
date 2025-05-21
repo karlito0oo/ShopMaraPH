@@ -4,26 +4,18 @@ import type { ProductCategory, ProductSize } from '../types/product';
 interface ProductFilterProps {
   activeCategory: ProductCategory;
   activeSize: ProductSize;
-  bestSellerOnly: boolean;
-  showNewOnly: boolean;
   searchKeyword: string;
   onCategoryChange: (category: ProductCategory) => void;
   onSizeChange: (size: ProductSize) => void;
-  onBestSellerChange: (bestSellerOnly: boolean) => void;
-  onNewArrivalsChange: (showNewOnly: boolean) => void;
   onKeywordChange: (keyword: string) => void;
 }
 
 const ProductFilter: React.FC<ProductFilterProps> = ({ 
   activeCategory, 
   activeSize, 
-  bestSellerOnly,
-  showNewOnly,
   searchKeyword,
   onCategoryChange, 
   onSizeChange,
-  onBestSellerChange,
-  onNewArrivalsChange,
   onKeywordChange
 }) => {
   return (

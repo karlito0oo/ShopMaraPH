@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
@@ -8,7 +8,7 @@ import GuestCheckoutModal from '../components/GuestCheckoutModal';
 import { OrderApi, CartApi } from '../services/ApiService';
 
 const CartPage = () => {
-  const { isAuthenticated, register, migrateGuestCart } = useAuth();
+  const { isAuthenticated, register } = useAuth();
   const [isCheckoutModalOpen, setIsCheckoutModalOpen] = useState(false);
   const [isPromptModalOpen, setIsPromptModalOpen] = useState(false);
   const [isGuestCheckoutModalOpen, setIsGuestCheckoutModalOpen] = useState(false);
@@ -20,10 +20,7 @@ const CartPage = () => {
     updateQuantity, 
     getTotalPrice,
     clearCart,
-    fetchCart,
-    backupGuestCart,
-    restoreGuestCart,
-    addToCart
+    backupGuestCart
   } = useCart();
 
   const subtotal = getTotalPrice();
