@@ -1,14 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
-import type { Product, ProductSize } from '../types/product';
+import type { Product } from '../types/product';
 import { getProductById } from '../services/ProductService';
 
 const ProductDetailPage = () => {
   const { productId } = useParams<{ productId: string }>();
   const [product, setProduct] = useState<Product | null>(null);
-  const [selectedSize, setSelectedSize] = useState<ProductSize | null>(null);
-  const [error, setError] = useState('');
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -21,7 +19,6 @@ const ProductDetailPage = () => {
       
       try {
         setIsLoading(true);
-        setError('');
         setLoadError(null);
         const fetchedProduct = await getProductById(productId);
         setProduct(fetchedProduct);
@@ -40,18 +37,12 @@ const ProductDetailPage = () => {
   const handleAddToCart = () => {
     if (!product) return;
 
-    if (!selectedSize) {
-      setError('Please select a size');
-      return;
-    }
-
-    // Get available stock for selected size
-    const availableStock = getStockForSize(product, selectedSize);
+    const size = product.sizes[0]; // Get the single size
+    const availableStock = product.sizeStock[0]?.stock || 0;
     
     // Check if item is in stock
     if (availableStock <= 0) {
-      setError(`Sorry, this item is out of stock`);
-      return;
+      return; // Don't add out-of-stock items
     }
 
     // Always add quantity of 1
@@ -59,7 +50,7 @@ const ProductDetailPage = () => {
 
     // The addToCart function will redirect to login if user is not authenticated
     // If user is authenticated, add to cart and then navigate to cart page
-    addToCart(product, selectedSize, quantity)
+    addToCart(product, size, quantity)
       .then(() => {
         // Only navigate to cart if the addToCart promise resolves
         // This won't happen if the user was redirected to login
@@ -69,19 +60,6 @@ const ProductDetailPage = () => {
         // Handle any errors that might occur during addToCart
         console.error('Error adding to cart:', err);
       });
-  };
-
-  const handleSizeChange = (size: ProductSize) => {
-    setSelectedSize(size);
-    setError('');
-  };
-
-  // Get stock for a specific size
-  const getStockForSize = (product: Product | null, size: ProductSize): number => {
-    if (!product) return 0;
-    
-    const sizeStockItem = product.sizeStock.find(item => item.size === size);
-    return sizeStockItem ? sizeStockItem.stock : 0;
   };
 
   // Get product images array or create one from the single image
@@ -135,7 +113,9 @@ const ProductDetailPage = () => {
   }
 
   const productImages = getProductImages();
-  const selectedSizeStock = selectedSize ? getStockForSize(product, selectedSize) : 0;
+  const size = product.sizes[0]; // Get the single size
+  const stock = product.sizeStock[0]?.stock || 0;
+  const isOutOfStock = stock <= 0;
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -183,11 +163,6 @@ const ProductDetailPage = () => {
             <div className="flex justify-between items-start">
               <h1 className="text-2xl font-bold">{product.name}</h1>
               <div className="flex space-x-2">
-                {product.isBestSeller && (
-                  <div className="bg-yellow-400 text-xs font-bold px-2 py-1 rounded">
-                    Best Seller
-                  </div>
-                )}
                 {product.isNewArrival && (
                   <div className="bg-green-500 text-white text-xs font-bold px-2 py-1 rounded">
                     New Arrival
@@ -195,95 +170,45 @@ const ProductDetailPage = () => {
                 )}
               </div>
             </div>
-            <div className="flex items-center mt-2">
-              <span className="text-gray-600 text-sm capitalize mr-2">Category: {product.category}</span>
+            <div className="mt-2 flex items-center">
+              <span className="bg-gray-100 text-gray-800 text-sm font-medium px-2 py-1 rounded mr-2">
+                Size: {size.toUpperCase()}
+              </span>
+              <span className={`text-sm font-medium px-2 py-1 rounded ${isOutOfStock ? 'text-red-600' : 'text-green-600'}`}>
+                {isOutOfStock ? 'Out of Stock' : `In Stock (${stock} available)`}
+              </span>
             </div>
             <div className="mt-4">
               <p className="text-xl font-semibold">₱{product.price.toFixed(2)}</p>
             </div>
           </div>
 
-          {/* Size Selector */}
+          {/* Product Description */}
           <div className="mb-6">
-            <h2 className="text-sm font-medium mb-2">Select Size</h2>
-            <div className="flex flex-wrap gap-2">
-              {product.sizes.filter(size => size !== 'all').map((size) => {
-                const sizeStock = getStockForSize(product, size);
-                const isOutOfStock = sizeStock <= 0;
-                
-                return (
-                  <button
-                    key={size}
-                    onClick={() => !isOutOfStock && handleSizeChange(size)}
-                    disabled={isOutOfStock}
-                    className={`px-4 py-2 text-sm font-medium rounded-md ${
-                      selectedSize === size
-                        ? 'bg-black text-white border-2 border-black'
-                        : isOutOfStock
-                          ? 'bg-gray-100 text-gray-400 border-2 border-gray-200 cursor-not-allowed'
-                          : 'bg-white text-black border-2 border-gray-300 hover:border-gray-500'
-                    }`}
-                  >
-                    {size.toUpperCase()} {isOutOfStock 
-                      ? '(Out of Stock)' 
-                      : `(${sizeStock} left)`}
-                  </button>
-                );
-              })}
-            </div>
-            {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
-            
-            {selectedSize && (
-              <div className="mt-3">
-                <p className="text-sm text-gray-700">
-                  {selectedSizeStock > 0
-                    ? `${selectedSizeStock} items available in size ${selectedSize.toUpperCase()}`
-                    : `Size ${selectedSize.toUpperCase()} is currently out of stock`
-                  }
-                </p>
-              </div>
-            )}
+            <h2 className="text-lg font-medium mb-2">Description</h2>
+            <p className="text-gray-700">{product.description || 'No description available.'}</p>
           </div>
+
+          {/* Care Instructions */}
+          {product.careInstructions && (
+            <div className="mb-6">
+              <h2 className="text-lg font-medium mb-2">Before You Buy</h2>
+              <div className="text-gray-700 whitespace-pre-line">{product.careInstructions}</div>
+            </div>
+          )}
 
           {/* Add to Cart Button */}
           <button
             onClick={handleAddToCart}
-            disabled={!selectedSize || selectedSizeStock <= 0}
-            className={`w-full px-4 py-3 rounded font-medium transition-colors ${
-              !selectedSize || selectedSizeStock <= 0
+            disabled={isOutOfStock}
+            className={`w-full py-3 px-4 rounded-md font-medium ${
+              isOutOfStock
                 ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                 : 'bg-black text-white hover:bg-gray-800'
             }`}
           >
-            {!selectedSize 
-              ? 'Please Select a Size' 
-              : selectedSizeStock <= 0 
-                ? 'Out of Stock' 
-                : 'Add to Cart'}
+            {isOutOfStock ? 'Out of Stock' : 'Add to Cart'}
           </button>
-
-          {/* Product Description */}
-          <div className="mt-8">
-            <h2 className="text-lg font-medium mb-2">Product Description</h2>
-            <p className="text-gray-600">
-              {product.description || 'Premium quality t-shirt featuring a unique design. Made with 100% organic cotton for maximum comfort and durability. Machine washable.'}
-            </p>
-            
-            <div className="mt-4">
-              <h3 className="text-sm font-medium mb-1">Before You Buy:</h3>
-              <div className="text-sm text-gray-600">
-                {product.careInstructions ? (
-                  <div dangerouslySetInnerHTML={{ __html: product.careInstructions }} />
-                ) : (
-                  <ul className="list-disc list-inside">
-                    <li>Machine wash cold</li>
-                    <li>Tumble dry low</li>
-                    <li>Do not bleach</li>
-                  </ul>
-                )}
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </div>

@@ -24,7 +24,7 @@ const CartPage = () => {
   } = useCart();
 
   const subtotal = getTotalPrice();
-  const shipping = subtotal > 0 ? 5.99 : 0;
+  const shipping = subtotal > 0 ? 80 : 0;
   const total = subtotal + shipping;
 
   const handleCheckoutClick = () => {

@@ -13,9 +13,9 @@ interface ProductFormData {
   imageFile: File | null;
   additionalImages: string[];
   additionalImageFiles: (File | null)[];
-  sizes: ProductSize[];
+  size: ProductSize;
   isNewArrival: boolean;
-  sizeStock: SizeStock[];
+  stock: number;
 }
 
 interface ProductFormProps {
@@ -36,9 +36,9 @@ const ProductForm: React.FC<ProductFormProps> = ({ productId, onSuccess, onError
     imageFile: null,
     additionalImages: ['', '', ''],
     additionalImageFiles: [null, null, null],
-    sizes: [],
+    size: 'small',
     isNewArrival: false,
-    sizeStock: []
+    stock: 0
   });
   const [isLoading, setIsLoading] = useState(false);
   const [isInitializing, setIsInitializing] = useState(!!productId);
@@ -85,6 +85,13 @@ const ProductForm: React.FC<ProductFormProps> = ({ productId, onSuccess, onError
         // Determine if product is a new arrival (either from category or explicit flag)
         const isNewArrival = product.category === 'new_arrival' || product.isNewArrival || false;
         
+        // Get the first size and its stock
+        const primarySize = product.sizes && product.sizes.length > 0 ? 
+          product.sizes[0] as ProductSize : 'small';
+        
+        const stockAmount = product.sizeStock && product.sizeStock.length > 0 ? 
+          product.sizeStock.find((ss: SizeStock) => ss.size === primarySize)?.stock || 0 : 0;
+        
         // Update form data
         setFormData({
           sku: product.sku || '',
@@ -96,9 +103,9 @@ const ProductForm: React.FC<ProductFormProps> = ({ productId, onSuccess, onError
           imageFile: null,
           additionalImages: additionalImgs,
           additionalImageFiles: [null, null, null],
-          sizes: product.sizes.filter((size: string) => size !== 'all') as ProductSize[],
+          size: primarySize,
           isNewArrival: isNewArrival,
-          sizeStock: product.sizeStock || []
+          stock: stockAmount
         });
       } catch (error) {
         console.error('Error fetching product:', error);
@@ -124,34 +131,6 @@ const ProductForm: React.FC<ProductFormProps> = ({ productId, onSuccess, onError
     }
   };
 
-  const handleSizeToggle = (size: ProductSize) => {
-    const newSizes = formData.sizes.includes(size)
-      ? formData.sizes.filter(s => s !== size)
-      : [...formData.sizes, size];
-    
-    // If adding a new size, add it to sizeStock with default stock 0
-    let newSizeStock = [...formData.sizeStock];
-    if (!formData.sizes.includes(size) && newSizes.includes(size)) {
-      newSizeStock.push({ size, stock: 0 });
-    } else if (formData.sizes.includes(size) && !newSizes.includes(size)) {
-      // If removing a size, remove it from sizeStock
-      newSizeStock = newSizeStock.filter(item => item.size !== size);
-    }
-    
-    setFormData({ 
-      ...formData, 
-      sizes: newSizes,
-      sizeStock: newSizeStock
-    });
-  };
-
-  const handleSizeStockChange = (size: ProductSize, stock: number) => {
-    const newSizeStock = formData.sizeStock.map(item => 
-      item.size === size ? { ...item, stock } : item
-    );
-    setFormData({ ...formData, sizeStock: newSizeStock });
-  };
-
   // Reset form to initial state
   const resetForm = () => {
     setFormData({
@@ -164,9 +143,9 @@ const ProductForm: React.FC<ProductFormProps> = ({ productId, onSuccess, onError
       imageFile: null,
       additionalImages: ['', '', ''],
       additionalImageFiles: [null, null, null],
-      sizes: [],
+      size: 'small',
       isNewArrival: false,
-      sizeStock: []
+      stock: 0
     });
 
     // Reset file input elements
@@ -254,11 +233,6 @@ const ProductForm: React.FC<ProductFormProps> = ({ productId, onSuccess, onError
       return;
     }
     
-    if (formData.sizes.length === 0) {
-      onError('At least one size must be selected');
-      return;
-    }
-    
     setIsLoading(true);
     
     try {
@@ -280,11 +254,12 @@ const ProductForm: React.FC<ProductFormProps> = ({ productId, onSuccess, onError
       apiFormData.append('is_best_seller', 'false'); // Always false since feature is deprecated
       apiFormData.append('is_new_arrival', formData.isNewArrival ? 'true' : 'false');
       
-      // Convert the sizes array to a JSON string
-      apiFormData.append('sizes', JSON.stringify(formData.sizes));
+      // Convert the single size to an array for API compatibility
+      apiFormData.append('sizes', JSON.stringify([formData.size]));
       
-      // Convert size stock to a JSON string
-      apiFormData.append('size_stock', JSON.stringify(formData.sizeStock));
+      // Convert stock to sizeStock array for API compatibility
+      const sizeStock = [{ size: formData.size, stock: formData.stock }];
+      apiFormData.append('size_stock', JSON.stringify(sizeStock));
       
       // Append main image
       if (formData.imageFile) {
@@ -538,44 +513,40 @@ const ProductForm: React.FC<ProductFormProps> = ({ productId, onSuccess, onError
         
         {/* Sizes Section */}
         <div>
-          <h3 className="text-lg font-medium mb-4">Sizes and Stock</h3>
+          <h3 className="text-lg font-medium mb-4">Size and Stock</h3>
           
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
             <div>
-              <h4 className="text-sm font-medium text-gray-700 mb-2">Available Sizes*</h4>
-              <div className="flex flex-wrap gap-2">
-                {availableSizes.map((size: ProductSize) => (
-                  <label key={size} className="inline-flex items-center">
-                    <input
-                      type="checkbox"
-                      name="sizes"
-                      value={size}
-                      checked={formData.sizes.includes(size)}
-                      onChange={() => handleSizeToggle(size)}
-                      className="form-checkbox h-5 w-5 text-black"
-                    />
-                    <span className="ml-2 text-sm text-gray-700">{size.toUpperCase()}</span>
-                  </label>
+              <h4 className="text-sm font-medium text-gray-700 mb-2">Size*</h4>
+              <select
+                id="size"
+                name="size"
+                value={formData.size}
+                onChange={(e) => setFormData({ ...formData, size: e.target.value as ProductSize })}
+                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-black focus:border-black sm:text-sm"
+                required
+              >
+                {availableSizes.map((size) => (
+                  <option key={size} value={size}>
+                    {size.toUpperCase()}
+                  </option>
                 ))}
-              </div>
+              </select>
             </div>
             
             <div>
               <h4 className="text-sm font-medium text-gray-700 mb-2">Stock*</h4>
               <div className="space-y-2">
-                {formData.sizes.map((size: ProductSize) => (
-                  <div key={size} className="flex items-center">
-                    <span className="w-16 text-sm text-gray-700">{size.toUpperCase()}:</span>
-                    <input
-                      type="number"
-                      name={`stock-${size}`}
-                      value={formData.sizeStock.find(ss => ss.size === size)?.stock || 0}
-                      onChange={(e) => handleSizeStockChange(size, parseInt(e.target.value) || 0)}
-                      min="0"
-                      className="ml-2 block w-20 border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-black focus:border-black sm:text-sm"
-                    />
-                  </div>
-                ))}
+                <div className="flex items-center">
+                  <input
+                    type="number"
+                    name="stock"
+                    value={formData.stock}
+                    onChange={(e) => setFormData({ ...formData, stock: parseInt(e.target.value) || 0 })}
+                    min="0"
+                    className="block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-black focus:border-black sm:text-sm"
+                  />
+                </div>
               </div>
             </div>
           </div>
