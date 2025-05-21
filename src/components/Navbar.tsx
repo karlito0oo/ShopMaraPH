@@ -41,7 +41,7 @@ const Navbar = () => {
   return (
     <>
       {/* Promotional Banner */}
-      <div className="bg-black text-white text-center py-2 text-sm">
+      <div className="bg-black text-white text-center py-2 text-sm font-como">
       Welcome, Fairies! Score Exclusive Launch Savings with Code: SHOPMARANEW
       </div>
       
@@ -49,9 +49,17 @@ const Navbar = () => {
       <nav className="border-b border-gray-200 relative">
         <div className="flex">
           {/* Logo */}
-          <div className="bg-[#ad688f] py-4 px-8">
-            <Link to="/" className="font-bold text-lg text-white no-underline">
-             ShopMara PH
+          <div className="bg-[#ad688f] py-2 px-6">
+            <Link to="/" className="font-como font-light text-lg text-white no-underline flex items-center">
+              <img 
+                src="/app-logo.jpg" 
+                alt="SHOPMARA PH" 
+                className="h-10 w-auto"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.src = 'https://via.placeholder.com/120x40?text=SHOPMARA+PH';
+                }}
+              />
             </Link>
           </div>
           
@@ -68,6 +76,7 @@ const Navbar = () => {
           
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center ml-auto">
+            {/* New Arrivals Announcement - Replacing All Products and New links */}
             <Link to="/products" className="border-l border-gray-200 py-5 px-10 text-black no-underline hover:bg-gray-100">
               All Products
             </Link>
@@ -94,7 +103,7 @@ const Navbar = () => {
             <div className="relative" ref={dropdownRef}>
               <button 
                 onClick={toggleAccountDropdown}
-                className="border-l border-gray-200 py-5 px-5 text-black hover:bg-gray-100 flex items-center gap-2"
+                className="border-l border-gray-200 py-5 px-5 text-black hover:bg-gray-100 flex items-center gap-2 font-como font-light"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-black" viewBox="0 0 20 20" fill="currentColor">
                   <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-6-3a2 2 0 11-4 0 2 2 0 014 0zm-2 4a5 5 0 00-4.546 2.916A5.986 5.986 0 005 10a6 6 0 0012 0c0-.352-.035-.696-.1-1.028A5.001 5.001 0 0010 11z" clipRule="evenodd" />
@@ -107,7 +116,7 @@ const Navbar = () => {
               
               {/* Dropdown Menu */}
               {isAccountDropdownOpen && (
-                <div className="absolute right-0 z-10 mt-0 bg-white shadow-lg border border-gray-200 rounded-b w-48">
+                <div className="absolute right-0 z-10 mt-0 bg-white shadow-lg border border-gray-200 rounded-b w-48 font-como font-light">
                   {isAuthenticated ? (
                     <>
                       {isAdmin && (
@@ -160,13 +169,11 @@ const Navbar = () => {
             isMenuOpen ? 'max-h-screen opacity-100' : 'max-h-0 opacity-0'
           }`}
         >
-          <div className="py-2">
-            <Link to="/products" className="block py-3 px-4 border-b border-gray-200 text-black no-underline hover:bg-gray-100">
-              All Products
-            </Link>
-            <Link to="/new" className="block py-3 px-4 border-b border-gray-200 text-black no-underline hover:bg-gray-100">
-              New
-            </Link>
+          <div className="py-2 font-como font-light">
+            {/* New Arrivals Announcement - Replacing All Products and New links */}
+            <div className="bg-black text-white py-3 px-4">
+              New Arrivals on May 24 @ 7PM
+            </div>
             <Link to="/about" className="block py-3 px-4 border-b border-gray-200 text-black no-underline hover:bg-gray-100">
               About Us
             </Link>

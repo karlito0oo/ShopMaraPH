@@ -4,12 +4,12 @@ const Footer = () => {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="bg-gray-100 pt-12 pb-8">
+    <footer className="bg-gray-100 pt-12 pb-8 font-como font-light">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
           {/* Brand and About */}
           <div>
-            <h3 className="font-bold text-lg mb-4">ShopMara PH</h3>
+            <h3 className="font-como font-light text-lg mb-4">SHOPMARA PH</h3>
             <p className="text-sm text-gray-600 mb-4">
             ShopMaraPH curates stylish, sustainable vintage pieces that empower modern women to wear confidence and elegance—from office to everyday. With ShopMaraPH, wear your story.
             </p>
@@ -34,7 +34,7 @@ const Footer = () => {
 
           {/* Shop Links */}
           <div>
-            <h3 className="font-bold text-lg mb-4">Shop</h3>
+            <h3 className="font-como font-light text-lg mb-4">Shop</h3>
             <ul className="space-y-2">
               <li><Link to="/products" className="text-gray-600 hover:text-black text-sm">All Products</Link></li>
               <li><Link to="/new" className="text-gray-600 hover:text-black text-sm">New Arrivals</Link></li>
@@ -43,7 +43,7 @@ const Footer = () => {
 
           {/* Company Links */}
           <div>
-            <h3 className="font-bold text-lg mb-4">Company</h3>
+            <h3 className="font-como font-light text-lg mb-4">Company</h3>
             <ul className="space-y-2">
               <li><Link to="/about" className="text-gray-600 hover:text-black text-sm">About Us</Link></li>
               <li><Link to="/contact" className="text-gray-600 hover:text-black text-sm">Contact</Link></li>
@@ -56,7 +56,7 @@ const Footer = () => {
         {/* Bottom Bar */}
         <div className="border-t border-gray-200 pt-8">
           <p className="text-sm text-gray-500 text-center">
-            &copy; {currentYear} ShopMara PH. All rights reserved.
+            &copy; {currentYear} SHOPMARA PH. All rights reserved.
           </p>
         </div>
       </div>

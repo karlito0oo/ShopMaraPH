@@ -7,7 +7,7 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        'como': ['"Work Sans"', 'sans-serif'], // Work Sans as a substitute for Como Light
+        'como': ['"Como Light"', 'sans-serif'], // Como Light font
       },
       colors: {
         'brand-pink': '#ad688f',

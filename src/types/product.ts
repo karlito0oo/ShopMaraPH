@@ -1,4 +1,4 @@
-export type ProductSize = 'small' | 'medium' | 'large' | 'xlarge' | 'all';
+export type ProductSize = 'small' | 'medium' | 'large' | 'xlarge' | 'xxlarge' | 'xxxlarge' | 'all';
 export type ProductCategory = 'all' | 'new_arrival' | 'men' | 'women';
 
 export interface SizeStock {

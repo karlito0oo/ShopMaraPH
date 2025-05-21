@@ -70,7 +70,7 @@ const ProductFilter: React.FC<ProductFilterProps> = ({
               onChange={() => onCategoryChange('new_arrival')}
               className="mr-2"
             />
-            <label htmlFor="new-arrival">New Arrival</label>
+            <label htmlFor="new-arrival">New Arrivals</label>
           </div>
         </div>
       </div>
@@ -133,6 +133,28 @@ const ProductFilter: React.FC<ProductFilterProps> = ({
               className="mr-2"
             />
             <label htmlFor="xlarge">Extra Large</label>
+          </div>
+          <div className="flex items-center">
+            <input 
+              type="radio" 
+              id="xxlarge" 
+              name="size" 
+              checked={activeSize === 'xxlarge'}
+              onChange={() => onSizeChange('xxlarge')}
+              className="mr-2"
+            />
+            <label htmlFor="xxlarge">2XL</label>
+          </div>
+          <div className="flex items-center">
+            <input 
+              type="radio" 
+              id="xxxlarge" 
+              name="size" 
+              checked={activeSize === 'xxxlarge'}
+              onChange={() => onSizeChange('xxxlarge')}
+              className="mr-2"
+            />
+            <label htmlFor="xxxlarge">3XL</label>
           </div>
         </div>
       </div>

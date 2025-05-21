@@ -44,6 +44,13 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             alt={product.name}
             className="product-card__image"
           />
+          
+          {/* SOLD Overlay for out of stock items */}
+          {isOutOfStock && (
+            <div className="absolute inset-0 bg-white bg-opacity-60 flex items-center justify-center">
+              <span className="text-black text-2xl font-bold font-como">SOLD</span>
+            </div>
+          )}
         </div>
       </Link>
       
@@ -74,9 +81,9 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             : 'product-card__stock--out'
         }`}>
           {!isOutOfStock ? (
-            <>In Stock ({product.sizeStock[0]?.stock} items)</>
+            <>In Stock</>
           ) : (
-            <>Out of Stock</>
+            <>Sold</>
           )}
         </div>
         
@@ -93,7 +100,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
                 : ''
             }`}
           >
-            {isOutOfStock ? 'Out of Stock' : 'Add to Cart'}
+            {isOutOfStock ? 'Sold' : 'Add to Cart'}
           </button>
         </div>
       </div>

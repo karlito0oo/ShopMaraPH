@@ -124,12 +124,19 @@ const ProductDetailPage = () => {
         <div className="space-y-4">
           {/* Main Image */}
           <div className="bg-gray-100 p-4 rounded">
-            <div className="aspect-w-1 aspect-h-1 bg-white">
+            <div className="aspect-w-1 aspect-h-1 bg-white relative">
               <img 
                 src={productImages[currentImageIndex]} 
                 alt={product.name}
                 className="w-full h-full object-contain"
               />
+              
+              {/* SOLD Overlay for out of stock items */}
+              {isOutOfStock && (
+                <div className="absolute inset-0 bg-white bg-opacity-60 flex items-center justify-center">
+                  <span className="text-black text-4xl font-bold font-como">SOLD</span>
+                </div>
+              )}
             </div>
           </div>
           
@@ -175,7 +182,7 @@ const ProductDetailPage = () => {
                 Size: {size.toUpperCase()}
               </span>
               <span className={`text-sm font-medium px-2 py-1 rounded ${isOutOfStock ? 'text-red-600' : 'text-green-600'}`}>
-                {isOutOfStock ? 'Out of Stock' : `In Stock (${stock} available)`}
+                {isOutOfStock ? 'Sold' : ``}
               </span>
             </div>
             <div className="mt-4">
@@ -207,7 +214,7 @@ const ProductDetailPage = () => {
                 : 'bg-black text-white hover:bg-gray-800'
             }`}
           >
-            {isOutOfStock ? 'Out of Stock' : 'Add to Cart'}
+            {isOutOfStock ? 'Sold' : 'Add to Cart'}
           </button>
         </div>
       </div>

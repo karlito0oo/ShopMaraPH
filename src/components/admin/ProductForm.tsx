@@ -51,7 +51,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ productId, onSuccess, onError
     useRef<HTMLInputElement>(null)
   ];
 
-  const availableSizes: ProductSize[] = ['small', 'medium', 'large', 'xlarge'];
+  const availableSizes: ProductSize[] = ['small', 'medium', 'large', 'xlarge', 'xxlarge', 'xxxlarge'];
 
   // Fetch product data if in edit mode
   useEffect(() => {
