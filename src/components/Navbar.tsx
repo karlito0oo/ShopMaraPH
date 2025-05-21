@@ -40,10 +40,7 @@ const Navbar = () => {
 
   return (
     <>
-      {/* Promotional Banner */}
-      <div className="bg-black text-white text-center py-2 text-sm font-como">
-      Welcome, Fairies! Score Exclusive Launch Savings with Code: SHOPMARANEW
-      </div>
+      
       
       {/* Main Navbar */}
       <nav className="border-b border-gray-200 relative">

@@ -3,10 +3,11 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import ManageProducts from '../../components/admin/ManageProducts';
 import OrderManagement from '../../components/admin/OrderManagement';
+import ManageAnnouncements from '../../components/admin/ManageAnnouncements';
 import AdminLayout from '../../components/layouts/AdminLayout';
 
 const AdminPage: React.FC = () => {
-  const { isAdmin } = useAuth();
+  const { isAdmin, token } = useAuth();
   const { tab } = useParams<{ tab?: string }>();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<string>('products');
@@ -17,6 +18,7 @@ const AdminPage: React.FC = () => {
   const tabs = [
     { id: 'products', label: 'Products' },
     { id: 'orders', label: 'Orders' },
+    { id: 'announcements', label: 'Announcements' },
   ];
   
   // Check URL parameter for active tab
@@ -65,6 +67,7 @@ const AdminPage: React.FC = () => {
       );
     }
     
+    
     return null;
   };
   
@@ -111,6 +114,7 @@ const AdminPage: React.FC = () => {
           />
         )}
         {activeTab === 'orders' && <OrderManagement />}
+        {activeTab === 'announcements' && <ManageAnnouncements token={token || ''} />}
       </div>
     </AdminLayout>
   );

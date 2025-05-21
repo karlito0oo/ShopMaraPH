@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\CartController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\UserProfileController;
 use App\Http\Controllers\Api\OrderController;
+use App\Http\Controllers\AnnouncementController;
 use App\Http\Middleware\AdminMiddleware;
 
 /*
@@ -27,6 +28,9 @@ Route::post('login', [AuthController::class, 'login']);
 // Public product routes - read only
 Route::get('products', [ProductController::class, 'index']);
 Route::get('products/{id}', [ProductController::class, 'show']);
+
+// Public announcements route - read only
+Route::get('announcements', [AnnouncementController::class, 'index']);
 
 // Guest checkout routes
 Route::post('guest-orders', [OrderController::class, 'createGuestOrder']);
@@ -73,5 +77,13 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('admin/orders', [OrderController::class, 'getAllOrders']);
         Route::get('admin/orders/{id}', [OrderController::class, 'getOrder']);
         Route::post('admin/orders/{id}/status', [OrderController::class, 'updateOrderStatus']);
+        
+        // Announcement management
+        Route::get('admin/announcements', [AnnouncementController::class, 'adminIndex']);
+        Route::get('admin/announcements/{id}', [AnnouncementController::class, 'show']);
+        Route::post('admin/announcements', [AnnouncementController::class, 'store']);
+        Route::put('admin/announcements/{id}', [AnnouncementController::class, 'update']);
+        Route::delete('admin/announcements/{id}', [AnnouncementController::class, 'destroy']);
+        Route::post('admin/announcements/{id}/toggle', [AnnouncementController::class, 'toggleStatus']);
     });
 }); 

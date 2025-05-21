@@ -16,6 +16,7 @@ import AddProductPage from './pages/admin/AddProductPage'
 import AdminOrdersPage from './pages/admin/AdminOrdersPage'
 import UserOrdersPage from './pages/UserOrdersPage'
 import AboutPage from './pages/AboutPage'
+import AnnouncementFormPage from './pages/admin/AnnouncementFormPage'
 import { CartProvider } from './context/CartContext'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import { ProfileProvider } from './context/ProfileContext'
@@ -96,6 +97,18 @@ function App() {
                 <Route path="/admin-orders" element={
                   <AdminRoute>
                     <AdminOrdersPage />
+                  </AdminRoute>
+                } />
+                
+                {/* Announcement management routes */}
+                <Route path="/admin/announcements/new" element={
+                  <AdminRoute>
+                    <AnnouncementFormPage />
+                  </AdminRoute>
+                } />
+                <Route path="/admin/announcements/edit/:id" element={
+                  <AdminRoute>
+                    <AnnouncementFormPage />
                   </AdminRoute>
                 } />
               </Routes>
