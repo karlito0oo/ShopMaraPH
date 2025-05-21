@@ -78,7 +78,7 @@ const Navbar = () => {
               All Products
             </Link>
             <Link to="/new" className="border-l border-gray-200 py-5 px-10 text-black no-underline hover:bg-gray-100">
-              New
+              New Arrivals
             </Link>
             <Link to="/sale" className="border-l border-gray-200 py-5 px-10 text-black no-underline hover:bg-gray-100">
               Sale
@@ -170,10 +170,7 @@ const Navbar = () => {
           }`}
         >
           <div className="py-2 font-como font-light">
-            {/* New Arrivals Announcement - Replacing All Products and New links */}
-            <div className="bg-black text-white py-3 px-4">
-              New Arrivals on May 24 @ 7PM
-            </div>
+           
             <Link to="/products" className="block py-3 px-4 border-b border-gray-200 text-black no-underline hover:bg-gray-100">
               All Products
             </Link>
