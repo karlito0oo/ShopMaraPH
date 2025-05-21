@@ -59,6 +59,9 @@ const Footer = () => {
           <p className="text-sm text-gray-500 text-center">
             &copy; {currentYear} SHOPMARA PH. All rights reserved.
           </p>
+          <p className="text-xs text-gray-400 text-center mt-2">
+            All product names, logos, and brands are property of their respective owners. ShopMaraPH is not affiliated with or endorsed by any brand featured.
+          </p>
         </div>
       </div>
     </footer>
