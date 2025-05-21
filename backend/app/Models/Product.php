@@ -28,6 +28,7 @@ class Product extends Model
         'category',
         'is_best_seller',
         'is_new_arrival',
+        'is_sale',
         'active',
     ];
 
@@ -40,6 +41,7 @@ class Product extends Model
         'images' => 'array',
         'is_best_seller' => 'boolean',
         'is_new_arrival' => 'boolean',
+        'is_sale' => 'boolean',
         'active' => 'boolean',
         'price' => 'float',
     ];

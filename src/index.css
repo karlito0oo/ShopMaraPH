@@ -191,7 +191,6 @@ button:focus-visible {
 
 .product-card__actions {
   margin-top: auto;
-  min-height: 88px; /* Ensure consistent height */
   display: flex;
   flex-direction: column;
 }

@@ -15,6 +15,7 @@ interface ProductFormData {
   additionalImageFiles: (File | null)[];
   size: ProductSize;
   isNewArrival: boolean;
+  isSale: boolean;
   stock: number;
 }
 
@@ -38,6 +39,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ productId, onSuccess, onError
     additionalImageFiles: [null, null, null],
     size: 'small',
     isNewArrival: false,
+    isSale: false,
     stock: 0
   });
   const [isLoading, setIsLoading] = useState(false);
@@ -85,6 +87,9 @@ const ProductForm: React.FC<ProductFormProps> = ({ productId, onSuccess, onError
         // Determine if product is a new arrival (either from category or explicit flag)
         const isNewArrival = product.category === 'new_arrival' || product.isNewArrival || false;
         
+        // Determine if product is on sale
+        const isSale = product.category === 'sale' || product.isSale || false;
+        
         // Get the first size and its stock
         const primarySize = product.sizes && product.sizes.length > 0 ? 
           product.sizes[0] as ProductSize : 'small';
@@ -105,6 +110,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ productId, onSuccess, onError
           additionalImageFiles: [null, null, null],
           size: primarySize,
           isNewArrival: isNewArrival,
+          isSale: isSale,
           stock: stockAmount
         });
       } catch (error) {
@@ -145,6 +151,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ productId, onSuccess, onError
       additionalImageFiles: [null, null, null],
       size: 'small',
       isNewArrival: false,
+      isSale: false,
       stock: 0
     });
 
@@ -247,12 +254,13 @@ const ProductForm: React.FC<ProductFormProps> = ({ productId, onSuccess, onError
       apiFormData.append('sku', formData.sku || '');
       
       // Set category based on isNewArrival flag
-      const category = formData.isNewArrival ? 'new_arrival' : 'all';
+      const category = formData.isNewArrival ? 'new_arrival' : formData.isSale ? 'sale' : 'all';
       apiFormData.append('category', category);
       
       // Use the expected field names for the API
       apiFormData.append('is_best_seller', 'false'); // Always false since feature is deprecated
       apiFormData.append('is_new_arrival', formData.isNewArrival ? 'true' : 'false');
+      apiFormData.append('is_sale', formData.isSale ? 'true' : 'false');
       
       // Convert the single size to an array for API compatibility
       apiFormData.append('sizes', JSON.stringify([formData.size]));
@@ -411,7 +419,18 @@ const ProductForm: React.FC<ProductFormProps> = ({ productId, onSuccess, onError
               />
               <span className="ml-2 text-sm text-gray-700">New Arrival</span>
             </div>
-            <p className="mt-1 text-xs text-gray-500">Mark this product as a new arrival</p>
+            <div className="flex items-center mt-2">
+              <input
+                type="checkbox"
+                id="isSale"
+                name="isSale"
+                checked={formData.isSale}
+                onChange={handleChange}
+                className="form-checkbox h-5 w-5 text-black"
+              />
+              <span className="ml-2 text-sm text-gray-700">Sale</span>
+            </div>
+            <p className="mt-1 text-xs text-gray-500">Mark this product as a new arrival or sale item</p>
           </div>
           
           <div className="md:col-span-2">

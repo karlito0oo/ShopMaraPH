@@ -34,6 +34,7 @@ class ProductController extends Controller
                 'category' => $product->category,
                 'isBestSeller' => $product->is_best_seller,
                 'isNewArrival' => $product->is_new_arrival,
+                'isSale' => $product->is_sale,
                 'sizes' => $product->available_sizes,
                 'sizeStock' => collect($product->size_stock)->map(function ($item) {
                     return [
@@ -75,6 +76,7 @@ class ProductController extends Controller
                 'category' => 'required|string|max:50',
                 'is_best_seller' => 'required|in:true,false',
                 'is_new_arrival' => 'required|in:true,false',
+                'is_sale' => 'required|in:true,false',
                 'sizes' => 'required|json',
                 'size_stock' => 'required|json',
             ]);
@@ -102,6 +104,7 @@ class ProductController extends Controller
             $product->category = $request->category;
             $product->is_best_seller = $request->is_best_seller === 'true';
             $product->is_new_arrival = $request->is_new_arrival === 'true';
+            $product->is_sale = $request->is_sale === 'true';
             $product->active = true;
 
             // Handle main image if provided
@@ -209,6 +212,7 @@ class ProductController extends Controller
                 'category' => $product->category,
                 'isBestSeller' => $product->is_best_seller,
                 'isNewArrival' => $product->is_new_arrival,
+                'isSale' => $product->is_sale,
                 'sizes' => $product->available_sizes,
                 'sizeStock' => collect($product->size_stock)->map(function ($item) {
                     return [

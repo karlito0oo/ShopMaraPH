@@ -72,6 +72,17 @@ const ProductFilter: React.FC<ProductFilterProps> = ({
             />
             <label htmlFor="new-arrival">New Arrivals</label>
           </div>
+          <div className="flex items-center">
+            <input 
+              type="radio" 
+              id="sale" 
+              name="category" 
+              checked={activeCategory === 'sale'}
+              onChange={() => onCategoryChange('sale')}
+              className="mr-2"
+            />
+            <label htmlFor="sale">Sale</label>
+          </div>
         </div>
       </div>
       

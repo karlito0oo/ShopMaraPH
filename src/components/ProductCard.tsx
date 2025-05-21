@@ -27,11 +27,16 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   
   return (
     <div className="product-card">
-      {/* Product Tags (Best Seller & New Arrival) */}
+      {/* Product Tags (New Arrival & Sale) */}
       <div className="absolute top-0 right-0 z-10 flex flex-col gap-1 m-2">
         {product.isNewArrival && (
           <div className="bg-green-500 text-white text-xs font-bold px-2 py-1 rounded">
             New Arrival
+          </div>
+        )}
+        {product.isSale && (
+          <div className="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded">
+            Sale
           </div>
         )}
       </div>
@@ -57,7 +62,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       {/* Product Content */}
       <div className="product-card__content">
         {/* Product Name and Size Row */}
-        <div className="flex items-start mb-2 gap-2 justify-between">
+        <div className="flex items-start gap-2 justify-between">
           {/* Product Name */}
           <Link to={`/product/${product.id}`} className="no-underline text-inherit flex-1 mr-2">
             <h3 className="product-card__title line-clamp-2">{product.name}</h3>
@@ -73,7 +78,6 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         <div className="product-card__price">
           ₱{product.price.toFixed(2)}
         </div>
-        
         
         {/* Buttons - Fixed height area */}
         <div className="product-card__actions">

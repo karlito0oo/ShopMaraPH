@@ -175,6 +175,11 @@ const ProductDetailPage = () => {
                     New Arrival
                   </div>
                 )}
+                {product.isSale && (
+                  <div className="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded">
+                    Sale
+                  </div>
+                )}
               </div>
             </div>
             <div className="mt-2 flex items-center">
