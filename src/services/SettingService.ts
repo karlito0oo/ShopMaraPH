@@ -1,7 +1,8 @@
 import { apiRequest } from './ApiService';
 
 interface PublicSettings {
-  delivery_fee: number;
+  delivery_fee_ncr: number;
+  delivery_fee_outside_ncr: number;
   free_delivery_threshold: number;
 }
 
@@ -28,7 +29,8 @@ export const SettingService = {
       console.error('Error fetching public settings:', error);
       // Return default values if API call fails
       return {
-        delivery_fee: 80,
+        delivery_fee_ncr: 80,
+        delivery_fee_outside_ncr: 120,
         free_delivery_threshold: 0
       };
     }

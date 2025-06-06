@@ -36,7 +36,8 @@ class SettingController extends Controller
     public function getPublicSettings()
     {
         $publicSettings = [
-            'delivery_fee' => Setting::get('delivery_fee', 80),
+            'delivery_fee_ncr' => Setting::get('delivery_fee_ncr', 80),
+            'delivery_fee_outside_ncr' => Setting::get('delivery_fee_outside_ncr', 120),
             'free_delivery_threshold' => Setting::get('free_delivery_threshold', 0),
         ];
         
