@@ -116,7 +116,7 @@ const Navbar = () => {
               
               {/* Dropdown Menu */}
               {isAccountDropdownOpen && (
-                <div className="absolute right-0 z-10 mt-0 bg-white shadow-lg border border-gray-200 rounded-b w-48 font-como font-light">
+                <div className="absolute right-0 z-50 mt-0 bg-white shadow-lg border border-gray-200 rounded-b w-48 font-como font-light" style={{ backgroundColor: '#fff' }}>
                   {isAuthenticated ? (
                     <>
                       {isAdmin && (
