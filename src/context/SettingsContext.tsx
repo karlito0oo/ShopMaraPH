@@ -5,6 +5,8 @@ interface SettingsContextType {
   deliveryFeeNcr: number;
   deliveryFeeOutsideNcr: number;
   freeDeliveryThreshold: number;
+  paymentOptionsDescription: string;
+  whatHappensAfterPayment: string;
   isLoading: boolean;
   refreshSettings: () => Promise<void>;
 }
@@ -13,6 +15,8 @@ const defaultSettings: SettingsContextType = {
   deliveryFeeNcr: 80,
   deliveryFeeOutsideNcr: 120,
   freeDeliveryThreshold: 0,
+  paymentOptionsDescription: '',
+  whatHappensAfterPayment: '',
   isLoading: true,
   refreshSettings: async () => {}
 };
@@ -25,6 +29,8 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [deliveryFeeNcr, setDeliveryFeeNcr] = useState<number>(defaultSettings.deliveryFeeNcr);
   const [deliveryFeeOutsideNcr, setDeliveryFeeOutsideNcr] = useState<number>(defaultSettings.deliveryFeeOutsideNcr);
   const [freeDeliveryThreshold, setFreeDeliveryThreshold] = useState<number>(defaultSettings.freeDeliveryThreshold);
+  const [paymentOptionsDescription, setPaymentOptionsDescription] = useState<string>(defaultSettings.paymentOptionsDescription);
+  const [whatHappensAfterPayment, setWhatHappensAfterPayment] = useState<string>(defaultSettings.whatHappensAfterPayment);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   const fetchSettings = async () => {
@@ -34,6 +40,8 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       setDeliveryFeeNcr(settings.delivery_fee_ncr);
       setDeliveryFeeOutsideNcr(settings.delivery_fee_outside_ncr);
       setFreeDeliveryThreshold(settings.free_delivery_threshold);
+      setPaymentOptionsDescription(settings.payment_options_description || '');
+      setWhatHappensAfterPayment(settings.what_happens_after_payment || '');
     } catch (error) {
       console.error('Error fetching settings:', error);
     } finally {
@@ -53,6 +61,8 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     deliveryFeeNcr,
     deliveryFeeOutsideNcr,
     freeDeliveryThreshold,
+    paymentOptionsDescription,
+    whatHappensAfterPayment,
     isLoading,
     refreshSettings
   };

@@ -49,7 +49,7 @@ const GuestCheckoutModal: React.FC<GuestCheckoutModalProps> = ({
   const [orderSuccess, setOrderSuccess] = useState(false);
   const [orderError, setOrderError] = useState<string | null>(null);
 
-  const { deliveryFeeNcr, deliveryFeeOutsideNcr, isLoading: settingsLoading } = useSettings();
+  const { deliveryFeeNcr, deliveryFeeOutsideNcr, isLoading: settingsLoading, paymentOptionsDescription, whatHappensAfterPayment } = useSettings();
 
   const bankDetails = `
     Payment Options:
@@ -161,6 +161,21 @@ const GuestCheckoutModal: React.FC<GuestCheckoutModalProps> = ({
     }
   };
 
+  const renderWhatHappensNext = () => {
+    if (!whatHappensAfterPayment) return null;
+    
+    return (
+      <div className="bg-yellow-50 p-4 rounded border border-yellow-200">
+        <h4 className="font-medium text-yellow-800 mb-2">What happens next?</h4>
+        <ol className="list-decimal list-inside text-sm text-gray-700 space-y-1">
+          {whatHappensAfterPayment.split('\n').map((line, index) => (
+            <li key={index}>{line}</li>
+          ))}
+        </ol>
+      </div>
+    );
+  };
+
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
       <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
@@ -227,16 +242,7 @@ const GuestCheckoutModal: React.FC<GuestCheckoutModalProps> = ({
                         Your order is now on <span className="font-medium">hold</span> and the products have been reserved for you.
                       </p>
                     </div>
-                      
-                    <div className="bg-yellow-50 p-4 rounded border border-yellow-200">
-                      <h4 className="font-medium text-yellow-800 mb-2">What happens next?</h4>
-                      <ol className="list-decimal list-inside text-sm text-gray-700 space-y-1">
-                        <li>We'll verify your payment within 24 hours</li>
-                        <li>Once verified, your order will be processed and packed</li>
-                        <li>You'll receive a shipping confirmation on Instagram</li>
-                        <li>Your order will be delivered within 3-5 business days</li>
-                      </ol>
-                    </div>
+                    {renderWhatHappensNext()}
                   </div>
                 ) : (
                   <form>
@@ -367,9 +373,11 @@ const GuestCheckoutModal: React.FC<GuestCheckoutModalProps> = ({
                         <div>
                           <h4 className="font-medium text-gray-900 mb-2">Total Amount: ₱{totalAmount.toFixed(2)}</h4>
                           
-                          <div className="bg-gray-50 p-4 rounded text-sm whitespace-pre-line">
-                            {bankDetails}
-                          </div>
+                          {!!paymentOptionsDescription && (
+                            <div className="mb-4">
+                              <div className="prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: paymentOptionsDescription }} />
+                            </div>
+                          )}
                         </div>
                         
                         <div>
@@ -397,7 +405,7 @@ const GuestCheckoutModal: React.FC<GuestCheckoutModalProps> = ({
                             <li><span className="font-medium">Name:</span> {formData.name}</li>
                             <li><span className="font-medium">Email:</span> {formData.email}</li>
                             <li><span className="font-medium">Instagram:</span> @{formData.instagramUsername}</li>
-                            <li><span className="font-medium">Address:</span> {formData.addressLine1}, {formData.barangay}, {formData.city}, {province}</li>
+                            <li><span className="font-medium">Address:</span> {formData.addressLine1}, {formData.barangay}, {formData.city}, {formData.province}</li>
                             <li><span className="font-medium">Mobile:</span> {formData.mobileNumber}</li>
                             <li><span className="font-medium">Subtotal:</span> ₱{totalAmount.toFixed(2)}</li>
                             <li><span className="font-medium">Shipping Fee:</span> {settingsLoading ? 'Loading...' : `₱${shippingFee.toFixed(2)}`}</li>
@@ -407,16 +415,7 @@ const GuestCheckoutModal: React.FC<GuestCheckoutModalProps> = ({
                             </li>
                           </ul>
                         </div>
-                        
-                        <div className="bg-yellow-50 p-4 rounded border border-yellow-200">
-                          <h4 className="font-medium text-yellow-800 mb-2">What happens next?</h4>
-                          <ol className="list-decimal list-inside text-sm text-gray-700 space-y-1">
-                            <li>We'll verify your payment within 24 hours</li>
-                            <li>Once verified, your order will be processed and packed</li>
-                            <li>You'll receive a shipping confirmation on Instagram</li>
-                            <li>Your order will be delivered within 3-5 business days</li>
-                          </ol>
-                        </div>
+                        {renderWhatHappensNext()}
                       </div>
                     )}
                   </form>

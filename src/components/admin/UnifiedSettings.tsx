@@ -46,6 +46,8 @@ const UnifiedSettings: React.FC<UnifiedSettingsProps> = ({ onSuccess, onError })
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [paymentOptionsDescription, setPaymentOptionsDescription] = useState<string>('');
+  const [whatHappensAfterPayment, setWhatHappensAfterPayment] = useState<string>('');
 
   const showToast = (message: string, type: 'success' | 'error') => {
     setToast({ message, type, visible: true });
@@ -63,9 +65,13 @@ const UnifiedSettings: React.FC<UnifiedSettingsProps> = ({ onSuccess, onError })
       const ncrSetting = settings.find(s => s.key === 'delivery_fee_ncr');
       const outsideNcrSetting = settings.find(s => s.key === 'delivery_fee_outside_ncr');
       const thresholdSetting = settings.find(s => s.key === 'free_delivery_threshold');
+      const paymentOptionsSetting = settings.find(s => s.key === 'payment_options_description');
+      const whatHappensSetting = settings.find(s => s.key === 'what_happens_after_payment');
       if (ncrSetting) setDeliveryFeeNcr(parseInt(ncrSetting.value));
       if (outsideNcrSetting) setDeliveryFeeOutsideNcr(parseInt(outsideNcrSetting.value));
       if (thresholdSetting) setFreeDeliveryThreshold(parseInt(thresholdSetting.value));
+      if (paymentOptionsSetting) setPaymentOptionsDescription(paymentOptionsSetting.value || '');
+      if (whatHappensSetting) setWhatHappensAfterPayment(whatHappensSetting.value || '');
       // Carousel
       const carouselRes = await HeroCarouselApi.getAll(token);
       setCarousels(carouselRes.data.carousels);
@@ -89,12 +95,14 @@ const UnifiedSettings: React.FC<UnifiedSettingsProps> = ({ onSuccess, onError })
     if (!token) return;
     setSaving(true);
     try {
-      // Save delivery and interval settings
+      // Save delivery, interval, and payment options description settings
       await SettingService.updateMultipleSettings(token, [
         { key: 'delivery_fee_ncr', value: deliveryFeeNcr },
         { key: 'delivery_fee_outside_ncr', value: deliveryFeeOutsideNcr },
         { key: 'free_delivery_threshold', value: freeDeliveryThreshold },
         { key: 'hero_carousel_interval', value: intervalInput },
+        { key: 'payment_options_description', value: paymentOptionsDescription },
+        { key: 'what_happens_after_payment', value: whatHappensAfterPayment },
       ]);
       setInterval(intervalInput);
       showToast('Settings updated successfully.', 'success');
@@ -204,6 +212,28 @@ const UnifiedSettings: React.FC<UnifiedSettingsProps> = ({ onSuccess, onError })
           <label className="block text-sm font-medium text-gray-700 mb-1">Free Delivery Threshold (₱)</label>
           <input type="number" min={0} step={1} value={freeDeliveryThreshold} onChange={e => setFreeDeliveryThreshold(parseInt(e.target.value) || 0)} className="w-full border-gray-300 rounded-md shadow-sm p-2 border" />
           <p className="text-sm text-gray-500 mt-1">Orders above this amount will qualify for free delivery. Set to 0 to disable free delivery.</p>
+        </div>
+        {/* Payment Options Description */}
+        <div className="mb-6">
+          <label className="block text-sm font-medium text-gray-700 mb-1">Payment Options Description</label>
+          <textarea
+            value={paymentOptionsDescription}
+            onChange={(e) => setPaymentOptionsDescription(e.target.value)}
+            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-black focus:border-black sm:text-sm min-h-[150px] resize-y"
+            placeholder="Enter payment options description..."
+          />
+          <p className="text-sm text-gray-500 mt-1">This description will be shown to customers at checkout. You can use basic text formatting.</p>
+        </div>
+        {/* What Happens After Payment */}
+        <div className="mb-6">
+          <label className="block text-sm font-medium text-gray-700 mb-1">What Happens After Payment</label>
+          <textarea
+            value={whatHappensAfterPayment}
+            onChange={(e) => setWhatHappensAfterPayment(e.target.value)}
+            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-black focus:border-black sm:text-sm min-h-[150px] resize-y"
+            placeholder="Enter what happens after payment..."
+          />
+          <p className="text-sm text-gray-500 mt-1">This description will be shown to customers after they place an order. Each line will be displayed as a separate bullet point.</p>
         </div>
         {/* Carousel Interval */}
         <div className="mb-6">

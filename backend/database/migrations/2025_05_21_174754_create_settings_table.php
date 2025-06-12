@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('type')->default('string'); // string, integer, boolean, json
             $table->string('display_name')->nullable();
             $table->text('description')->nullable();
+            $table->text('payment_options_description')->nullable();
             $table->timestamps();
         });
         
@@ -57,15 +58,6 @@ return new class extends Migration
                 'type' => 'integer',
                 'display_name' => 'Free Delivery Threshold',
                 'description' => 'Order amount above which delivery is free (0 = no free delivery)',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'key' => 'hero_carousel_interval',
-                'value' => '5000',
-                'type' => 'integer',
-                'display_name' => 'Hero Carousel Interval (ms)',
-                'description' => 'Interval in milliseconds for hero carousel image change',
                 'created_at' => now(),
                 'updated_at' => now(),
             ],

@@ -39,6 +39,8 @@ class SettingController extends Controller
             'delivery_fee_ncr' => Setting::get('delivery_fee_ncr', 80),
             'delivery_fee_outside_ncr' => Setting::get('delivery_fee_outside_ncr', 120),
             'free_delivery_threshold' => Setting::get('free_delivery_threshold', 0),
+            'payment_options_description' => Setting::get('payment_options_description', ''),
+            'what_happens_after_payment' => Setting::get('what_happens_after_payment', ''),
         ];
         
         return response()->json([

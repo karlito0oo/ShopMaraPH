@@ -210,17 +210,17 @@ const AdminOrdersPage: React.FC = () => {
           setUpdateStatus(order?.status || '');
           setAdminNotes(order?.admin_notes || '');
           setUpdateSuccess(false);
-        }}
+              }}
         loading={loading}
         error={error}
         tabs={tabs}
         activeTab={activeTab}
         onTabChange={handleTabChange}
         onClearFilters={() => {
-          setSearchQuery('');
-          setStatusFilter('');
-          setActiveTab('all');
-        }}
+                setSearchQuery('');
+                setStatusFilter('');
+                setActiveTab('all');
+              }}
         searchQuery={searchQuery}
         onSearchQueryChange={setSearchQuery}
         mobileView={mobileView}

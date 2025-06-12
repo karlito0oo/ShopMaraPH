@@ -4,6 +4,8 @@ interface PublicSettings {
   delivery_fee_ncr: number;
   delivery_fee_outside_ncr: number;
   free_delivery_threshold: number;
+  payment_options_description: string;
+  what_happens_after_payment: string;
 }
 
 interface Setting {
@@ -31,7 +33,9 @@ export const SettingService = {
       return {
         delivery_fee_ncr: 80,
         delivery_fee_outside_ncr: 120,
-        free_delivery_threshold: 0
+        free_delivery_threshold: 0,
+        payment_options_description: '',
+        what_happens_after_payment: '',
       };
     }
   },
