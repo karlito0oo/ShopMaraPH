@@ -146,6 +146,7 @@ class OrderController extends Controller
             'payment_proof' => 'required|image|max:5120', // 5MB max
             'cart_items' => 'required|json',
             'shipping_fee' => 'nullable|numeric|min:0',
+            'guest_id' => 'required|string|max:255',
         ]);
 
         if ($validator->fails()) {
@@ -217,6 +218,7 @@ class OrderController extends Controller
             // Create order
             $order = new Order([
                 'user_id' => null, // Guest order, no user ID
+                'guest_id' => $request->guest_id,
                 'status' => Order::STATUS_PENDING,
                 'customer_name' => $request->customer_name,
                 'email' => $request->email,
@@ -226,7 +228,7 @@ class OrderController extends Controller
                 'province' => $request->province,
                 'city' => $request->city,
                 'mobile_number' => $request->mobile_number,
-                'payment_method' => 'bank_transfer', // Currently only supporting bank transfers
+                'payment_method' => 'bank_transfer',
                 'payment_proof' => $paymentProofPath,
                 'total_amount' => $totalAmount,
                 'shipping_fee' => $request->input('shipping_fee', 0),
@@ -429,6 +431,24 @@ class OrderController extends Controller
             'success' => true,
             'data' => [
                 'order' => $order,
+            ],
+        ]);
+    }
+
+    /**
+     * Get all orders for a guest by guest_id.
+     */
+    public function getGuestOrders($guestId)
+    {
+        $orders = Order::where('guest_id', $guestId)
+            ->with('items')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'orders' => $orders,
             ],
         ]);
     }

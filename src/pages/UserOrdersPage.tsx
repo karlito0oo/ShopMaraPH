@@ -16,6 +16,7 @@ const UserOrdersPage: React.FC = () => {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [activeTab, setActiveTab] = useState<string>('all');
   const [mobileView, setMobileView] = useState<boolean>(false);
+  const [guestId, setGuestId] = useState<string | null>(null);
 
   // Define tabs for order statuses
   const tabs = [
@@ -28,8 +29,12 @@ const UserOrdersPage: React.FC = () => {
   ];
 
   useEffect(() => {
-    fetchOrders();
+    setGuestId(localStorage.getItem('guest_id'));
   }, []);
+
+  useEffect(() => {
+    fetchOrders();
+  }, [token, guestId]);
 
   useEffect(() => {
     if (orders.length > 0) {
@@ -83,25 +88,41 @@ const UserOrdersPage: React.FC = () => {
   };
 
   const fetchOrders = async () => {
-    if (!token) return;
-    
-    setLoading(true);
-    setError(null);
-    
-    try {
-      const response = await OrderApi.getUserOrders(token);
-      const ordersData = response.data.orders;
-      setOrders(ordersData);
-      setFilteredOrders(ordersData);
-      
-      // Select the most recent order by default if any exists
-      if (ordersData.length > 0) {
-        setSelectedOrder(ordersData[0]);
+    if (token) {
+      setLoading(true);
+      setError(null);
+      try {
+        const response = await OrderApi.getUserOrders(token);
+        const ordersData = response.data.orders;
+        setOrders(ordersData);
+        setFilteredOrders(ordersData);
+        if (ordersData.length > 0) {
+          setSelectedOrder(ordersData[0]);
+        }
+      } catch (error) {
+        setError(error instanceof Error ? error.message : 'An error occurred while fetching orders');
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error('Error fetching orders:', error);
-      setError(error instanceof Error ? error.message : 'An error occurred while fetching orders');
-    } finally {
+    } else if (guestId) {
+      setLoading(true);
+      setError(null);
+      try {
+        const response = await OrderApi.getGuestOrders(guestId);
+        const ordersData = response.data.orders;
+        setOrders(ordersData);
+        setFilteredOrders(ordersData);
+        if (ordersData.length > 0) {
+          setSelectedOrder(ordersData[0]);
+        }
+      } catch (error) {
+        setError(error instanceof Error ? error.message : 'An error occurred while fetching guest orders');
+      } finally {
+        setLoading(false);
+      }
+    } else {
+      setOrders([]);
+      setFilteredOrders([]);
       setLoading(false);
     }
   };
@@ -161,6 +182,19 @@ const UserOrdersPage: React.FC = () => {
     const date = new Date(dateString);
     return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
   };
+
+  // If neither token nor guestId, show a message
+  if (!token && !guestId) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="text-center py-12">
+          <h2 className="text-2xl font-bold mb-4">No Orders Found</h2>
+          <p className="text-gray-600 mb-4">You are not logged in and have not placed any guest orders yet.</p>
+          <Link to="/products" className="bg-black text-white px-6 py-2 rounded inline-block">Browse Products</Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-4 py-8">

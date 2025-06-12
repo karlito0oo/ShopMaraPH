@@ -26,11 +26,10 @@ import { ToastProvider } from './context/ToastContext'
 // Protected route component for authentication
 const ProtectedRoute = ({ children }: { children: React.ReactElement }) => {
   const { isAuthenticated } = useAuth();
-  
-  if (!isAuthenticated) {
+  const hasGuestId = typeof window !== 'undefined' && localStorage.getItem('guest_id');
+  if (!isAuthenticated && !hasGuestId) {
     return <Navigate to="/login" />;
   }
-  
   return children;
 };
 

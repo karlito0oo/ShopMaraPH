@@ -133,40 +133,27 @@ const CartPage = () => {
   };
 
   const handleGuestOrderSubmit = async (formData: any) => {
-    try {
-      // Create a FormData object to send the order data
-      const orderData = new FormData();
-      orderData.append('customer_name', formData.name);
-      orderData.append('email', formData.email);
-      orderData.append('instagram_username', formData.instagramUsername);
-      orderData.append('address_line1', formData.addressLine1);
-      orderData.append('barangay', formData.barangay);
-      orderData.append('city', formData.city);
-      orderData.append('mobile_number', formData.mobileNumber);
-      orderData.append('province', formData.province);
-      orderData.append('shipping_fee', shipping.toString());
-      
-      if (formData.paymentProof) {
-        orderData.append('payment_proof', formData.paymentProof);
-      }
-      
-      // Add cart items to the order data
-      orderData.append('cart_items', JSON.stringify(cartItems.map(item => ({
-        product_id: item.product.id,
-        size: item.size,
-        quantity: item.quantity,
-        price: item.product.price
-      }))));
-      
-      // Submit the guest order
-      await OrderApi.createGuestOrder(orderData);
-      
-      // Clear the cart after successful order
-      clearCart();
-    } catch (error) {
-      console.error('Error submitting guest order:', error);
-      throw error;
+    const data = new FormData();
+    data.append('customer_name', formData.name);
+    data.append('email', formData.email);
+    data.append('instagram_username', formData.instagramUsername);
+    data.append('address_line1', formData.addressLine1);
+    data.append('barangay', formData.barangay);
+    data.append('province', formData.province);
+    data.append('city', formData.city);
+    data.append('mobile_number', formData.mobileNumber);
+    data.append('payment_proof', formData.paymentProof);
+    data.append('cart_items', JSON.stringify(cartItems.map(item => ({
+      product_id: item.product.id,
+      size: item.size,
+      quantity: item.quantity,
+    }))));
+    data.append('shipping_fee', String(shipping));
+    if (formData.guest_id) {
+      data.append('guest_id', formData.guest_id);
     }
+    await OrderApi.createGuestOrder(data);
+    clearCart();
   };
 
   const handleProvinceChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {

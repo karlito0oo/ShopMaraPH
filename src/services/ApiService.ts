@@ -187,6 +187,9 @@ export const OrderApi = {
   
   updateOrderStatus: (token: string, orderId: number | string, status: string, adminNotes?: string) => 
     apiRequest(`/admin/orders/${orderId}/status`, 'POST', { status, admin_notes: adminNotes }, token),
+  
+  getGuestOrders: (guestId: string) => 
+    apiRequest(`/guest-orders/${guestId}`, 'GET', null, null),
 };
 
 /**

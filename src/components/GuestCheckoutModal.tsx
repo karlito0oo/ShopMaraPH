@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useSettings } from '../context/SettingsContext';
 import { PH_PROVINCES } from './CheckoutModal';
+import { nanoid } from 'nanoid';
 
 interface GuestCheckoutFormData {
   name: string;
@@ -12,6 +13,7 @@ interface GuestCheckoutFormData {
   city: string;
   mobileNumber: string;
   paymentProof: File | null;
+  guest_id?: string;
 }
 
 interface GuestCheckoutModalProps {
@@ -141,7 +143,14 @@ const GuestCheckoutModal: React.FC<GuestCheckoutModalProps> = ({
     if (validateStep(currentStep)) {
       try {
         setIsSubmitting(true);
-        await onSubmitOrder({ ...formData, province });
+        // Generate or get guest_id
+        let guestId = localStorage.getItem('guest_id');
+        if (!guestId) {
+          guestId = nanoid();
+          localStorage.setItem('guest_id', guestId);
+          window.dispatchEvent(new Event('guest_id_set'));
+        }
+        await onSubmitOrder({ ...formData, province, guest_id: guestId });
         setOrderSuccess(true);
       } catch (error) {
         setOrderError(error instanceof Error ? error.message : 'An error occurred while processing your order');

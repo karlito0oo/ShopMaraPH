@@ -42,6 +42,8 @@ Route::post('guest-orders', [OrderController::class, 'createGuestOrder']);
 // Hero carousel routes
 Route::get('hero-carousel', [\App\Http\Controllers\Api\HeroCarouselController::class, 'publicIndex']); // public
 
+// Guest order lookup
+Route::get('guest-orders/{guest_id}', [\App\Http\Controllers\Api\OrderController::class, 'getGuestOrders']);
 
 // Protected routes
 Route::middleware('auth:sanctum')->group(function () {

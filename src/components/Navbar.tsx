@@ -9,6 +9,34 @@ const Navbar = () => {
   const { getTotalItems } = useCart();
   const { user, isAuthenticated, isAdmin, logout } = useAuth();
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const [hasGuestOrders, setHasGuestOrders] = useState(false);
+
+  useEffect(() => {
+    // Check for guest_id in localStorage
+    setHasGuestOrders(!!localStorage.getItem('guest_id'));
+
+    // Listen for changes to localStorage (e.g., guest_id set after guest checkout)
+    const handleStorage = (event: StorageEvent) => {
+      if (event.key === 'guest_id') {
+        setHasGuestOrders(!!event.newValue);
+      }
+    };
+    window.addEventListener('storage', handleStorage);
+    // Listen for custom event (same tab)
+    const handleGuestIdSet = () => setHasGuestOrders(true);
+    window.addEventListener('guest_id_set', handleGuestIdSet);
+    return () => {
+      window.removeEventListener('storage', handleStorage);
+      window.removeEventListener('guest_id_set', handleGuestIdSet);
+    };
+  }, []);
+
+  // Also check when menu is opened (for mobile)
+  useEffect(() => {
+    if (isMenuOpen) {
+      setHasGuestOrders(!!localStorage.getItem('guest_id'));
+    }
+  }, [isMenuOpen]);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -155,6 +183,15 @@ const Navbar = () => {
                         </svg>
                         <span className="text-sm">Sign Up</span>
                       </Link>
+                      {!isAuthenticated && hasGuestOrders && (
+                        <Link to="/my-orders" className="flex items-center gap-2 px-4 py-3 text-black no-underline hover:bg-gray-100 border-b border-gray-200">
+                          <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-black" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
+                            <path fillRule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clipRule="evenodd" />
+                          </svg>
+                          <span className="text-sm">My Orders</span>
+                        </Link>
+                      )}
                     </>
                   )}
                 </div>
@@ -241,6 +278,15 @@ const Navbar = () => {
                     </svg>
                     <span className="text-sm">Sign Up</span>
                   </Link>
+                  {!isAuthenticated && hasGuestOrders && (
+                    <Link to="/my-orders" className="flex items-center gap-2 py-2 text-black no-underline hover:text-gray-600">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-black" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
+                        <path fillRule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clipRule="evenodd" />
+                      </svg>
+                      <span className="text-sm">My Orders</span>
+                    </Link>
+                  )}
                 </div>
               )}
             </div>
