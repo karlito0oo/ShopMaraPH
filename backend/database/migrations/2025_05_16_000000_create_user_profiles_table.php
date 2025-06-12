@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('instagram_username')->nullable();
             $table->string('address_line1')->nullable();
             $table->string('barangay')->nullable();
+            $table->string('province')->nullable();
             $table->string('city')->nullable();
             $table->string('mobile_number')->nullable();
             $table->timestamps();

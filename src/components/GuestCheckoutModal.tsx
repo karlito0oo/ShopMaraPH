@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { useSettings } from '../context/SettingsContext';
+import { PH_PROVINCES } from './CheckoutModal';
 
 interface GuestCheckoutFormData {
   name: string;
@@ -6,6 +8,7 @@ interface GuestCheckoutFormData {
   instagramUsername: string;
   addressLine1: string;
   barangay: string;
+  province: string;
   city: string;
   mobileNumber: string;
   paymentProof: File | null;
@@ -16,16 +19,20 @@ interface GuestCheckoutModalProps {
   onClose: () => void;
   totalAmount: number;
   onSubmitOrder: (formData: GuestCheckoutFormData) => Promise<void>;
+  province: string;
+  setProvince: React.Dispatch<React.SetStateAction<string>>;
 }
 
 const GuestCheckoutModal: React.FC<GuestCheckoutModalProps> = ({
   isOpen,
   onClose,
   totalAmount,
-  onSubmitOrder
+  onSubmitOrder,
+  province,
+  setProvince,
 }) => {
   const [currentStep, setCurrentStep] = useState(1);
-  const [formData, setFormData] = useState<GuestCheckoutFormData>({
+  const [formData, setFormData] = useState<Omit<GuestCheckoutFormData, 'province'>>({
     name: '',
     email: '',
     instagramUsername: '',
@@ -39,6 +46,8 @@ const GuestCheckoutModal: React.FC<GuestCheckoutModalProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [orderSuccess, setOrderSuccess] = useState(false);
   const [orderError, setOrderError] = useState<string | null>(null);
+
+  const { deliveryFeeNcr, deliveryFeeOutsideNcr, isLoading: settingsLoading } = useSettings();
 
   const bankDetails = `
     Payment Options:
@@ -80,6 +89,18 @@ const GuestCheckoutModal: React.FC<GuestCheckoutModalProps> = ({
     }
   };
 
+  const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    if (name === 'province') {
+      setProvince(value);
+    } else {
+      setFormData({ ...formData, [name]: value });
+    }
+    if (errors[name as keyof GuestCheckoutFormData]) {
+      setErrors({ ...errors, [name]: '' });
+    }
+  };
+
   const validateStep = (step: number): boolean => {
     const newErrors: Partial<Record<keyof GuestCheckoutFormData, string>> = {};
     
@@ -92,6 +113,7 @@ const GuestCheckoutModal: React.FC<GuestCheckoutModalProps> = ({
       if (!formData.barangay.trim()) newErrors.barangay = 'Barangay is required';
       if (!formData.city.trim()) newErrors.city = 'City is required';
       if (!formData.mobileNumber.trim()) newErrors.mobileNumber = 'Mobile number is required';
+      if (!province) newErrors.province = 'Province is required';
     } else if (step === 2) {
       if (!formData.paymentProof) newErrors.paymentProof = 'Proof of payment is required';
     }
@@ -110,12 +132,16 @@ const GuestCheckoutModal: React.FC<GuestCheckoutModalProps> = ({
     setCurrentStep(currentStep - 1);
   };
 
+  const isNcr = province === 'Metro Manila';
+  const shippingFee = province ? (isNcr ? deliveryFeeNcr : deliveryFeeOutsideNcr) : 0;
+  const grandTotal = totalAmount + shippingFee;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (validateStep(currentStep)) {
       try {
         setIsSubmitting(true);
-        await onSubmitOrder(formData);
+        await onSubmitOrder({ ...formData, province });
         setOrderSuccess(true);
       } catch (error) {
         setOrderError(error instanceof Error ? error.message : 'An error occurred while processing your order');
@@ -280,6 +306,24 @@ const GuestCheckoutModal: React.FC<GuestCheckoutModalProps> = ({
                           </div>
                           
                           <div>
+                            <label htmlFor="province" className="block text-sm font-medium text-gray-700">Province</label>
+                            <select
+                              id="province"
+                              name="province"
+                              value={province}
+                              onChange={handleSelectChange}
+                              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#ad688f] focus:border-[#ad688f] sm:text-sm"
+                            >
+                              {PH_PROVINCES.map((prov) => (
+                                <option key={prov.value} value={prov.value}>{prov.label}</option>
+                              ))}
+                            </select>
+                            {errors.province && <p className="mt-1 text-sm text-red-600">{errors.province}</p>}
+                          </div>
+                        </div>
+                        
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
                             <label htmlFor="city" className="block text-sm font-medium text-gray-700">City</label>
                             <input
                               type="text"
@@ -291,19 +335,19 @@ const GuestCheckoutModal: React.FC<GuestCheckoutModalProps> = ({
                             />
                             {errors.city && <p className="mt-1 text-sm text-red-600">{errors.city}</p>}
                           </div>
-                        </div>
-                        
-                        <div>
-                          <label htmlFor="mobileNumber" className="block text-sm font-medium text-gray-700">Mobile Number</label>
-                          <input
-                            type="text"
-                            id="mobileNumber"
-                            name="mobileNumber"
-                            value={formData.mobileNumber}
-                            onChange={handleChange}
-                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#ad688f] focus:border-[#ad688f] sm:text-sm"
-                          />
-                          {errors.mobileNumber && <p className="mt-1 text-sm text-red-600">{errors.mobileNumber}</p>}
+                          
+                          <div>
+                            <label htmlFor="mobileNumber" className="block text-sm font-medium text-gray-700">Mobile Number</label>
+                            <input
+                              type="text"
+                              id="mobileNumber"
+                              name="mobileNumber"
+                              value={formData.mobileNumber}
+                              onChange={handleChange}
+                              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#ad688f] focus:border-[#ad688f] sm:text-sm"
+                            />
+                            {errors.mobileNumber && <p className="mt-1 text-sm text-red-600">{errors.mobileNumber}</p>}
+                          </div>
                         </div>
                       </div>
                     )}
@@ -344,9 +388,11 @@ const GuestCheckoutModal: React.FC<GuestCheckoutModalProps> = ({
                             <li><span className="font-medium">Name:</span> {formData.name}</li>
                             <li><span className="font-medium">Email:</span> {formData.email}</li>
                             <li><span className="font-medium">Instagram:</span> @{formData.instagramUsername}</li>
-                            <li><span className="font-medium">Address:</span> {formData.addressLine1}, {formData.barangay}, {formData.city}</li>
+                            <li><span className="font-medium">Address:</span> {formData.addressLine1}, {formData.barangay}, {formData.city}, {province}</li>
                             <li><span className="font-medium">Mobile:</span> {formData.mobileNumber}</li>
-                            <li><span className="font-medium">Total Amount:</span> ₱{totalAmount.toFixed(2)}</li>
+                            <li><span className="font-medium">Subtotal:</span> ₱{totalAmount.toFixed(2)}</li>
+                            <li><span className="font-medium">Shipping Fee:</span> {settingsLoading ? 'Loading...' : `₱${shippingFee.toFixed(2)}`}</li>
+                            <li><span className="font-medium">Grand Total:</span> {settingsLoading ? 'Loading...' : `₱${grandTotal.toFixed(2)}`}</li>
                             <li>
                               <span className="font-medium">Payment Proof:</span> {formData.paymentProof?.name}
                             </li>

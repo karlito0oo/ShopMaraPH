@@ -31,6 +31,7 @@ interface Order {
   address_line1: string;
   barangay: string;
   city: string;
+  province: string;
   mobile_number: string;
   payment_method: string;
   payment_proof: string;
@@ -41,6 +42,7 @@ interface Order {
   updated_at: string;
   items: OrderItem[];
   user?: User;
+  shipping_fee?: number;
 }
 
 const AdminOrdersPage: React.FC = () => {
@@ -362,7 +364,7 @@ const AdminOrdersPage: React.FC = () => {
                     <p className="mb-1"><span className="font-medium">Name:</span> {selectedOrder.customer_name}</p>
                     <p className="mb-1"><span className="font-medium">Email:</span> {selectedOrder.user?.email || 'No email available'}</p>
                     <p className="mb-1"><span className="font-medium">Instagram:</span> @{selectedOrder.instagram_username}</p>
-                    <p className="mb-1"><span className="font-medium">Address:</span> {selectedOrder.address_line1}, {selectedOrder.barangay}, {selectedOrder.city}</p>
+                    <p className="mb-1"><span className="font-medium">Address:</span> {selectedOrder.address_line1}, {selectedOrder.barangay}, {selectedOrder.city}, {selectedOrder?.province}</p>
                     <p className="mb-1"><span className="font-medium">Mobile:</span> {selectedOrder.mobile_number}</p>
                   </div>
                   
@@ -376,6 +378,8 @@ const AdminOrdersPage: React.FC = () => {
                     </p>
                     <p className="mb-1"><span className="font-medium">Payment Method:</span> {selectedOrder.payment_method}</p>
                     <p className="mb-1"><span className="font-medium">Total Amount:</span> ₱{parseFloat(selectedOrder.total_amount.toString()).toFixed(2)}</p>
+                    <p className="mb-1"><span className="font-medium">Shipping Fee:</span> ₱{parseFloat((selectedOrder.shipping_fee || 0).toString()).toFixed(2)}</p>
+                    <p className="mb-1"><span className="font-medium">Grand Total:</span> ₱{(parseFloat(selectedOrder.total_amount.toString()) + parseFloat((selectedOrder.shipping_fee || 0).toString())).toFixed(2)}</p>
                     {selectedOrder.approved_at && (
                       <p className="mb-1"><span className="font-medium">Approved:</span> {formatDate(selectedOrder.approved_at)}</p>
                     )}

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
@@ -6,6 +6,9 @@ import CheckoutModal from '../components/CheckoutModal';
 import CheckoutPromptModal from '../components/CheckoutPromptModal';
 import GuestCheckoutModal from '../components/GuestCheckoutModal';
 import { OrderApi, CartApi } from '../services/ApiService';
+import { useProfile } from '../context/ProfileContext';
+import { useSettings } from '../context/SettingsContext';
+import { PH_PROVINCES } from '../components/CheckoutModal';
 
 const CartPage = () => {
   const { isAuthenticated, register } = useAuth();
@@ -22,8 +25,26 @@ const CartPage = () => {
     backupGuestCart
   } = useCart();
 
+  const { profile, updateProfile, isLoading: profileLoading } = useProfile();
+  const { deliveryFeeNcr, deliveryFeeOutsideNcr, isLoading: settingsLoading } = useSettings();
+  const [province, setProvince] = useState<string>(profile?.province || '');
+  const [isProvinceSaving, setIsProvinceSaving] = useState(false);
+
+  useEffect(() => {
+    if (profile && profile.province) {
+      setProvince(profile.province);
+    }
+  }, [profile]);
+
   const subtotal = getTotalPrice();
-  const shipping = subtotal > 0 ? 80 : 0;
+  let shipping = 0;
+  if (cartItems.length > 0) {
+    if (province) {
+      shipping = province === 'Metro Manila' ? deliveryFeeNcr : deliveryFeeOutsideNcr;
+    } else {
+      shipping = 0;
+    }
+  }
   const total = subtotal + shipping;
 
   const handleCheckoutClick = () => {
@@ -122,6 +143,8 @@ const CartPage = () => {
       orderData.append('barangay', formData.barangay);
       orderData.append('city', formData.city);
       orderData.append('mobile_number', formData.mobileNumber);
+      orderData.append('province', formData.province);
+      orderData.append('shipping_fee', shipping.toString());
       
       if (formData.paymentProof) {
         orderData.append('payment_proof', formData.paymentProof);
@@ -143,6 +166,21 @@ const CartPage = () => {
     } catch (error) {
       console.error('Error submitting guest order:', error);
       throw error;
+    }
+  };
+
+  const handleProvinceChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newProvince = e.target.value;
+    setProvince(newProvince);
+    if (isAuthenticated) {
+      setIsProvinceSaving(true);
+      try {
+        await updateProfile({ province: newProvince });
+      } catch (err) {
+        console.error('Failed to update province:', err);
+      } finally {
+        setIsProvinceSaving(false);
+      }
     }
   };
 
@@ -273,9 +311,23 @@ const CartPage = () => {
                 <span className="text-gray-600">Subtotal ({cartItems.length} {cartItems.length === 1 ? 'item' : 'items'})</span>
                 <span className="font-medium">₱{subtotal.toFixed(2)}</span>
               </div>
-              <div className="flex justify-between">
+              <div className="flex justify-between items-center">
                 <span className="text-gray-600">Shipping</span>
-                <span className="font-medium">₱{shipping.toFixed(2)}</span>
+                <select
+                  className="border border-gray-300 rounded-md py-1 px-2 focus:outline-none focus:ring-black focus:border-black text-sm"
+                  value={province}
+                  onChange={handleProvinceChange}
+                  disabled={isProvinceSaving || settingsLoading}
+                >
+                  {PH_PROVINCES.map((prov) => (
+                    <option key={prov.value} value={prov.value}>{prov.label}</option>
+                  ))}
+                </select>
+                <span className="font-medium ml-2">
+                  {province
+                    ? (settingsLoading ? 'Loading...' : `₱${shipping.toFixed(2)}`)
+                    : '—'}
+                </span>
               </div>
               <div className="border-t pt-4 flex justify-between">
                 <span className="font-medium text-lg">Total</span>
@@ -320,8 +372,10 @@ const CartPage = () => {
       <GuestCheckoutModal 
         isOpen={isGuestCheckoutModalOpen}
         onClose={closeGuestCheckoutModal}
-        totalAmount={total}
+        totalAmount={subtotal}
         onSubmitOrder={handleGuestOrderSubmit}
+        province={province}
+        setProvince={setProvince}
       />
     </div>
   )

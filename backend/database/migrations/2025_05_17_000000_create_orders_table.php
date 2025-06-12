@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('instagram_username');
             $table->string('address_line1');
             $table->string('barangay');
+            $table->string('province')->nullable();
             $table->string('city');
             $table->string('mobile_number');
             $table->string('payment_method')->default('bank_transfer');

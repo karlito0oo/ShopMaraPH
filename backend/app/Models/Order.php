@@ -33,11 +33,13 @@ class Order extends Model
         'instagram_username',
         'address_line1',
         'barangay',
+        'province',
         'city',
         'mobile_number',
         'payment_method',
         'payment_proof',
         'total_amount',
+        'shipping_fee',
         'admin_notes',
         'approved_at',
     ];
@@ -49,6 +51,7 @@ class Order extends Model
      */
     protected $casts = [
         'total_amount' => 'decimal:2',
+        'shipping_fee' => 'decimal:2',
         'approved_at' => 'datetime',
     ];
 

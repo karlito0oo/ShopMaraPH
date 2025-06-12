@@ -3,6 +3,7 @@ import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useProfile } from '../context/ProfileContext';
 import { OrderApi } from '../services/ApiService';
+import { useSettings } from '../context/SettingsContext';
 
 interface CheckoutModalProps {
   isOpen: boolean;
@@ -15,10 +16,97 @@ interface CheckoutFormData {
   instagramUsername: string;
   addressLine1: string;
   barangay: string;
+  province: string;
   city: string;
   mobileNumber: string;
   paymentProof: File | null;
 }
+
+export const PH_PROVINCES = [
+  { value: '', label: 'Select Province' },
+  { value: 'Metro Manila', label: 'Metro Manila (NCR)' },
+  { value: 'Abra', label: 'Abra' },
+  { value: 'Agusan del Norte', label: 'Agusan del Norte' },
+  { value: 'Agusan del Sur', label: 'Agusan del Sur' },
+  { value: 'Aklan', label: 'Aklan' },
+  { value: 'Albay', label: 'Albay' },
+  { value: 'Antique', label: 'Antique' },
+  { value: 'Apayao', label: 'Apayao' },
+  { value: 'Aurora', label: 'Aurora' },
+  { value: 'Basilan', label: 'Basilan' },
+  { value: 'Bataan', label: 'Bataan' },
+  { value: 'Batanes', label: 'Batanes' },
+  { value: 'Batangas', label: 'Batangas' },
+  { value: 'Benguet', label: 'Benguet' },
+  { value: 'Biliran', label: 'Biliran' },
+  { value: 'Bohol', label: 'Bohol' },
+  { value: 'Bukidnon', label: 'Bukidnon' },
+  { value: 'Bulacan', label: 'Bulacan' },
+  { value: 'Cagayan', label: 'Cagayan' },
+  { value: 'Camarines Norte', label: 'Camarines Norte' },
+  { value: 'Camarines Sur', label: 'Camarines Sur' },
+  { value: 'Camiguin', label: 'Camiguin' },
+  { value: 'Capiz', label: 'Capiz' },
+  { value: 'Catanduanes', label: 'Catanduanes' },
+  { value: 'Cavite', label: 'Cavite' },
+  { value: 'Cebu', label: 'Cebu' },
+  { value: 'Cotabato', label: 'Cotabato' },
+  { value: 'Davao de Oro', label: 'Davao de Oro' },
+  { value: 'Davao del Norte', label: 'Davao del Norte' },
+  { value: 'Davao del Sur', label: 'Davao del Sur' },
+  { value: 'Davao Occidental', label: 'Davao Occidental' },
+  { value: 'Davao Oriental', label: 'Davao Oriental' },
+  { value: 'Dinagat Islands', label: 'Dinagat Islands' },
+  { value: 'Eastern Samar', label: 'Eastern Samar' },
+  { value: 'Guimaras', label: 'Guimaras' },
+  { value: 'Ifugao', label: 'Ifugao' },
+  { value: 'Ilocos Norte', label: 'Ilocos Norte' },
+  { value: 'Ilocos Sur', label: 'Ilocos Sur' },
+  { value: 'Iloilo', label: 'Iloilo' },
+  { value: 'Isabela', label: 'Isabela' },
+  { value: 'Kalinga', label: 'Kalinga' },
+  { value: 'La Union', label: 'La Union' },
+  { value: 'Laguna', label: 'Laguna' },
+  { value: 'Lanao del Norte', label: 'Lanao del Norte' },
+  { value: 'Lanao del Sur', label: 'Lanao del Sur' },
+  { value: 'Leyte', label: 'Leyte' },
+  { value: 'Maguindanao', label: 'Maguindanao' },
+  { value: 'Marinduque', label: 'Marinduque' },
+  { value: 'Masbate', label: 'Masbate' },
+  { value: 'Misamis Occidental', label: 'Misamis Occidental' },
+  { value: 'Misamis Oriental', label: 'Misamis Oriental' },
+  { value: 'Mountain Province', label: 'Mountain Province' },
+  { value: 'Negros Occidental', label: 'Negros Occidental' },
+  { value: 'Negros Oriental', label: 'Negros Oriental' },
+  { value: 'Northern Samar', label: 'Northern Samar' },
+  { value: 'Nueva Ecija', label: 'Nueva Ecija' },
+  { value: 'Nueva Vizcaya', label: 'Nueva Vizcaya' },
+  { value: 'Occidental Mindoro', label: 'Occidental Mindoro' },
+  { value: 'Oriental Mindoro', label: 'Oriental Mindoro' },
+  { value: 'Palawan', label: 'Palawan' },
+  { value: 'Pampanga', label: 'Pampanga' },
+  { value: 'Pangasinan', label: 'Pangasinan' },
+  { value: 'Quezon', label: 'Quezon' },
+  { value: 'Quirino', label: 'Quirino' },
+  { value: 'Rizal', label: 'Rizal' },
+  { value: 'Romblon', label: 'Romblon' },
+  { value: 'Samar', label: 'Samar' },
+  { value: 'Sarangani', label: 'Sarangani' },
+  { value: 'Siquijor', label: 'Siquijor' },
+  { value: 'Sorsogon', label: 'Sorsogon' },
+  { value: 'South Cotabato', label: 'South Cotabato' },
+  { value: 'Southern Leyte', label: 'Southern Leyte' },
+  { value: 'Sultan Kudarat', label: 'Sultan Kudarat' },
+  { value: 'Sulu', label: 'Sulu' },
+  { value: 'Surigao del Norte', label: 'Surigao del Norte' },
+  { value: 'Surigao del Sur', label: 'Surigao del Sur' },
+  { value: 'Tarlac', label: 'Tarlac' },
+  { value: 'Tawi-Tawi', label: 'Tawi-Tawi' },
+  { value: 'Zambales', label: 'Zambales' },
+  { value: 'Zamboanga del Norte', label: 'Zamboanga del Norte' },
+  { value: 'Zamboanga del Sur', label: 'Zamboanga del Sur' },
+  { value: 'Zamboanga Sibugay', label: 'Zamboanga Sibugay' },
+];
 
 const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, totalAmount }) => {
   const { user } = useAuth();
@@ -29,6 +117,7 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, totalAmo
     instagramUsername: '',
     addressLine1: '',
     barangay: '',
+    province: '',
     city: '',
     mobileNumber: '',
     paymentProof: null
@@ -39,6 +128,7 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, totalAmo
   const [orderError, setOrderError] = useState<string | null>(null);
 
   const { clearCart, token } = useCart();
+  const { deliveryFeeNcr, deliveryFeeOutsideNcr, isLoading: settingsLoading } = useSettings();
 
   // Pre-fill form data with user profile information when the modal opens
   useEffect(() => {
@@ -57,6 +147,7 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, totalAmo
           barangay: profile.barangay || '',
           city: profile.city || '',
           mobileNumber: profile.mobile_number || '',
+          province: profile.province || '',
         };
       }
       
@@ -114,6 +205,31 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, totalAmo
     }
   };
 
+  const handleSelectChange = async(e: React.ChangeEvent<HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+    if (errors[name as keyof CheckoutFormData]) {
+      setErrors({ ...errors, [name]: '' });
+    }
+
+    const newProvince = value;
+    console.log(newProvince);
+    setFormData(prev => ({ ...prev, province: newProvince }));
+    try {
+      await updateProfile({
+        instagram_username: formData.instagramUsername,
+        address_line1: formData.addressLine1,
+        barangay: formData.barangay,
+        province: newProvince,
+        city: formData.city,
+        mobile_number: formData.mobileNumber,
+      });
+    } catch (error) {
+      // Optionally show error to user
+      console.error('Failed to update province:', error);
+    }
+  };
+
   const validateStep = (step: number): boolean => {
     const newErrors: Partial<Record<keyof CheckoutFormData, string>> = {};
     
@@ -122,6 +238,7 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, totalAmo
       if (!formData.instagramUsername.trim()) newErrors.instagramUsername = 'Instagram username is required';
       if (!formData.addressLine1.trim()) newErrors.addressLine1 = 'Address is required';
       if (!formData.barangay.trim()) newErrors.barangay = 'Barangay is required';
+      if (!formData.province) newErrors.province = 'Province is required';
       if (!formData.city.trim()) newErrors.city = 'City is required';
       if (!formData.mobileNumber.trim()) newErrors.mobileNumber = 'Mobile number is required';
     } else if (step === 2) {
@@ -174,6 +291,7 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, totalAmo
         instagram_username: formData.instagramUsername,
         address_line1: formData.addressLine1,
         barangay: formData.barangay,
+        province: formData.province,
         city: formData.city,
         mobile_number: formData.mobileNumber,
       });
@@ -185,11 +303,17 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, totalAmo
     }
   };
 
+    // Calculate shipping fee based on province
+    const isNcr = formData.province === 'Metro Manila';
+    const shippingFee = isNcr ? deliveryFeeNcr : deliveryFeeOutsideNcr;
+    const grandTotal = totalAmount + shippingFee;
+    
   // Create a new order with the cart items and shipping information
   const createOrder = async () => {
     if (!token || !formData.paymentProof) {
       throw new Error('Missing token or payment proof');
     }
+
 
     // Create a FormData object to send the payment proof file
     const orderData = new FormData();
@@ -197,9 +321,11 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, totalAmo
     orderData.append('instagram_username', formData.instagramUsername);
     orderData.append('address_line1', formData.addressLine1);
     orderData.append('barangay', formData.barangay);
+    orderData.append('province', formData.province);
     orderData.append('city', formData.city);
     orderData.append('mobile_number', formData.mobileNumber);
     orderData.append('payment_proof', formData.paymentProof);
+    orderData.append('shipping_fee', shippingFee.toString());
 
     try {
       const data = await OrderApi.createOrder(token, orderData);
@@ -323,21 +449,40 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, totalAmo
                           {errors.instagramUsername && <p className="mt-1 text-sm text-red-600">{errors.instagramUsername}</p>}
                         </div>
                         
-                        <div>
-                          <label htmlFor="addressLine1" className="block text-sm font-medium text-gray-700">Address Line 1</label>
-                          <input
-                            type="text"
-                            id="addressLine1"
-                            name="addressLine1"
-                            value={formData.addressLine1}
-                            onChange={handleChange}
-                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-black focus:border-black sm:text-sm"
-                          />
-                          {errors.addressLine1 && <p className="mt-1 text-sm text-red-600">{errors.addressLine1}</p>}
-                        </div>
+                        
                         
                         <div className="grid grid-cols-2 gap-4">
                           <div>
+                            <label htmlFor="province" className="block text-sm font-medium text-gray-700">Province</label>
+                            <select
+                              id="province"
+                              name="province"
+                              value={formData.province}
+                              onChange={handleSelectChange}
+                              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-black focus:border-black sm:text-sm"
+                            >
+                              {PH_PROVINCES.map((prov) => (
+                                <option key={prov.value} value={prov.value}>{prov.label}</option>
+                              ))}
+                            </select>
+                            {errors.province && <p className="mt-1 text-sm text-red-600">{errors.province}</p>}
+                          </div>
+                          <div>
+                          <label htmlFor="city" className="block text-sm font-medium text-gray-700">City</label>
+                          <input
+                            type="text"
+                            id="city"
+                            name="city"
+                            value={formData.city}
+                            onChange={handleChange}
+                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-black focus:border-black sm:text-sm"
+                          />
+                          {errors.city && <p className="mt-1 text-sm text-red-600">{errors.city}</p>}
+                          </div>
+                        </div>
+                         <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            
                             <label htmlFor="barangay" className="block text-sm font-medium text-gray-700">Barangay</label>
                             <input
                               type="text"
@@ -349,18 +494,17 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, totalAmo
                             />
                             {errors.barangay && <p className="mt-1 text-sm text-red-600">{errors.barangay}</p>}
                           </div>
-                          
                           <div>
-                            <label htmlFor="city" className="block text-sm font-medium text-gray-700">City</label>
-                            <input
-                              type="text"
-                              id="city"
-                              name="city"
-                              value={formData.city}
-                              onChange={handleChange}
-                              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-black focus:border-black sm:text-sm"
-                            />
-                            {errors.city && <p className="mt-1 text-sm text-red-600">{errors.city}</p>}
+                          <label htmlFor="addressLine1" className="block text-sm font-medium text-gray-700">Address Line 1</label>
+                          <input
+                            type="text"
+                            id="addressLine1"
+                            name="addressLine1"
+                            value={formData.addressLine1}
+                            onChange={handleChange}
+                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-black focus:border-black sm:text-sm"
+                          />
+                          {errors.addressLine1 && <p className="mt-1 text-sm text-red-600">{errors.addressLine1}</p>}
                           </div>
                         </div>
                         
@@ -414,9 +558,11 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, totalAmo
                           <ul className="text-sm text-gray-700 space-y-2">
                             <li><span className="font-medium">Name:</span> {formData.name}</li>
                             <li><span className="font-medium">Instagram:</span> @{formData.instagramUsername}</li>
-                            <li><span className="font-medium">Address:</span> {formData.addressLine1}, {formData.barangay}, {formData.city}</li>
+                            <li><span className="font-medium">Address:</span> {formData.addressLine1}, {formData.barangay}, {formData.city}, {formData.province}</li>
                             <li><span className="font-medium">Mobile:</span> {formData.mobileNumber}</li>
-                            <li><span className="font-medium">Total Amount:</span> ₱{totalAmount.toFixed(2)}</li>
+                            <li><span className="font-medium">Subtotal:</span> ₱{totalAmount.toFixed(2)}</li>
+                            <li><span className="font-medium">Shipping Fee:</span> {settingsLoading ? 'Loading...' : `₱${shippingFee.toFixed(2)}`}</li>
+                            <li><span className="font-medium">Grand Total:</span> {settingsLoading ? 'Loading...' : `₱${grandTotal.toFixed(2)}`}</li>
                             <li>
                               <span className="font-medium">Payment Proof:</span> {formData.paymentProof?.name}
                             </li>

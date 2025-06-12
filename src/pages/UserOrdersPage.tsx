@@ -35,6 +35,7 @@ interface Order {
   created_at: string;
   updated_at: string;
   items: OrderItem[];
+  shipping_fee?: number;
 }
 
 const UserOrdersPage: React.FC = () => {
@@ -297,6 +298,8 @@ const UserOrdersPage: React.FC = () => {
                         <p className="text-sm mb-1"><span className="font-medium">Approved Date:</span> {formatDate(selectedOrder.approved_at)}</p>
                       )}
                       <p className="text-sm mb-1"><span className="font-medium">Payment Method:</span> {selectedOrder.payment_method.replace('_', ' ').toUpperCase()}</p>
+                      <p className="text-sm mb-1"><span className="font-medium">Shipping Fee:</span> ₱{parseFloat((selectedOrder.shipping_fee || 0).toString()).toFixed(2)}</p>
+                      <p className="text-sm mb-1"><span className="font-medium">Grand Total:</span> ₱{(parseFloat(selectedOrder.total_amount.toString()) + parseFloat((selectedOrder.shipping_fee || 0).toString())).toFixed(2)}</p>
                       {selectedOrder.payment_proof && (
                         <div className="mt-2">
                           <p className="text-sm mb-1 font-medium">Payment Proof:</p>

@@ -27,9 +27,11 @@ class OrderController extends Controller
             'instagram_username' => 'required|string|max:255',
             'address_line1' => 'required|string|max:255',
             'barangay' => 'required|string|max:255',
+            'province' => 'nullable|string|max:255',
             'city' => 'required|string|max:255',
             'mobile_number' => 'required|string|max:255',
             'payment_proof' => 'required|image|max:5120', // 5MB max
+            'shipping_fee' => 'nullable|numeric|min:0',
         ]);
 
         if ($validator->fails()) {
@@ -73,11 +75,13 @@ class OrderController extends Controller
                 'instagram_username' => $request->instagram_username,
                 'address_line1' => $request->address_line1,
                 'barangay' => $request->barangay,
+                'province' => $request->province,
                 'city' => $request->city,
                 'mobile_number' => $request->mobile_number,
                 'payment_method' => 'bank_transfer', // Currently only supporting bank transfers
                 'payment_proof' => $paymentProofPath,
                 'total_amount' => $totalAmount,
+                'shipping_fee' => $request->input('shipping_fee', 0),
             ]);
             $order->save();
 
@@ -136,10 +140,12 @@ class OrderController extends Controller
             'instagram_username' => 'required|string|max:255',
             'address_line1' => 'required|string|max:255',
             'barangay' => 'required|string|max:255',
+            'province' => 'nullable|string|max:255',
             'city' => 'required|string|max:255',
             'mobile_number' => 'required|string|max:255',
             'payment_proof' => 'required|image|max:5120', // 5MB max
             'cart_items' => 'required|json',
+            'shipping_fee' => 'nullable|numeric|min:0',
         ]);
 
         if ($validator->fails()) {
@@ -217,11 +223,13 @@ class OrderController extends Controller
                 'instagram_username' => $request->instagram_username,
                 'address_line1' => $request->address_line1,
                 'barangay' => $request->barangay,
+                'province' => $request->province,
                 'city' => $request->city,
                 'mobile_number' => $request->mobile_number,
                 'payment_method' => 'bank_transfer', // Currently only supporting bank transfers
                 'payment_proof' => $paymentProofPath,
                 'total_amount' => $totalAmount,
+                'shipping_fee' => $request->input('shipping_fee', 0),
             ]);
             $order->save();
 

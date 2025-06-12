@@ -45,6 +45,7 @@ class UserProfileController extends Controller
             'instagram_username' => 'nullable|string|max:255',
             'address_line1' => 'nullable|string|max:255',
             'barangay' => 'nullable|string|max:255',
+            'province' => 'nullable|string|max:255',
             'city' => 'nullable|string|max:255',
             'mobile_number' => 'nullable|string|max:255',
         ]);
@@ -66,6 +67,7 @@ class UserProfileController extends Controller
                 'instagram_username' => $request->instagram_username,
                 'address_line1' => $request->address_line1,
                 'barangay' => $request->barangay,
+                'province' => $request->province,
                 'city' => $request->city,
                 'mobile_number' => $request->mobile_number,
             ]);
@@ -76,6 +78,7 @@ class UserProfileController extends Controller
                 'instagram_username' => $request->instagram_username,
                 'address_line1' => $request->address_line1,
                 'barangay' => $request->barangay,
+                'province' => $request->province,
                 'city' => $request->city,
                 'mobile_number' => $request->mobile_number,
             ]);

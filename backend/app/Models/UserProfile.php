@@ -20,6 +20,7 @@ class UserProfile extends Model
         'instagram_username',
         'address_line1',
         'barangay',
+        'province',
         'city',
         'mobile_number',
     ];

@@ -9,6 +9,7 @@ interface UserProfile {
   instagram_username: string | null;
   address_line1: string | null;
   barangay: string | null;
+  province?: string | null;
   city: string | null;
   mobile_number: string | null;
   created_at: string;
