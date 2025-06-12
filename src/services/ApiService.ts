@@ -54,7 +54,16 @@ export const apiRequest = async (
     
     // If the response is not OK, throw an error
     if (!response.ok) {
-      throw new Error(responseData.message || 'Something went wrong');
+      if(responseData.errors){
+        const allErrors = Object.values(responseData.errors)
+  .flat()
+  .join('; ');
+        throw new Error(allErrors ?? "");
+      }
+      if(responseData.message){
+        throw new Error(responseData.message);
+      }
+      throw new Error('Something went wrong');
     }
     
     return responseData;
@@ -178,4 +187,21 @@ export const OrderApi = {
   
   updateOrderStatus: (token: string, orderId: number | string, status: string, adminNotes?: string) => 
     apiRequest(`/admin/orders/${orderId}/status`, 'POST', { status, admin_notes: adminNotes }, token),
+};
+
+/**
+ * Hero Carousel related API endpoints
+ */
+export const HeroCarouselApi = {
+  // Admin endpoints
+  getAll: (token: string) => apiRequest('/admin/hero-carousel', 'GET', null, token),
+  create: (token: string, data: FormData) => apiRequest('/admin/hero-carousel', 'POST', data, token, true),
+  update: (token: string, id: number, data: FormData) => {
+    data.append('_method', 'PUT');
+    return apiRequest(`/admin/hero-carousel/${id}`, 'POST', data, token, true);
+  },
+  delete: (token: string, id: number) => apiRequest(`/admin/hero-carousel/${id}`, 'DELETE', null, token),
+  updateInterval: (token: string, interval: number) => apiRequest('/admin/hero-carousel/interval', 'POST', { interval }, token),
+  // Public endpoint
+  getPublic: () => apiRequest('/hero-carousel', 'GET'),
 }; 

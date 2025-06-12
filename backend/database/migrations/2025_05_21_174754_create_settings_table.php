@@ -60,6 +60,15 @@ return new class extends Migration
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
+            [
+                'key' => 'hero_carousel_interval',
+                'value' => '5000',
+                'type' => 'integer',
+                'display_name' => 'Hero Carousel Interval (ms)',
+                'description' => 'Interval in milliseconds for hero carousel image change',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
         ]);
     }
 

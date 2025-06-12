@@ -53,7 +53,6 @@ class SettingController extends Controller
     public function update(Request $request, $key)
     {
         $setting = Setting::where('key', $key)->first();
-        
         if (!$setting) {
             return response()->json([
                 'success' => false,

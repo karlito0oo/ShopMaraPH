@@ -4,7 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import ManageProducts from '../../components/admin/ManageProducts';
 import OrderManagement from '../../components/admin/OrderManagement';
 import ManageAnnouncements from '../../components/admin/ManageAnnouncements';
-import DeliverySettings from '../../components/admin/DeliverySettings';
+import UnifiedSettings from '../../components/admin/UnifiedSettings';
 import AdminLayout from '../../components/layouts/AdminLayout';
 
 const AdminPage: React.FC = () => {
@@ -129,10 +129,7 @@ const AdminPage: React.FC = () => {
         {activeTab === 'announcements' && <ManageAnnouncements token={token || ''} />}
         {activeTab === 'settings' && (
           <div className="space-y-8">
-            <DeliverySettings 
-              onSuccess={handleSuccess}
-              onError={handleError}
-            />
+            <UnifiedSettings onSuccess={handleSuccess} onError={handleError} />
           </div>
         )}
       </div>

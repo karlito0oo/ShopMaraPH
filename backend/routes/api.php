@@ -39,8 +39,14 @@ Route::get('settings', [SettingController::class, 'getPublicSettings']);
 // Guest checkout routes
 Route::post('guest-orders', [OrderController::class, 'createGuestOrder']);
 
+// Hero carousel routes
+Route::get('hero-carousel', [\App\Http\Controllers\Api\HeroCarouselController::class, 'publicIndex']); // public
+
+
 // Protected routes
 Route::middleware('auth:sanctum')->group(function () {
+    Route::apiResource('admin/hero-carousel', \App\Http\Controllers\Api\HeroCarouselController::class);
+    Route::post('admin/hero-carousel/interval', [\App\Http\Controllers\Api\HeroCarouselController::class, 'updateInterval']);
     Route::get('user', [AuthController::class, 'user']);
     Route::post('logout', [AuthController::class, 'logout']);
     
