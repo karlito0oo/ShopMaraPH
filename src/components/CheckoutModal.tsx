@@ -165,23 +165,6 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, totalAmo
     }
   }, [user, profile, isOpen]);
 
-  const bankDetails = `
-    Payment Options:
-    
-    GCash:
-    Account Name: ShopMara PH
-    Account Number: 09123456789
-    
-    Bank Transfer:
-    BDO
-    Account Name: ShopMara PH
-    Account Number: 1234567890
-    
-    BPI
-    Account Name: ShopMara PH
-    Account Number: 9876543210
-  `;
-
   if (!isOpen) return null;
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -533,38 +516,7 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, totalAmo
                     {currentStep === 2 && (
                       <div className="space-y-4">
                         <div>
-                          <h4 className="font-medium text-gray-900 mb-2">Total Amount: ₱{totalAmount.toFixed(2)}</h4>
                           
-                          <div className="bg-gray-50 p-4 rounded text-sm whitespace-pre-line">
-                            {bankDetails}
-                          </div>
-                        </div>
-                        
-                        {!!paymentOptionsDescription && (
-                          <div className="mb-4">
-                            <div className="prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: paymentOptionsDescription }} />
-                          </div>
-                        )}
-                        
-                        <div>
-                          <label htmlFor="paymentProof" className="block text-sm font-medium text-gray-700">Proof of Payment</label>
-                          <input
-                            type="file"
-                            id="paymentProof"
-                            name="paymentProof"
-                            accept="image/*"
-                            onChange={handleFileChange}
-                            className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-black focus:border-black sm:text-sm"
-                          />
-                          <p className="mt-1 text-xs text-gray-500">Please upload a screenshot of your payment receipt.</p>
-                          {errors.paymentProof && <p className="mt-1 text-sm text-red-600">{errors.paymentProof}</p>}
-                        </div>
-                      </div>
-                    )}
-                    
-                    {/* Step 3: Confirmation */}
-                    {currentStep === 3 && (
-                      <div className="space-y-4">
                         <div className="bg-green-50 p-4 rounded border border-green-200">
                           <h4 className="font-medium text-green-800 mb-2">Order Summary</h4>
                           <ul className="text-sm text-gray-700 space-y-2">
@@ -580,6 +532,33 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, totalAmo
                             </li>
                           </ul>
                         </div>
+                          
+                          {!!paymentOptionsDescription && (
+                            <div className="mb-4">
+                              <div className="prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: paymentOptionsDescription }} />
+                            </div>
+                          )}
+                          
+                          <div>
+                            <label htmlFor="paymentProof" className="block text-sm font-medium text-gray-700">Proof of Payment</label>
+                            <input
+                              type="file"
+                              id="paymentProof"
+                              name="paymentProof"
+                              accept="image/*"
+                              onChange={handleFileChange}
+                              className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-black focus:border-black sm:text-sm"
+                            />
+                            <p className="mt-1 text-xs text-gray-500">Please upload a screenshot of your payment receipt.</p>
+                            {errors.paymentProof && <p className="mt-1 text-sm text-red-600">{errors.paymentProof}</p>}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Step 3: Confirmation */}
+                    {currentStep === 3 && (
+                      <div className="space-y-4">
                         {renderWhatHappensNext()}
                       </div>
                     )}

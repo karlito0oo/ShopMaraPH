@@ -51,22 +51,6 @@ const GuestCheckoutModal: React.FC<GuestCheckoutModalProps> = ({
 
   const { deliveryFeeNcr, deliveryFeeOutsideNcr, isLoading: settingsLoading, paymentOptionsDescription, whatHappensAfterPayment } = useSettings();
 
-  const bankDetails = `
-    Payment Options:
-    
-    GCash:
-    Account Name: ShopMara PH
-    Account Number: 09123456789
-    
-    Bank Transfer:
-    BDO
-    Account Name: ShopMara PH
-    Account Number: 1234567890
-    
-    BPI
-    Account Name: ShopMara PH
-    Account Number: 9876543210
-  `;
 
   if (!isOpen) return null;
 
@@ -370,8 +354,22 @@ const GuestCheckoutModal: React.FC<GuestCheckoutModalProps> = ({
                     {/* Step 2: Payment Information */}
                     {currentStep === 2 && (
                       <div className="space-y-4">
-                        <div>
-                          <h4 className="font-medium text-gray-900 mb-2">Total Amount: ₱{totalAmount.toFixed(2)}</h4>
+                          
+                      <div className="space-y-4">
+                        <div className="bg-green-50 p-4 rounded border border-green-200">
+                          <h4 className="font-medium text-green-800 mb-2">Order Summary</h4>
+                          <ul className="text-sm text-gray-700 space-y-2">
+                            <li><span className="font-medium">Name:</span> {formData.name}</li>
+                            <li><span className="font-medium">Email:</span> {formData.email}</li>
+                            <li><span className="font-medium">Instagram:</span> @{formData.instagramUsername}</li>
+                            <li><span className="font-medium">Address:</span> {formData.addressLine1}, {formData.barangay}, {formData.city}, {formData.province}</li>
+                            <li><span className="font-medium">Mobile:</span> {formData.mobileNumber}</li>
+                            <li><span className="font-medium">Subtotal:</span> ₱{totalAmount.toFixed(2)}</li>
+                            <li><span className="font-medium">Shipping Fee:</span> {settingsLoading ? 'Loading...' : `₱${shippingFee.toFixed(2)}`}</li>
+                            <li><span className="font-medium">Grand Total:</span> {settingsLoading ? 'Loading...' : `₱${grandTotal.toFixed(2)}`}</li>
+                            
+                          </ul>
+                        </div>
                           
                           {!!paymentOptionsDescription && (
                             <div className="mb-4">
@@ -398,23 +396,7 @@ const GuestCheckoutModal: React.FC<GuestCheckoutModalProps> = ({
                     
                     {/* Step 3: Confirmation */}
                     {currentStep === 3 && (
-                      <div className="space-y-4">
-                        <div className="bg-green-50 p-4 rounded border border-green-200">
-                          <h4 className="font-medium text-green-800 mb-2">Order Summary</h4>
-                          <ul className="text-sm text-gray-700 space-y-2">
-                            <li><span className="font-medium">Name:</span> {formData.name}</li>
-                            <li><span className="font-medium">Email:</span> {formData.email}</li>
-                            <li><span className="font-medium">Instagram:</span> @{formData.instagramUsername}</li>
-                            <li><span className="font-medium">Address:</span> {formData.addressLine1}, {formData.barangay}, {formData.city}, {formData.province}</li>
-                            <li><span className="font-medium">Mobile:</span> {formData.mobileNumber}</li>
-                            <li><span className="font-medium">Subtotal:</span> ₱{totalAmount.toFixed(2)}</li>
-                            <li><span className="font-medium">Shipping Fee:</span> {settingsLoading ? 'Loading...' : `₱${shippingFee.toFixed(2)}`}</li>
-                            <li><span className="font-medium">Grand Total:</span> {settingsLoading ? 'Loading...' : `₱${grandTotal.toFixed(2)}`}</li>
-                            <li>
-                              <span className="font-medium">Payment Proof:</span> {formData.paymentProof?.name}
-                            </li>
-                          </ul>
-                        </div>
+                      <div>
                         {renderWhatHappensNext()}
                       </div>
                     )}
