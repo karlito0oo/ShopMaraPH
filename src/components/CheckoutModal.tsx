@@ -325,11 +325,7 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, totalAmo
     return (
       <div className="bg-yellow-50 p-4 rounded border border-yellow-200">
         <h4 className="font-medium text-yellow-800 mb-2">What happens next?</h4>
-        <ol className="list-decimal list-inside text-sm text-gray-700 space-y-1">
-          {whatHappensAfterPayment.split('\n').map((line, index) => (
-            <li key={index}>{line}</li>
-          ))}
-        </ol>
+        <div className="prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: whatHappensAfterPayment }} />
       </div>
     );
   };
@@ -516,30 +512,26 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ isOpen, onClose, totalAmo
                     {currentStep === 2 && (
                       <div className="space-y-4">
                         <div>
-                          
-                        <div className="bg-green-50 p-4 rounded border border-green-200">
-                          <h4 className="font-medium text-green-800 mb-2">Order Summary</h4>
-                          <ul className="text-sm text-gray-700 space-y-2">
-                            <li><span className="font-medium">Name:</span> {formData.name}</li>
-                            <li><span className="font-medium">Instagram:</span> @{formData.instagramUsername}</li>
-                            <li><span className="font-medium">Address:</span> {formData.addressLine1}, {formData.barangay}, {formData.city}, {formData.province}</li>
-                            <li><span className="font-medium">Mobile:</span> {formData.mobileNumber}</li>
-                            <li><span className="font-medium">Subtotal:</span> ₱{totalAmount.toFixed(2)}</li>
-                            <li><span className="font-medium">Shipping Fee:</span> {settingsLoading ? 'Loading...' : `₱${shippingFee.toFixed(2)}`}</li>
-                            <li><span className="font-medium">Grand Total:</span> {settingsLoading ? 'Loading...' : `₱${grandTotal.toFixed(2)}`}</li>
-                            <li>
-                              <span className="font-medium">Payment Proof:</span> {formData.paymentProof?.name}
-                            </li>
-                          </ul>
-                        </div>
+                          <div className="bg-green-50 p-4 rounded border border-green-200">
+                            <h4 className="font-medium text-green-800 mb-2">Order Summary</h4>
+                            <ul className="text-sm text-gray-700 space-y-2">
+                              <li><span className="font-medium">Name:</span> {formData.name}</li>
+                              <li><span className="font-medium">Instagram:</span> @{formData.instagramUsername}</li>
+                              <li><span className="font-medium">Address:</span> {formData.addressLine1}, {formData.barangay}, {formData.city}, {formData.province}</li>
+                              <li><span className="font-medium">Mobile:</span> {formData.mobileNumber}</li>
+                              <li><span className="font-medium">Subtotal:</span> ₱{totalAmount.toFixed(2)}</li>
+                              <li><span className="font-medium">Shipping Fee:</span> {settingsLoading ? 'Loading...' : `₱${shippingFee.toFixed(2)}`}</li>
+                              <li><span className="font-medium">Grand Total:</span> {settingsLoading ? 'Loading...' : `₱${grandTotal.toFixed(2)}`}</li>
+                            </ul>
+                          </div>
                           
                           {!!paymentOptionsDescription && (
-                            <div className="mb-4">
+                            <div className="mt-4">
                               <div className="prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: paymentOptionsDescription }} />
                             </div>
                           )}
                           
-                          <div>
+                          <div className="mt-4">
                             <label htmlFor="paymentProof" className="block text-sm font-medium text-gray-700">Proof of Payment</label>
                             <input
                               type="file"

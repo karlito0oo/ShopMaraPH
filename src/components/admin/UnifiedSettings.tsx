@@ -4,6 +4,7 @@ import { SettingService } from '../../services/SettingService';
 import { HeroCarouselApi } from '../../services/ApiService';
 import Toast from '../Toast';
 import Modal from '../ui/Modal';
+import RichTextEditor from '../ui/RichTextEditor';
 
 interface HeroCarousel {
   id: number;
@@ -216,24 +217,20 @@ const UnifiedSettings: React.FC<UnifiedSettingsProps> = ({ onSuccess, onError })
         {/* Payment Options Description */}
         <div className="mb-6">
           <label className="block text-sm font-medium text-gray-700 mb-1">Payment Options Description</label>
-          <textarea
+          <RichTextEditor
             value={paymentOptionsDescription}
-            onChange={(e) => setPaymentOptionsDescription(e.target.value)}
-            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-black focus:border-black sm:text-sm min-h-[150px] resize-y"
-            placeholder="Enter payment options description..."
+            onChange={setPaymentOptionsDescription}
           />
-          <p className="text-sm text-gray-500 mt-1">This description will be shown to customers at checkout. You can use basic text formatting.</p>
+          <p className="text-sm text-gray-500 mt-1">This description will be shown to customers at checkout. You can use formatting, links, and images.</p>
         </div>
         {/* What Happens After Payment */}
         <div className="mb-6">
           <label className="block text-sm font-medium text-gray-700 mb-1">What Happens After Payment</label>
-          <textarea
+          <RichTextEditor
             value={whatHappensAfterPayment}
-            onChange={(e) => setWhatHappensAfterPayment(e.target.value)}
-            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-black focus:border-black sm:text-sm min-h-[150px] resize-y"
-            placeholder="Enter what happens after payment..."
+            onChange={setWhatHappensAfterPayment}
           />
-          <p className="text-sm text-gray-500 mt-1">This description will be shown to customers after they place an order. Each line will be displayed as a separate bullet point.</p>
+          <p className="text-sm text-gray-500 mt-1">This description will be shown to customers after they place an order. You can use formatting, links, and images.</p>
         </div>
         {/* Carousel Interval */}
         <div className="mb-6">
