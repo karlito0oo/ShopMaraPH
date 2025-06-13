@@ -207,4 +207,15 @@ export const HeroCarouselApi = {
   updateInterval: (token: string, interval: number) => apiRequest('/admin/hero-carousel/interval', 'POST', { interval }, token),
   // Public endpoint
   getPublic: () => apiRequest('/hero-carousel', 'GET'),
+};
+
+/**
+ * User Management (Admin) API endpoints
+ */
+export const AdminUserApi = {
+  getAllUsers: (token: string) =>
+    apiRequest('/admin/users', 'GET', null, token),
+
+  changeUserPassword: (token: string, userId: number, password: string, password_confirmation: string) =>
+    apiRequest(`/admin/users/${userId}/change-password`, 'POST', { password, password_confirmation }, token),
 }; 

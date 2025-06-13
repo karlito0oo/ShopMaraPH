@@ -96,11 +96,6 @@ const LoginPage = () => {
       <p className="text-center text-gray-500 text-sm">
         Don't have an account? <Link to="/register" className="text-black font-bold">Sign up</Link>
       </p>
-      <div className="mt-4 text-center text-gray-500 text-sm">
-        <p>For admin access, use:</p>
-        <p><strong>Email:</strong> admin@example.com</p>
-        <p><strong>Password:</strong> password123</p>
-      </div>
     </div>
   );
 };

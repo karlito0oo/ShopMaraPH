@@ -5,6 +5,7 @@ import ManageProducts from '../../components/admin/ManageProducts';
 import OrderManagement from '../../components/admin/OrderManagement';
 import ManageAnnouncements from '../../components/admin/ManageAnnouncements';
 import UnifiedSettings from '../../components/admin/UnifiedSettings';
+import ManageUsers from '../../components/admin/ManageUsers';
 import AdminLayout from '../../components/layouts/AdminLayout';
 
 const AdminPage: React.FC = () => {
@@ -19,6 +20,7 @@ const AdminPage: React.FC = () => {
   const tabs = [
     { id: 'products', label: 'Products' },
     { id: 'orders', label: 'Orders' },
+    { id: 'users', label: 'Users' },
     { id: 'announcements', label: 'Announcements' },
     { id: 'settings', label: 'Settings' },
   ];
@@ -65,6 +67,17 @@ const AdminPage: React.FC = () => {
           className="mt-4 sm:mt-0 inline-block bg-black text-white px-4 py-2 rounded"
         >
           Manage Orders
+        </Link>
+      );
+    }
+    
+    if (activeTab === 'users') {
+      return (
+        <Link 
+          to="/admin/users" 
+          className="mt-4 sm:mt-0 inline-block bg-black text-white px-4 py-2"
+        >
+          Manage Users
         </Link>
       );
     }
@@ -126,6 +139,7 @@ const AdminPage: React.FC = () => {
           />
         )}
         {activeTab === 'orders' && <OrderManagement />}
+        {activeTab === 'users' && <ManageUsers />}
         {activeTab === 'announcements' && <ManageAnnouncements token={token || ''} />}
         {activeTab === 'settings' && (
           <div className="space-y-8">

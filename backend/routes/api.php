@@ -102,5 +102,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('admin/settings', [SettingController::class, 'index']);
         Route::put('admin/settings/{key}', [SettingController::class, 'update']);
         Route::post('admin/settings', [SettingController::class, 'updateMultiple']);
+
+        // User management
+        Route::get('admin/users', [\App\Http\Controllers\Api\AdminUserController::class, 'index']);
+        Route::post('admin/users/{id}/change-password', [\App\Http\Controllers\Api\AdminUserController::class, 'changePassword']);
     });
 }); 

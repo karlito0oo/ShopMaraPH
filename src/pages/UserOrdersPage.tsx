@@ -87,19 +87,19 @@ const UserOrdersPage: React.FC = () => {
 
   const fetchOrders = async () => {
     if (token) {
-      setLoading(true);
-      setError(null);
-      try {
-        const response = await OrderApi.getUserOrders(token);
-        const ordersData = response.data.orders;
-        setOrders(ordersData);
-        setFilteredOrders(ordersData);
-        if (ordersData.length > 0) {
-          setSelectedOrder(ordersData[0]);
-        }
-      } catch (error) {
-        setError(error instanceof Error ? error.message : 'An error occurred while fetching orders');
-      } finally {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await OrderApi.getUserOrders(token);
+      const ordersData = response.data.orders;
+      setOrders(ordersData);
+      setFilteredOrders(ordersData);
+      if (ordersData.length > 0) {
+        setSelectedOrder(ordersData[0]);
+      }
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'An error occurred while fetching orders');
+    } finally {
         setLoading(false);
       }
     } else if (guestId) {
@@ -191,9 +191,9 @@ const UserOrdersPage: React.FC = () => {
         onSelectOrder={setSelectedOrder}
         loading={loading}
         error={error}
-        tabs={tabsWithCounts}
-        activeTab={activeTab}
-        onTabChange={handleTabChange}
+              tabs={tabsWithCounts} 
+              activeTab={activeTab} 
+              onTabChange={handleTabChange}
         getStatusBadgeClass={getStatusBadgeClass}
         formatDate={formatDate}
         adminMode={false}
