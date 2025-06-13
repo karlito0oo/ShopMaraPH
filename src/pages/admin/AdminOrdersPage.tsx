@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { OrderApi } from '../../services/ApiService';
-import { API_CONFIG } from '../../config';
 import AdminLayout from '../../components/layouts/AdminLayout';
 import OrdersPanel from '../../components/OrdersPanel';
-import type { Order, OrderItem, User } from '../../types/order';
+import type { Order } from '../../types/order';
 
 const AdminOrdersPage: React.FC = () => {
   const { token, isAdmin } = useAuth();
@@ -128,13 +127,6 @@ const AdminOrdersPage: React.FC = () => {
     setFilteredOrders(filtered);
   };
 
-  const handleViewOrder = (order: Order) => {
-    setSelectedOrder(order);
-    setUpdateStatus(order.status);
-    setAdminNotes(order.admin_notes || '');
-    setUpdateSuccess(false);
-  };
-
   const handleStatusUpdate = async () => {
     if (!token || !selectedOrder) return;
     
@@ -202,7 +194,6 @@ const AdminOrdersPage: React.FC = () => {
       darkTabs={true}
     >
       <OrdersPanel
-        orders={orders}
         filteredOrders={filteredOrders}
         selectedOrder={selectedOrder}
         onSelectOrder={(order: Order | null) => {
@@ -210,17 +201,17 @@ const AdminOrdersPage: React.FC = () => {
           setUpdateStatus(order?.status || '');
           setAdminNotes(order?.admin_notes || '');
           setUpdateSuccess(false);
-              }}
+        }}
         loading={loading}
         error={error}
         tabs={tabs}
         activeTab={activeTab}
         onTabChange={handleTabChange}
         onClearFilters={() => {
-                setSearchQuery('');
-                setStatusFilter('');
-                setActiveTab('all');
-              }}
+          setSearchQuery('');
+          setStatusFilter('');
+          setActiveTab('all');
+        }}
         searchQuery={searchQuery}
         onSearchQueryChange={setSearchQuery}
         mobileView={mobileView}

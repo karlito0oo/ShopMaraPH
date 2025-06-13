@@ -28,7 +28,6 @@ const UnifiedSettings: React.FC<UnifiedSettingsProps> = ({ onSuccess, onError })
   const [deliveryFeeOutsideNcr, setDeliveryFeeOutsideNcr] = useState<number>(120);
   const [freeDeliveryThreshold, setFreeDeliveryThreshold] = useState<number>(0);
   // Carousel settings
-  const [interval, setInterval] = useState<number>(5000);
   const [intervalInput, setIntervalInput] = useState<number>(5000);
   const [carousels, setCarousels] = useState<HeroCarousel[]>([]);
   // Carousel modal
@@ -76,7 +75,6 @@ const UnifiedSettings: React.FC<UnifiedSettingsProps> = ({ onSuccess, onError })
       // Carousel
       const carouselRes = await HeroCarouselApi.getAll(token);
       setCarousels(carouselRes.data.carousels);
-      setInterval(carouselRes.data.interval);
       setIntervalInput(carouselRes.data.interval);
     } catch (err) {
       showToast('Failed to load settings', 'error');
@@ -105,7 +103,6 @@ const UnifiedSettings: React.FC<UnifiedSettingsProps> = ({ onSuccess, onError })
         { key: 'payment_options_description', value: paymentOptionsDescription },
         { key: 'what_happens_after_payment', value: whatHappensAfterPayment },
       ]);
-      setInterval(intervalInput);
       showToast('Settings updated successfully.', 'success');
     } catch (err: any) {
       showToast('Failed to update settings.', 'error');

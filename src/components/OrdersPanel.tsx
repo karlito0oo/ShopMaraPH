@@ -1,6 +1,6 @@
 import React from 'react';
 import { API_CONFIG } from '../config';
-import type { Order, OrderItem, User } from '../types/order';
+import type { Order } from '../types/order';
 
 interface Tab {
   id: string;
@@ -9,7 +9,6 @@ interface Tab {
 }
 
 interface OrdersPanelProps {
-  orders: Order[];
   filteredOrders: Order[];
   selectedOrder: Order | null;
   onSelectOrder: (order: Order | null) => void;
@@ -35,7 +34,6 @@ interface OrdersPanelProps {
 }
 
 const OrdersPanel: React.FC<OrdersPanelProps> = ({
-  orders,
   filteredOrders,
   selectedOrder,
   onSelectOrder,

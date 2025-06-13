@@ -2,10 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { OrderApi } from '../services/ApiService';
-import { API_CONFIG } from '../config';
-import TabButton from '../components/ui/TabButton';
 import OrdersPanel from '../components/OrdersPanel';
-import type { Order, OrderItem, User } from '../types/order';
+import type { Order } from '../types/order';
 
 const UserOrdersPage: React.FC = () => {
   const { token } = useAuth();
@@ -140,10 +138,6 @@ const UserOrdersPage: React.FC = () => {
     setActiveTab(tabId);
   };
 
-  const handleViewOrder = (order: Order) => {
-    setSelectedOrder(order);
-  };
-
   const getStatusBadgeClass = (status: string) => {
     switch (status) {
       case 'pending':
@@ -158,23 +152,6 @@ const UserOrdersPage: React.FC = () => {
         return 'bg-red-100 text-red-800';
       default:
         return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  const getStatusMessage = (status: string) => {
-    switch (status) {
-      case 'pending':
-        return 'Your order is being reviewed. We will approve it once payment is verified.';
-      case 'approved':
-        return 'Your payment has been verified. We are preparing your order for shipment.';
-      case 'shipped':
-        return 'Your order is on the way! It should arrive within the estimated delivery time.';
-      case 'delivered':
-        return 'Your order has been delivered. Thank you for shopping with us!';
-      case 'cancelled':
-        return 'This order has been cancelled. Please check any admin notes for details.';
-      default:
-        return 'Your order is being processed.';
     }
   };
 
@@ -209,7 +186,6 @@ const UserOrdersPage: React.FC = () => {
       </div>
 
       <OrdersPanel
-        orders={orders}
         filteredOrders={filteredOrders}
         selectedOrder={selectedOrder}
         onSelectOrder={setSelectedOrder}

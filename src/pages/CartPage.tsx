@@ -25,7 +25,7 @@ const CartPage = () => {
     backupGuestCart
   } = useCart();
 
-  const { profile, updateProfile, isLoading: profileLoading } = useProfile();
+  const { profile, updateProfile } = useProfile();
   const { deliveryFeeNcr, deliveryFeeOutsideNcr, isLoading: settingsLoading } = useSettings();
   const [province, setProvince] = useState<string>(profile?.province || '');
   const [isProvinceSaving, setIsProvinceSaving] = useState(false);

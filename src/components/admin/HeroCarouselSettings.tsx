@@ -16,7 +16,6 @@ interface HeroCarousel {
 const HeroCarouselSettings: React.FC = () => {
   const { token } = useAuth();
   const [carousels, setCarousels] = useState<HeroCarousel[]>([]);
-  const [interval, setInterval] = useState<number>(5000);
   const [intervalInput, setIntervalInput] = useState<number>(5000);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -44,7 +43,6 @@ const HeroCarouselSettings: React.FC = () => {
       if (!token) return;
       const res = await HeroCarouselApi.getAll(token);
       setCarousels(res.data.carousels);
-      setInterval(res.data.interval);
       setIntervalInput(res.data.interval);
     } catch (err: any) {
       setError('Failed to load hero carousel data');
@@ -146,8 +144,7 @@ const HeroCarouselSettings: React.FC = () => {
     if (!token) return;
     try {
       await HeroCarouselApi.updateInterval(token, intervalInput);
-      setInterval(intervalInput);
-      showToast('Interval updated successfully.', 'success');
+      fetchData();
     } catch (err: any) {
       showToast('Failed to update interval.', 'error');
     }
