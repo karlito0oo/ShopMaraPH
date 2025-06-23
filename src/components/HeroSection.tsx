@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import AnnouncementSlider from './AnnouncementSlider';
 import { HeroCarouselApi } from '../services/ApiService';
 
@@ -12,6 +12,9 @@ const HeroSection = () => {
   const [slides, setSlides] = useState<any[]>([]);
   const [intervalMs, setIntervalMs] = useState<number>(4000);
   const [current, setCurrent] = useState(0);
+  const [prev, setPrev] = useState(0);
+  const [isSliding, setIsSliding] = useState(false);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     HeroCarouselApi.getPublic().then(res => {
@@ -31,23 +34,66 @@ const HeroSection = () => {
   useEffect(() => {
     if (slides.length === 0) return;
     const interval = setInterval(() => {
-      setCurrent((prev) => (prev + 1) % slides.length);
+      setPrev(current);
+      setCurrent((prevIdx) => (prevIdx + 1) % slides.length);
+      setIsSliding(true);
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      timeoutRef.current = setTimeout(() => setIsSliding(false), 700); // match transition duration
     }, intervalMs);
-    return () => clearInterval(interval);
-  }, [slides, intervalMs]);
+    return () => {
+      clearInterval(interval);
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
+  }, [slides, intervalMs, current]);
+
+  // Helper to determine slide position
+  const getSlideStyle = (idx: number) => {
+    if (idx === current && isSliding) {
+      return {
+        transform: 'translateX(0%)',
+        transition: 'transform 0.7s cubic-bezier(0.4,0,0.2,1)',
+        zIndex: 2,
+        opacity: 1,
+      };
+    }
+    if (idx === prev && isSliding) {
+      return {
+        transform: 'translateX(-100%)',
+        transition: 'transform 0.7s cubic-bezier(0.4,0,0.2,1)',
+        zIndex: 1,
+        opacity: 1,
+      };
+    }
+    if (idx === current && !isSliding) {
+      return {
+        transform: 'translateX(0%)',
+        transition: 'none',
+        zIndex: 2,
+        opacity: 1,
+      };
+    }
+    return {
+      transform: 'translateX(100%)',
+      transition: 'none',
+      zIndex: 0,
+      opacity: 0,
+    };
+  };
 
   return (
     <div className="relative w-full h-[450px] md:h-[600px] flex items-center justify-center overflow-hidden border-b border-gray-200 bg-black">
       {/* Carousel Images */}
-      {slides.map((slide, idx) => (
-        <img
-          key={slide.image_url + idx}
-          src={slide.image_url}
-          alt="carousel background"
-          className={`absolute top-0 left-0 w-full h-full object-cover transition-opacity duration-700 ${idx === current ? 'opacity-100 z-0' : 'opacity-0 z-0'}`}
-          style={{ transitionProperty: 'opacity' }}
-        />
-      ))}
+      <div className="absolute top-0 left-0 w-full h-full">
+        {slides.map((slide, idx) => (
+          <img
+            key={slide.image_url + idx}
+            src={slide.image_url}
+            alt="carousel background"
+            className="absolute top-0 left-0 w-full h-full object-cover"
+            style={getSlideStyle(idx)}
+          />
+        ))}
+      </div>
       {/* Overlay */}
       <div className="absolute inset-0 bg-black bg-opacity-40 z-10" />
       {/* Content */}
