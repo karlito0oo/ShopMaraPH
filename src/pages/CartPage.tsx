@@ -2,21 +2,13 @@ import { useState, useEffect } from 'react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
-import CheckoutModal from '../components/CheckoutModal';
-import CheckoutPromptModal from '../components/CheckoutPromptModal';
-import GuestCheckoutModal from '../components/GuestCheckoutModal';
-import { OrderApi, CartApi } from '../services/ApiService';
+import UnifiedCheckoutModal, { PH_PROVINCES } from '../components/UnifiedCheckoutModal';
 import { useProfile } from '../context/ProfileContext';
 import { useSettings } from '../context/SettingsContext';
-import { PH_PROVINCES } from '../components/CheckoutModal';
 
 const CartPage = () => {
-  const { isAuthenticated, register } = useAuth();
-  const [isCheckoutModalOpen, setIsCheckoutModalOpen] = useState(false);
-  const [isPromptModalOpen, setIsPromptModalOpen] = useState(false);
-  const [isGuestCheckoutModalOpen, setIsGuestCheckoutModalOpen] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false);
-  
+  const { isAuthenticated } = useAuth();
+  const [isUnifiedCheckoutOpen, setIsUnifiedCheckoutOpen] = useState(false);
   const { 
     cartItems, 
     removeFromCart, 
@@ -25,10 +17,9 @@ const CartPage = () => {
     backupGuestCart
   } = useCart();
 
-  const { profile, updateProfile } = useProfile();
+  const { profile } = useProfile();
   const { deliveryFeeNcr, deliveryFeeOutsideNcr, isLoading: settingsLoading } = useSettings();
   const [province, setProvince] = useState<string>(profile?.province || '');
-  const [isProvinceSaving, setIsProvinceSaving] = useState(false);
 
   useEffect(() => {
     if (profile && profile.province) {
@@ -48,127 +39,15 @@ const CartPage = () => {
   const total = subtotal + shipping;
 
   const handleCheckoutClick = () => {
-    if (isAuthenticated) {
-      // If user is logged in, go straight to checkout
-      setIsCheckoutModalOpen(true);
-    } else {
-      // If user is not logged in, show the prompt
-      setIsPromptModalOpen(true);
-    }
+    setIsUnifiedCheckoutOpen(true);
   };
 
-  const closeCheckoutModal = () => {
-    setIsCheckoutModalOpen(false);
+  const closeUnifiedCheckoutModal = () => {
+    setIsUnifiedCheckoutOpen(false);
   };
 
-  const closePromptModal = () => {
-    setIsPromptModalOpen(false);
-  };
-
-  const closeGuestCheckoutModal = () => {
-    setIsGuestCheckoutModalOpen(false);
-  };
-
-  const handleContinueAsGuest = () => {
-    setIsPromptModalOpen(false);
-    setIsGuestCheckoutModalOpen(true);
-  };
-
-  const handleCreateAccount = async (name: string, email: string, password: string) => {
-    try {
-      setIsProcessing(true);
-      console.log("1. Starting account creation process");
-      
-      // Backup the guest cart
-      const guestCartItems = backupGuestCart();
-      console.log("2. Guest cart items backed up:", guestCartItems.length);
-      
-      // Register the user
-      console.log("3. Calling register function");
-      const userData = await register(name, email, password, password);
-      console.log("4. Registration successful, token:", userData.token ? "received" : "missing");
-      
-      // Use the token directly from registration response
-      const token = userData.token;
-      
-      // Add a small delay to ensure authentication state is updated
-      console.log("5. Waiting for auth state to update");
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Load cart items directly using the CartApi service
-      if (guestCartItems.length > 0 && token) {
-        console.log("6. Manually adding cart items using CartApi");
-        
-        // Process each item one by one using the API directly
-        for (const item of guestCartItems) {
-          console.log("Adding item to user cart via API:", item.product.id, item.size, item.quantity);
-          try {
-            const response = await CartApi.addToCart(
-              token, 
-              item.product.id, 
-              item.size, 
-              item.quantity
-            );
-            console.log("Cart API response:", response.success ? "success" : "failed");
-          } catch (error) {
-            console.error("Error adding item to cart:", error);
-          }
-        }
-      }
-      
-      
-      // Store success flag in sessionStorage to show checkout modal after reload
-      sessionStorage.setItem('showCheckoutAfterReload', 'true');
-      
-      // Reload the page to ensure cart is properly loaded with the new user's data
-      console.log("9. Reloading page to refresh cart data");
-      window.location.reload();
-      
-    } catch (error) {
-      console.error("Error in handleCreateAccount:", error);
-      setIsProcessing(false);
-      // Error handling is done inside the CheckoutPromptModal component
-      throw error;
-    }
-  };
-
-  const handleGuestOrderSubmit = async (formData: any) => {
-    const data = new FormData();
-    data.append('customer_name', formData.name);
-    data.append('email', formData.email);
-    data.append('instagram_username', formData.instagramUsername);
-    data.append('address_line1', formData.addressLine1);
-    data.append('barangay', formData.barangay);
-    data.append('province', formData.province);
-    data.append('city', formData.city);
-    data.append('mobile_number', formData.mobileNumber);
-    data.append('payment_proof', formData.paymentProof);
-    data.append('cart_items', JSON.stringify(cartItems.map(item => ({
-      product_id: item.product.id,
-      size: item.size,
-      quantity: item.quantity,
-    }))));
-    data.append('shipping_fee', String(shipping));
-    if (formData.guest_id) {
-      data.append('guest_id', formData.guest_id);
-    }
-    await OrderApi.createGuestOrder(data);
-    clearCart();
-  };
-
-  const handleProvinceChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const newProvince = e.target.value;
-    setProvince(newProvince);
-    if (isAuthenticated) {
-      setIsProvinceSaving(true);
-      try {
-        await updateProfile({ province: newProvince });
-      } catch (err) {
-        console.error('Failed to update province:', err);
-      } finally {
-        setIsProvinceSaving(false);
-      }
-    }
+  const handleProvinceChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setProvince(e.target.value);
   };
 
   return (
@@ -301,10 +180,10 @@ const CartPage = () => {
               <div className="flex justify-between items-center">
                 <span className="text-gray-600">Shipping</span>
                 <select
-                  className="border border-gray-300 rounded-md py-1 px-2 focus:outline-none focus:ring-black focus:border-black text-sm"
+                  className="border border-gray-300 rounded-md py-1 px-2 focus:outline-none focus:ring-black focus:border-black text-sm ml-2"
                   value={province}
                   onChange={handleProvinceChange}
-                  disabled={isProvinceSaving || settingsLoading}
+                  disabled={settingsLoading}
                 >
                   {PH_PROVINCES.map((prov) => (
                     <option key={prov.value} value={prov.value}>{prov.label}</option>
@@ -322,10 +201,9 @@ const CartPage = () => {
               </div>
               <button
                 onClick={handleCheckoutClick}
-                disabled={isProcessing}
-                className="w-full bg-[#ad688f] text-white py-3 px-4 font-medium rounded hover:bg-[#96577b] transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+                className="w-full bg-[#ad688f] text-white py-3 px-4 font-medium rounded hover:bg-[#96577b] transition-colors"
               >
-                {isProcessing ? 'Processing...' : 'Checkout'}
+                Checkout
               </button>
               {isAuthenticated && (
                 <Link
@@ -340,29 +218,11 @@ const CartPage = () => {
         </div>
       )}
 
-      {/* For logged-in users */}
-      <CheckoutModal 
-        isOpen={isCheckoutModalOpen} 
-        onClose={closeCheckoutModal} 
+      <UnifiedCheckoutModal
+        isOpen={isUnifiedCheckoutOpen}
+        onClose={closeUnifiedCheckoutModal}
         totalAmount={total}
-      />
-
-      {/* For non-logged-in users - prompt to login or continue as guest */}
-      <CheckoutPromptModal
-        isOpen={isPromptModalOpen}
-        onClose={closePromptModal}
-        onContinueAsGuest={handleContinueAsGuest}
-        onCreateAccount={handleCreateAccount}
-      />
-
-      {/* For guest checkout */}
-      <GuestCheckoutModal 
-        isOpen={isGuestCheckoutModalOpen}
-        onClose={closeGuestCheckoutModal}
-        totalAmount={subtotal}
-        onSubmitOrder={handleGuestOrderSubmit}
         province={province}
-        setProvince={setProvince}
       />
     </div>
   )

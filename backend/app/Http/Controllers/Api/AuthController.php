@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use App\Models\User;
+use App\Http\Controllers\Api\CartController;
 
 class AuthController extends Controller
 {
@@ -33,6 +34,25 @@ class AuthController extends Controller
         ]);
 
         $token = $user->createToken('auth_token')->plainTextToken;
+
+        // Handle cart_items if present
+        if ($request->has('cart_items')) {
+            $cartItems = json_decode($request->cart_items, true);
+            if (is_array($cartItems)) {
+                // Temporarily authenticate as the new user
+                Auth::login($user);
+                $cartController = new CartController();
+                foreach ($cartItems as $item) {
+                    $cartRequest = new Request([
+                        'product_id' => $item['product_id'],
+                        'size' => $item['size'],
+                        'quantity' => $item['quantity'],
+                    ]);
+                    $cartController->addToCart($cartRequest);
+                }
+                Auth::logout();
+            }
+        }
 
         return response()->json([
             'success' => true,

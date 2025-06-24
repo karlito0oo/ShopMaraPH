@@ -15,7 +15,13 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isAdmin: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (name: string, email: string, password: string, password_confirmation: string) => Promise<{ user: User; token: string }>;
+  register: (
+    name: string,
+    email: string,
+    password: string,
+    password_confirmation: string,
+    cart_items?: string
+  ) => Promise<{ user: User; token: string }>;
   logout: () => Promise<void>;
   validateToken: () => Promise<boolean>;
   migrateGuestCart: () => Promise<boolean>;
@@ -97,8 +103,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   // Register a new user
-  const register = async (name: string, email: string, password: string, password_confirmation: string) => {
+  const register = async (
+    name: string,
+    email: string,
+    password: string,
+    password_confirmation: string,
+    cart_items?: string
+  ) => {
     try {
+      const body: any = { name, email, password, password_confirmation };
+      if (cart_items) body.cart_items = cart_items;
       const response = await fetch(`${API_URL}/register`, {
         method: 'POST',
         headers: {
@@ -106,7 +120,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           'Accept': 'application/json',
         },
         credentials: 'include',
-        body: JSON.stringify({ name, email, password, password_confirmation }),
+        body: JSON.stringify(body),
       });
 
       if (!response.ok) {
