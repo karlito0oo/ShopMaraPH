@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
 import type { Product } from '../types/product';
+import { ProductApi } from '../services/ApiService';
 
 const ProductDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -16,11 +17,8 @@ const ProductDetailPage = () => {
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const response = await fetch(`/api/products/${id}`);
-        if (!response.ok) {
-          throw new Error('Failed to fetch product');
-        }
-        const data = await response.json();
+       
+        const data = await ProductApi.getProductById(id || '');
         setProduct(data.data);
       } catch (error) {
         console.error('Error:', error);
@@ -162,7 +160,7 @@ const ProductDetailPage = () => {
               </span>
             </div>
             <div className="mt-4">
-              <p className="text-xl font-semibold">₱{product.price.toFixed(2)}</p>
+              <p className="text-xl font-semibold">₱{Number(product.price).toFixed(2)}</p>
             </div>
           </div>
 

@@ -21,88 +21,88 @@ const ProductFilter: React.FC<ProductFilterProps> = ({
   showCategoryFilter = true,
 }) => {
   return (
-    <div className="space-y-6">
+    <div className="bg-white p-6 rounded-lg shadow-sm space-y-6">
       {/* Search Filter */}
       <div className="mb-6">
-        <h3 className="font-medium text-sm mb-2">Search</h3>
+        <h3 className="text-gray-800 font-semibold text-sm uppercase tracking-wider mb-3">Search</h3>
         <input
           type="text"
           value={searchKeyword}
           onChange={(e) => onKeywordChange(e.target.value)}
           placeholder="Search products..."
-          className="w-full px-3 py-2 border rounded-md"
+          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-all"
         />
       </div>
 
       {/* Category Filter */}
       {showCategoryFilter && onCategoryChange && (
         <div className="mb-6">
-          <h3 className="font-medium text-sm mb-2">Category</h3>
-          <div className="space-y-2">
-            <div className="flex items-center">
+          <h3 className="text-gray-800 font-semibold text-sm uppercase tracking-wider mb-3">Category</h3>
+          <div className="space-y-3">
+            <label className="flex items-center cursor-pointer group">
               <input 
                 type="radio" 
                 id="all" 
                 name="category" 
                 checked={activeCategory === 'all'}
                 onChange={() => onCategoryChange('all')}
-                className="mr-2"
+                className="form-radio text-black focus:ring-black h-4 w-4"
               />
-              <label htmlFor="all">All Products</label>
-            </div>
-            <div className="flex items-center">
+              <span className="ml-3 text-gray-700 group-hover:text-black transition-colors">All Products</span>
+            </label>
+            <label className="flex items-center cursor-pointer group">
               <input 
                 type="radio" 
                 id="men" 
                 name="category" 
                 checked={activeCategory === 'men'}
                 onChange={() => onCategoryChange('men')}
-                className="mr-2"
+                className="form-radio text-black focus:ring-black h-4 w-4"
               />
-              <label htmlFor="men">Men</label>
-            </div>
-            <div className="flex items-center">
+              <span className="ml-3 text-gray-700 group-hover:text-black transition-colors">Men</span>
+            </label>
+            <label className="flex items-center cursor-pointer group">
               <input 
                 type="radio" 
                 id="women" 
                 name="category" 
                 checked={activeCategory === 'women'}
                 onChange={() => onCategoryChange('women')}
-                className="mr-2"
+                className="form-radio text-black focus:ring-black h-4 w-4"
               />
-              <label htmlFor="women">Women</label>
-            </div>
+              <span className="ml-3 text-gray-700 group-hover:text-black transition-colors">Women</span>
+            </label>
           </div>
         </div>
       )}
 
       {/* Size Filter */}
       <div className="mb-6">
-        <h3 className="font-medium text-sm mb-2">Size</h3>
-        <div className="space-y-2">
-          <div className="flex items-center">
+        <h3 className="text-gray-800 font-semibold text-sm uppercase tracking-wider mb-3">Size</h3>
+        <div className="space-y-3">
+          <label className="flex items-center cursor-pointer group">
             <input 
               type="radio" 
               id="size-all" 
               name="size" 
               checked={activeSize === 'all'}
               onChange={() => onSizeChange('all')}
-              className="mr-2"
+              className="form-radio text-black focus:ring-black h-4 w-4"
             />
-            <label htmlFor="size-all">All Sizes</label>
-          </div>
+            <span className="ml-3 text-gray-700 group-hover:text-black transition-colors">All Sizes</span>
+          </label>
           {(['xs', 's', 'm', 'l', 'xl', 'xxl'] as ProductSize[]).map((size) => (
-            <div key={size} className="flex items-center">
+            <label key={size} className="flex items-center cursor-pointer group">
               <input 
                 type="radio" 
                 id={`size-${size}`}
                 name="size" 
                 checked={activeSize === size}
                 onChange={() => onSizeChange(size)}
-                className="mr-2"
+                className="form-radio text-black focus:ring-black h-4 w-4"
               />
-              <label htmlFor={`size-${size}`}>{size.toUpperCase()}</label>
-            </div>
+              <span className="ml-3 text-gray-700 group-hover:text-black transition-colors">{size.toUpperCase()}</span>
+            </label>
           ))}
         </div>
       </div>

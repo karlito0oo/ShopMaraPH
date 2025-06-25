@@ -41,6 +41,7 @@ class Product extends Model
     protected $casts = [
         'is_new_arrival' => 'boolean',
         'is_sale' => 'boolean',
+        'images' => 'array',
         'price' => 'decimal:2'
     ];
 

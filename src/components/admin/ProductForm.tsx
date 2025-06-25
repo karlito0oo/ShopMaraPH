@@ -24,9 +24,10 @@ const ProductForm: React.FC<ProductFormProps> = ({
   const { token } = useAuth();
   const [loading, setLoading] = useState(false);
   const [mainImage, setMainImage] = useState<File | null>(null);
-  const [additionalImages, setAdditionalImages] = useState<File[]>([]);
+  const [newAdditionalImages, setNewAdditionalImages] = useState<File[]>([]);
   const [mainImagePreview, setMainImagePreview] = useState<string>('');
-  const [additionalImagePreviews, setAdditionalImagePreviews] = useState<string[]>([]);
+  const [existingAdditionalImages, setExistingAdditionalImages] = useState<string[]>([]);
+  const [newAdditionalImagePreviews, setNewAdditionalImagePreviews] = useState<string[]>([]);
 
   const [formData, setFormData] = useState({
     sku: '',
@@ -57,7 +58,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
       }
 
       if (initialData.images && Array.isArray(initialData.images)) {
-        setAdditionalImagePreviews(initialData.images);
+        setExistingAdditionalImages(initialData.images);
       }
     }
   }, [initialData, isEditing]);
@@ -80,10 +81,19 @@ const ProductForm: React.FC<ProductFormProps> = ({
   const handleAdditionalImagesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const newFiles = Array.from(e.target.files);
-      setAdditionalImages(prev => [...prev, ...newFiles]);
+      setNewAdditionalImages(prev => [...prev, ...newFiles]);
       const newPreviews = newFiles.map(file => URL.createObjectURL(file));
-      setAdditionalImagePreviews(prev => [...prev, ...newPreviews]);
+      setNewAdditionalImagePreviews(prev => [...prev, ...newPreviews]);
     }
+  };
+
+  const removeExistingImage = (index: number) => {
+    setExistingAdditionalImages(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const removeNewImage = (index: number) => {
+    setNewAdditionalImages(prev => prev.filter((_, i) => i !== index));
+    setNewAdditionalImagePreviews(prev => prev.filter((_, i) => i !== index));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -101,17 +111,22 @@ const ProductForm: React.FC<ProductFormProps> = ({
       formDataToSend.append('is_new_arrival', formData.isNewArrival.toString());
       formDataToSend.append('is_sale', formData.isSale.toString());
 
+      // Handle main image
       if (mainImage) {
         formDataToSend.append('image', mainImage);
+      } else if (isEditing && mainImagePreview) {
+        formDataToSend.append('existing_image', mainImagePreview);
       }
 
-      additionalImages.forEach(image => {
+      // Handle additional images - first add existing ones
+      if (existingAdditionalImages.length > 0) {
+        formDataToSend.append('existing_additional_images', JSON.stringify(existingAdditionalImages));
+      }
+
+      // Then add new ones
+      newAdditionalImages.forEach(image => {
         formDataToSend.append('additional_images[]', image);
       });
-
-      if (isEditing && initialData.images) {
-        formDataToSend.append('original_image_urls', JSON.stringify(initialData.images));
-      }
 
       if (isEditing) {
         await ProductApi.updateProduct(token!, initialData.id, formDataToSend);
@@ -323,15 +338,27 @@ const ProductForm: React.FC<ProductFormProps> = ({
             <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
               <div className="space-y-1 text-center">
                 <div className="flex flex-wrap gap-4 justify-center">
-                  {additionalImagePreviews.map((preview, index) => (
-                    <div key={index} className="relative">
-                      <img src={preview} alt={`Preview ${index + 1}`} className="h-32 w-32 object-cover" />
+                  {/* Existing Images */}
+                  {existingAdditionalImages.map((imageUrl, index) => (
+                    <div key={`existing-${index}`} className="relative">
+                      <img src={imageUrl} alt={`Existing ${index + 1}`} className="h-32 w-32 object-cover" />
                       <button
                         type="button"
-                        onClick={() => {
-                          setAdditionalImages(prev => prev.filter((_, i) => i !== index));
-                          setAdditionalImagePreviews(prev => prev.filter((_, i) => i !== index));
-                        }}
+                        onClick={() => removeExistingImage(index)}
+                        className="absolute top-0 right-0 -mt-2 -mr-2 bg-red-500 text-white rounded-full p-1"
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                  
+                  {/* New Images */}
+                  {newAdditionalImagePreviews.map((preview, index) => (
+                    <div key={`new-${index}`} className="relative">
+                      <img src={preview} alt={`New ${index + 1}`} className="h-32 w-32 object-cover" />
+                      <button
+                        type="button"
+                        onClick={() => removeNewImage(index)}
                         className="absolute top-0 right-0 -mt-2 -mr-2 bg-red-500 text-white rounded-full p-1"
                       >
                         ×

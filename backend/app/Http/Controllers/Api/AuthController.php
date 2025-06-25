@@ -45,8 +45,6 @@ class AuthController extends Controller
                 foreach ($cartItems as $item) {
                     $cartRequest = new Request([
                         'product_id' => $item['product_id'],
-                        'size' => $item['size'],
-                        'quantity' => $item['quantity'],
                     ]);
                     $cartController->addToCart($cartRequest);
                 }

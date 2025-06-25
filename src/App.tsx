@@ -72,7 +72,7 @@ function App() {
                       </ProtectedRoute>
                     } />
                     <Route path="/products" element={<AllProductsPage />} />
-                    <Route path="/product/:productId" element={<ProductDetailPage />} />
+                    <Route path="/product/:id" element={<ProductDetailPage />} />
                     
                     {/* Admin routes */}
                     <Route path="/admin" element={

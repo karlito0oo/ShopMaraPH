@@ -52,7 +52,7 @@ class ProductController extends Controller
             $isUpdate = !is_null($id);
             
             // Different validation rules for update vs create
-            $imageValidation = $isUpdate ? 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048' : 'required|image|mimes:jpeg,png,jpg,gif|max:2048';
+            $imageValidation = $isUpdate ? 'nullable|image|mimes:jpeg,png,jpg,gif|max:5048' : 'required|image|mimes:jpeg,png,jpg,gif|max:2048';
             $skuValidation = $isUpdate ? 'nullable|string|max:50|unique:products,sku,' . $id : 'nullable|string|max:50|unique:products,sku';
 
             $validator = Validator::make($request->all(), [
@@ -62,7 +62,7 @@ class ProductController extends Controller
                 'care_instructions' => 'nullable|string',
                 'price' => 'required|numeric|min:0',
                 'image' => $imageValidation,
-                'additional_images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+                'additional_images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5048',
                 'is_new_arrival' => 'required|in:true,false',
                 'is_sale' => 'required|in:true,false',
                 'status' => 'sometimes|in:Available,Sold',
@@ -97,17 +97,23 @@ class ProductController extends Controller
                     Storage::disk('public')->delete($product->image);
                 }
                 $product->image = $request->file('image')->store('products', 'public');
+            } elseif ($isUpdate && $request->has('existing_image')) {
+                // Keep existing main image - extract path from URL
+                $path = parse_url($request->existing_image, PHP_URL_PATH);
+                $product->image = preg_replace('#^/storage/#', '', $path);
             }
 
             // Handle additional images
             $additionalImagesPaths = [];
-            if ($isUpdate) {
-                // Preserve existing additional images if this is an update
-                $additionalImagesPaths = $product->images ?? [];
-                
-                // Get original image URLs if provided
-                if ($request->has('original_image_urls')) {
-                    $originalImageUrls = json_decode($request->original_image_urls, true);
+            
+            // Handle existing additional images
+            if ($request->has('existing_additional_images')) {
+                $existingImages = json_decode($request->existing_additional_images, true) ?? [];
+                foreach ($existingImages as $imageUrl) {
+                    // Extract just the path after 'storage/'
+                    $path = parse_url($imageUrl, PHP_URL_PATH);
+                    $path = preg_replace('#^/storage/#', '', $path);
+                    $additionalImagesPaths[] = $path;
                 }
             }
             
@@ -115,6 +121,19 @@ class ProductController extends Controller
             if ($request->hasFile('additional_images')) {
                 foreach ($request->file('additional_images') as $image) {
                     $additionalImagesPaths[] = $image->store('products', 'public');
+                }
+            }
+            
+            // Clean up removed images
+            if ($isUpdate && $product->images) {
+                $currentPaths = $additionalImagesPaths;
+                $oldPaths = $product->images;
+                
+                // Delete images that are no longer in use
+                foreach ($oldPaths as $oldPath) {
+                    if (!in_array($oldPath, $currentPaths)) {
+                        Storage::disk('public')->delete($oldPath);
+                    }
                 }
             }
             
@@ -151,7 +170,6 @@ class ProductController extends Controller
     {
         try {
             $product = Product::findOrFail($id);
-            
             // Transform to match frontend format
             $transformedProduct = [
                 'id' => $product->id,

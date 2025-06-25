@@ -18,11 +18,11 @@ const ManageProducts: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const { showToast } = useToast();
   const { token } = useAuth();
-
+  
   useEffect(() => {
     fetchProducts();
   }, []);
-
+  
   const fetchProducts = async () => {
     try {
       const response = await ProductApi.getAllProducts();
@@ -39,12 +39,12 @@ const ManageProducts: React.FC = () => {
       setLoading(false);
     }
   };
-
+  
   const handleDelete = async (productId: number) => {
     if (!window.confirm('Are you sure you want to delete this product?')) {
       return;
     }
-
+    
     try {
       await ProductApi.deleteProduct(token!, productId);
       showToast('Product deleted successfully', 'success');
@@ -63,36 +63,36 @@ const ManageProducts: React.FC = () => {
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Manage Products</h1>
-        <Link
+          <Link 
           to="/admin/products/add"
           className="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700"
-        >
-          Add New Product
-        </Link>
+          >
+            Add New Product
+          </Link>
       </div>
-
+      
       <div className="bg-white shadow-md rounded-lg overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Product
-              </th>
+                </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Price
-              </th>
+                  Price
+                </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Category
-              </th>
+                  Category
+                </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Status
-              </th>
+                </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Actions
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
             {products.map((product) => (
               <tr key={product.id}>
                 <td className="px-6 py-4 whitespace-nowrap">
@@ -104,13 +104,13 @@ const ManageProducts: React.FC = () => {
                       <div className="text-sm font-medium text-gray-900">{product.name}</div>
                     </div>
                   </div>
-                </td>
+                  </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="text-sm text-gray-900">₱{product.price.toFixed(2)}</div>
-                </td>
+                  </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="text-sm text-gray-900">{product.category}</div>
-                </td>
+                  </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span
                     className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
@@ -121,26 +121,26 @@ const ManageProducts: React.FC = () => {
                   >
                     {product.status}
                   </span>
-                </td>
+                  </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                   <Link
                     to={`/admin/products/edit/${product.id}`}
                     className="text-indigo-600 hover:text-indigo-900 mr-4"
-                  >
-                    Edit
+                    >
+                      Edit
                   </Link>
-                  <button
-                    onClick={() => handleDelete(product.id)}
-                    className="text-red-600 hover:text-red-900"
-                  >
-                    Delete
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+                    <button 
+                      onClick={() => handleDelete(product.id)}
+                      className="text-red-600 hover:text-red-900"
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
     </div>
   );
 };
