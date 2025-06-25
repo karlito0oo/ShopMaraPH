@@ -1,15 +1,14 @@
 import { useState, useEffect } from 'react';
 import ProductFilter from '../components/ProductFilter';
 import ProductGrid from '../components/ProductGrid';
-import type { Product, ProductCategory, ProductSize } from '../types/product';
-import { getAllProducts } from '../services/ProductService';
-import { filterProducts } from '../types/product';
+import type { Product, ProductSize } from '../types/product';
+import { getSaleProducts } from '../services/ProductService';
+import { filterProductsBySize } from '../types/product';
 
 const SalePage = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeCategory, setActiveCategory] = useState<ProductCategory>('sale');
   const [activeSize, setActiveSize] = useState<ProductSize>('all');
   const [searchKeyword, setSearchKeyword] = useState('');
 
@@ -17,10 +16,10 @@ const SalePage = () => {
     const fetchProducts = async () => {
       setIsLoading(true);
       try {
-        const allProducts = await getAllProducts();
-        setProducts(allProducts);
+        const saleProducts = await getSaleProducts();
+        setProducts(saleProducts);
       } catch (error) {
-        console.error('Error fetching products:', error);
+        console.error('Error fetching sale products:', error);
       } finally {
         setIsLoading(false);
       }
@@ -30,14 +29,9 @@ const SalePage = () => {
   }, []);
 
   useEffect(() => {
-    // Always filter for sale products on the sale page
-    const filtered = filterProducts(products, activeCategory, activeSize, searchKeyword, false, true);
+    const filtered = filterProductsBySize(products, activeSize, searchKeyword);
     setFilteredProducts(filtered);
-  }, [products, activeCategory, activeSize, searchKeyword]);
-
-  const handleCategoryChange = (category: ProductCategory) => {
-    setActiveCategory(category);
-  };
+  }, [products, activeSize, searchKeyword]);
 
   const handleSizeChange = (size: ProductSize) => {
     setActiveSize(size);
@@ -48,7 +42,6 @@ const SalePage = () => {
   };
 
   const handleResetFilters = () => {
-    setActiveCategory('sale');
     setActiveSize('all');
     setSearchKeyword('');
   };
@@ -76,12 +69,11 @@ const SalePage = () => {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <div className="md:col-span-1">
           <ProductFilter
-            activeCategory={activeCategory}
             activeSize={activeSize}
             searchKeyword={searchKeyword}
-            onCategoryChange={handleCategoryChange}
             onSizeChange={handleSizeChange}
             onKeywordChange={handleSearchChange}
+            showCategoryFilter={false}
           />
         </div>
         

@@ -20,6 +20,14 @@ class Order extends Model
     const STATUS_DELIVERED = 'delivered';
     const STATUS_CANCELLED = 'cancelled';
 
+    const STATUSES = [
+        self::STATUS_PENDING,
+        self::STATUS_APPROVED,
+        self::STATUS_SHIPPED,
+        self::STATUS_DELIVERED,
+        self::STATUS_CANCELLED,
+    ];
+
     /**
      * The attributes that are mass assignable.
      *

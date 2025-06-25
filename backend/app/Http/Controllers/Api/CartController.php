@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\Product;
-use App\Models\ProductSize;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
@@ -18,52 +17,50 @@ class CartController extends Controller
      */
     public function getCart()
     {
-        $user = Auth::user();
-        $cart = $user->cart()->with(['items.product'])->first();
-        
-        if (!$cart) {
-            // Return empty cart if none exists yet
+        try {
+            $user = Auth::user();
+$cart = Cart::with(['items.product'])->where('user_id', $user->id)->first();
+
+if (!$cart) {
+    return response()->json([
+        'success' => true,
+        'data' => [
+            'items' => [],
+            'total' => 0,
+        ],
+    ]);
+}
+
+// Filter and transform items
+$cart->items = $cart->items->filter(function ($item) {
+    return $item->product && $item->product->status === 'Available';
+})->map(function ($item) {
+    if ($item->product && $item->product->image) {
+        $item->product->image = asset('storage/' . $item->product->image);
+    }
+    return $item;
+});
+
+// Calculate total
+$total = $cart->items->sum(function ($item) {
+    return $item->product->price;
+});
+
+return response()->json([
+    'success' => true,
+    'data' => [
+        'items' => $cart->items,
+        'total' => $total,
+    ],
+]);
+
+        } catch (\Exception $e) {
             return response()->json([
-                'success' => true,
-                'data' => [
-                    'items' => [],
-                    'totalItems' => 0,
-                    'totalPrice' => 0
-                ]
-            ]);
+                'success' => false,
+                'message' => 'Failed to get cart',
+                'error' => $e->getMessage(),
+            ], 500);
         }
-        
-        // Transform cart items to match frontend format
-        $transformedItems = $cart->items->map(function ($item) {
-            $product = $item->product;
-            return [
-                'id' => $item->id,
-                'product' => [
-                    'id' => $product->id,
-                    'name' => $product->name,
-                    'price' => $product->price,
-                    'image' => asset('storage/' . $product->image),
-                    'category' => $product->category,
-                ],
-                'size' => $item->size,
-                'quantity' => $item->quantity,
-            ];
-        });
-        
-        // Calculate totals
-        $totalItems = $cart->items->sum('quantity');
-        $totalPrice = $cart->items->reduce(function ($sum, $item) {
-            return $sum + ($item->product->price * $item->quantity);
-        }, 0);
-        
-        return response()->json([
-            'success' => true,
-            'data' => [
-                'items' => $transformedItems,
-                'totalItems' => $totalItems,
-                'totalPrice' => $totalPrice
-            ]
-        ]);
     }
 
     /**
@@ -71,149 +68,53 @@ class CartController extends Controller
      */
     public function addToCart(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'product_id' => 'required|exists:products,id',
-            'size' => 'required|string',
-            'quantity' => 'required|integer|min:1',
-        ]);
+        try {
+            $request->validate([
+                'product_id' => 'required|exists:products,id',
+            ]);
 
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors(),
-            ], 422);
-        }
-        
-        $user = Auth::user();
-        $productId = $request->product_id;
-        $size = $request->size;
-        $quantity = $request->quantity;
-        
-        // Verify product exists and has the requested size available
-        $product = Product::with('sizes')->findOrFail($productId);
-        $productSize = $product->sizes->where('size', $size)->first();
-        
-        if (!$productSize) {
-            return response()->json([
-                'success' => false,
-                'message' => 'The selected size is not available for this product.',
-            ], 422);
-        }
-        
-        // Check if quantity is available
-        if ($productSize->stock < $quantity) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Not enough stock available for the selected size.',
-            ], 422);
-        }
-        
-        // Get or create the user's cart
-        $cart = $user->cart;
-        if (!$cart) {
-            $cart = Cart::create(['user_id' => $user->id]);
-        }
-        
-        // Check if the product is already in the cart with the same size
-        $cartItem = $cart->items()->where('product_id', $productId)
-            ->where('size', $size)
-            ->first();
-        
-        if ($cartItem) {
-            // Update existing cart item
-            $newQuantity = $cartItem->quantity + $quantity;
-            
-            // Verify there's enough stock for the new total quantity
-            if ($productSize->stock < $newQuantity) {
+            // Check if product is available
+            $product = Product::where('id', $request->product_id)
+                ->where('status', 'Available')
+                ->first();
+
+            if (!$product) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Not enough stock available for the total requested quantity.',
+                    'message' => 'Product is not available',
                 ], 422);
             }
-            
-            $cartItem->quantity = $newQuantity;
-            $cartItem->save();
-        } else {
-            // Create new cart item
-            $cartItem = CartItem::create([
+
+            // Get or create cart
+            $user = Auth::user();
+            $cart = Cart::firstOrCreate(['user_id' => $user->id]);
+
+            // Check if product is already in cart
+            $existingItem = CartItem::where('cart_id', $cart->id)
+                ->where('product_id', $request->product_id)
+                ->first();
+
+            if ($existingItem) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Product is already in cart',
+                ], 422);
+            }
+
+            // Add item to cart
+            CartItem::create([
                 'cart_id' => $cart->id,
-                'product_id' => $productId,
-                'size' => $size,
-                'quantity' => $quantity,
+                'product_id' => $request->product_id,
             ]);
-        }
-        
-        // Return updated cart
-        return $this->getCart();
-    }
 
-    /**
-     * Update the quantity of a cart item.
-     */
-    public function updateCartItem(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'cart_item_id' => 'required|exists:cart_items,id',
-            'quantity' => 'required|integer|min:0',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors(),
-            ], 422);
-        }
-        
-        $user = Auth::user();
-        $cart = $user->cart;
-        
-        if (!$cart) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Cart not found.',
-            ], 404);
-        }
-        
-        $cartItemId = $request->cart_item_id;
-        $quantity = $request->quantity;
-        
-        // Get the cart item and verify it belongs to the user's cart
-        $cartItem = CartItem::where('id', $cartItemId)
-            ->where('cart_id', $cart->id)
-            ->with('product.sizes')
-            ->first();
-        
-        if (!$cartItem) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Cart item not found.',
-            ], 404);
-        }
-        
-        // If quantity is 0, remove the item
-        if ($quantity === 0) {
-            $cartItem->delete();
             return $this->getCart();
-        }
-        
-        // Verify there's enough stock for the requested quantity
-        $productSize = $cartItem->product->sizes
-            ->where('size', $cartItem->size)
-            ->first();
-        
-        if (!$productSize || $productSize->stock < $quantity) {
+        } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Not enough stock available for the requested quantity.',
-            ], 422);
+                'message' => 'Failed to add product to cart',
+                'error' => $e->getMessage(),
+            ], 500);
         }
-        
-        // Update the cart item
-        $cartItem->quantity = $quantity;
-        $cartItem->save();
-        
-        // Return updated cart
-        return $this->getCart();
     }
 
     /**
@@ -221,43 +122,30 @@ class CartController extends Controller
      */
     public function removeFromCart(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'cart_item_id' => 'required|exists:cart_items,id',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors(),
-            ], 422);
-        }
-        
-        $user = Auth::user();
-        $cart = $user->cart;
-        
-        if (!$cart) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Cart not found.',
-            ], 404);
-        }
-        
         $cartItemId = $request->cart_item_id;
-        
-        // Delete the cart item if it belongs to the user's cart
-        $deleted = CartItem::where('id', $cartItemId)
-            ->where('cart_id', $cart->id)
-            ->delete();
-        
-        if (!$deleted) {
+        try {
+            $user = Auth::user();
+            $cartItem = CartItem::whereHas('cart', function ($query) use ($user) {
+                $query->where('user_id', $user->id);
+            })->find($cartItemId);
+
+            if (!$cartItem) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Cart item not found',
+                ], 404);
+            }
+
+            $cartItem->delete();
+
+            return $this->getCart();
+        } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Cart item not found or already removed.',
-            ], 404);
+                'message' => 'Failed to remove product from cart',
+                'error' => $e->getMessage(),
+            ], 500);
         }
-        
-        // Return updated cart
-        return $this->getCart();
     }
 
     /**
@@ -265,22 +153,29 @@ class CartController extends Controller
      */
     public function clearCart()
     {
-        $user = Auth::user();
-        $cart = $user->cart;
-        
-        if ($cart) {
-            // Delete all items in the cart
-            $cart->items()->delete();
+        try {
+            $user = Auth::user();
+            $cart = Cart::where('user_id', $user->id)->first();
+
+            if ($cart) {
+                $cart->items()->delete();
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Cart cleared successfully.',
+                'data' => [
+                    'items' => [],
+                    'totalItems' => 0,
+                    'totalPrice' => 0
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to clear cart',
+                'error' => $e->getMessage(),
+            ], 500);
         }
-        
-        return response()->json([
-            'success' => true,
-            'message' => 'Cart cleared successfully.',
-            'data' => [
-                'items' => [],
-                'totalItems' => 0,
-                'totalPrice' => 0
-            ]
-        ]);
     }
 } 

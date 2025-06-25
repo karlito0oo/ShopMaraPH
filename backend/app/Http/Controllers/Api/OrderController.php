@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\ValidationException;
 
 class OrderController extends Controller
 {
@@ -42,7 +43,7 @@ class OrderController extends Controller
         }
 
         $user = Auth::user();
-        $cart = $user->cart()->with(['items.product.sizes'])->first();
+        $cart = $user->cart()->with(['items.product'])->first();
 
         if (!$cart || $cart->items->isEmpty()) {
             return response()->json([
@@ -57,7 +58,7 @@ class OrderController extends Controller
             // Calculate total amount
             $totalAmount = 0;
             foreach ($cart->items as $item) {
-                $totalAmount += $item->product->price * $item->quantity;
+                $totalAmount += $item->product->price;
             }
 
             // Handle payment proof upload
@@ -85,27 +86,28 @@ class OrderController extends Controller
             ]);
             $order->save();
 
-            // Create order items
+            // Create order items and mark products as sold
             foreach ($cart->items as $cartItem) {
+                // Check if product is available
+                $product = Product::where('id', $cartItem->product->id)
+                    ->where('status', 'Available')
+                    ->first();
+
+                if (!$product) {
+                    throw new \Exception("Product {$cartItem->product->name} is no longer available.");
+                }
+
                 $orderItem = new OrderItem([
                     'order_id' => $order->id,
                     'product_id' => $cartItem->product->id,
                     'product_name' => $cartItem->product->name,
-                    'size' => $cartItem->size,
-                    'quantity' => $cartItem->quantity,
                     'price' => $cartItem->product->price,
                 ]);
                 $orderItem->save();
 
-                // Put the product on hold by reducing available stock
-                $productSize = ProductSize::where('product_id', $cartItem->product->id)
-                    ->where('size', $cartItem->size)
-                    ->first();
-
-                if ($productSize) {
-                    $productSize->stock -= $cartItem->quantity;
-                    $productSize->save();
-                }
+                // Mark the product as sold
+                $product->status = 'Sold';
+                $product->save();
             }
 
             // Clear the cart
@@ -174,36 +176,23 @@ class OrderController extends Controller
             $orderItems = [];
             
             foreach ($cartItems as $item) {
-                $product = Product::find($item['product_id']);
+                $product = Product::where('id', $item['product_id'])
+                    ->where('status', 'Available')
+                    ->first();
                 
                 if (!$product) {
                     return response()->json([
                         'success' => false,
-                        'message' => 'Product not found: ' . $item['product_id'],
+                        'message' => 'Product not available: ' . $item['product_id'],
                     ], 422);
                 }
                 
-                // Check if the product has the requested size available
-                $productSize = ProductSize::where('product_id', $item['product_id'])
-                    ->where('size', $item['size'])
-                    ->where('stock', '>=', $item['quantity'])
-                    ->first();
-                
-                if (!$productSize) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => "Insufficient stock for {$product->name} (Size: {$item['size']})",
-                    ], 422);
-                }
-                
-                $totalAmount += $product->price * $item['quantity'];
+                $totalAmount += $product->price;
                 
                 // Build order item data
                 $orderItems[] = [
                     'product_id' => $product->id,
                     'product_name' => $product->name,
-                    'size' => $item['size'],
-                    'quantity' => $item['quantity'],
                     'price' => $product->price,
                 ];
             }
@@ -235,34 +224,25 @@ class OrderController extends Controller
             ]);
             $order->save();
 
-            // Create order items
+            // Create order items and mark products as sold
             foreach ($orderItems as $itemData) {
                 $orderItem = new OrderItem([
                     'order_id' => $order->id,
                     'product_id' => $itemData['product_id'],
                     'product_name' => $itemData['product_name'],
-                    'size' => $itemData['size'],
-                    'quantity' => $itemData['quantity'],
                     'price' => $itemData['price'],
                 ]);
                 $orderItem->save();
 
-                // Put the product on hold by reducing available stock
-                $productSize = ProductSize::where('product_id', $itemData['product_id'])
-                    ->where('size', $itemData['size'])
-                    ->first();
-
-                if ($productSize) {
-                    $productSize->stock -= $itemData['quantity'];
-                    $productSize->save();
-                }
+                // Mark the product as sold
+                Product::where('id', $itemData['product_id'])->update(['status' => 'Sold']);
             }
 
             DB::commit();
 
             return response()->json([
                 'success' => true,
-                'message' => 'Guest order created successfully',
+                'message' => 'Order created successfully',
                 'data' => [
                     'order' => $order->load('items'),
                 ],
@@ -271,7 +251,7 @@ class OrderController extends Controller
             DB::rollBack();
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to create guest order: ' . $e->getMessage(),
+                'message' => 'Failed to create order: ' . $e->getMessage(),
             ], 500);
         }
     }
@@ -282,7 +262,10 @@ class OrderController extends Controller
     public function getUserOrders()
     {
         $user = Auth::user();
-        $orders = $user->orders()->with('items')->orderBy('created_at', 'desc')->get();
+        $orders = Order::with('items.product')
+            ->where('user_id', $user->id)
+            ->orderBy('created_at', 'desc')
+            ->get();
 
         return response()->json([
             'success' => true,
@@ -298,7 +281,10 @@ class OrderController extends Controller
     public function getUserOrder($id)
     {
         $user = Auth::user();
-        $order = $user->orders()->with('items')->find($id);
+        $order = Order::with('items.product')
+            ->where('user_id', $user->id)
+            ->where('id', $id)
+            ->first();
 
         if (!$order) {
             return response()->json([
@@ -320,15 +306,9 @@ class OrderController extends Controller
      */
     public function getAllOrders(Request $request)
     {
-        $query = Order::with('items', 'user');
-
-        // Filter by status if provided
-        if ($request->has('status')) {
-            $query->where('status', $request->status);
-        }
-
-        // Order by created_at desc by default
-        $orders = $query->orderBy('created_at', 'desc')->get();
+        $orders = Order::with('items.product')
+            ->orderBy('created_at', 'desc')
+            ->get();
 
         return response()->json([
             'success' => true,
@@ -344,8 +324,7 @@ class OrderController extends Controller
     public function updateOrderStatus(Request $request, $id)
     {
         $validator = Validator::make($request->all(), [
-            'status' => 'required|string|in:pending,approved,shipped,delivered,cancelled',
-            'admin_notes' => 'nullable|string',
+            'status' => 'required|string|in:' . implode(',', Order::STATUSES),
         ]);
 
         if ($validator->fails()) {
@@ -355,47 +334,10 @@ class OrderController extends Controller
             ], 422);
         }
 
-        $order = Order::with('items')->find($id);
-
-        if (!$order) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Order not found',
-            ], 404);
-        }
-
         try {
-            DB::beginTransaction();
-
-            $oldStatus = $order->status;
+            $order = Order::findOrFail($id);
             $order->status = $request->status;
-
-            // If admin notes are provided, update them
-            if ($request->has('admin_notes')) {
-                $order->admin_notes = $request->admin_notes;
-            }
-
-            // If order is being approved now, set approved_at timestamp
-            if ($request->status === Order::STATUS_APPROVED && $oldStatus === Order::STATUS_PENDING) {
-                $order->approved_at = now();
-            }
-
-            // If order is being cancelled, return stock
-            if ($request->status === Order::STATUS_CANCELLED && $oldStatus !== Order::STATUS_CANCELLED) {
-                foreach ($order->items as $item) {
-                    $productSize = ProductSize::where('product_id', $item->product_id)
-                        ->where('size', $item->size)
-                        ->first();
-
-                    if ($productSize) {
-                        $productSize->stock += $item->quantity;
-                        $productSize->save();
-                    }
-                }
-            }
-
             $order->save();
-            DB::commit();
 
             return response()->json([
                 'success' => true,
@@ -405,10 +347,10 @@ class OrderController extends Controller
                 ],
             ]);
         } catch (\Exception $e) {
-            DB::rollBack();
             return response()->json([
                 'success' => false,
-                'message' => 'Failed to update order status: ' . $e->getMessage(),
+                'message' => 'Failed to update order status',
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -418,7 +360,7 @@ class OrderController extends Controller
      */
     public function getOrder($id)
     {
-        $order = Order::with(['items', 'user'])->find($id);
+        $order = Order::with('items.product')->find($id);
 
         if (!$order) {
             return response()->json([
@@ -440,8 +382,8 @@ class OrderController extends Controller
      */
     public function getGuestOrders($guestId)
     {
-        $orders = Order::where('guest_id', $guestId)
-            ->with('items')
+        $orders = Order::with('items.product')
+            ->where('guest_id', $guestId)
             ->orderBy('created_at', 'desc')
             ->get();
 
@@ -451,5 +393,80 @@ class OrderController extends Controller
                 'orders' => $orders,
             ],
         ]);
+    }
+
+    public function store(Request $request)
+    {
+        try {
+            $validatedData = $request->validate([
+                'user_id' => 'nullable|exists:users,id',
+                'guest_id' => 'nullable|string',
+                'email' => 'required|email',
+                'first_name' => 'required|string',
+                'last_name' => 'required|string',
+                'phone' => 'required|string',
+                'address' => 'required|string',
+                'city' => 'required|string',
+                'province' => 'required|string',
+                'postal_code' => 'required|string',
+                'total_amount' => 'required|numeric',
+                'shipping_fee' => 'required|numeric',
+                'items' => 'required|array',
+                'items.*.product_id' => 'required|exists:products,id',
+            ]);
+
+            DB::beginTransaction();
+
+            // Create the order
+            $order = Order::create([
+                'user_id' => $validatedData['user_id'] ?? null,
+                'guest_id' => $validatedData['guest_id'] ?? null,
+                'email' => $validatedData['email'],
+                'first_name' => $validatedData['first_name'],
+                'last_name' => $validatedData['last_name'],
+                'phone' => $validatedData['phone'],
+                'address' => $validatedData['address'],
+                'city' => $validatedData['city'],
+                'province' => $validatedData['province'],
+                'postal_code' => $validatedData['postal_code'],
+                'total_amount' => $validatedData['total_amount'],
+                'shipping_fee' => $validatedData['shipping_fee'],
+                'status' => 'pending'
+            ]);
+
+            // Create order items and mark products as sold
+            foreach ($validatedData['items'] as $item) {
+                OrderItem::create([
+                    'order_id' => $order->id,
+                    'product_id' => $item['product_id']
+                ]);
+
+                // Mark the product as sold
+                Product::where('id', $item['product_id'])->update(['status' => 'Sold']);
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Order created successfully',
+                'data' => $order->load('items.product')
+            ], 201);
+
+        } catch (ValidationException $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to create order',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 } 

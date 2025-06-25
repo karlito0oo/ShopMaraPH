@@ -1,10 +1,5 @@
-export type ProductSize = 'small' | 'medium' | 'large' | 'xlarge' | 'xxlarge' | 'xxxlarge' | 'all';
-export type ProductCategory = 'all' | 'new_arrival' | 'sale' | 'men' | 'women';
-
-export interface SizeStock {
-  size: ProductSize;
-  stock: number;
-}
+export type ProductCategory = 'men' | 'women' | 'all' | 'new_arrival' | 'sale';
+export type ProductSize = 'all' | 'xs' | 's' | 'm' | 'l' | 'xl' | 'xxl';
 
 export interface Product {
   id: string | number;
@@ -16,24 +11,29 @@ export interface Product {
   image: string;
   images?: string[];  // Optional array of additional images
   category: ProductCategory;
-  sizes: ProductSize[];
-  isBestSeller?: boolean; // DEPRECATED: No longer used in UI
   isNewArrival?: boolean;
   isSale?: boolean;
-  sizeStock: SizeStock[];  // Size-specific stock quantities (now required)
+  status: 'Available' | 'Sold';
+  size?: ProductSize;
 }
 
-export const getAvailableSizes = (product: Product, selectedSize: ProductSize): ProductSize[] => {
-  if (selectedSize === 'all') {
-    return product.sizes;
-  }
-  return product.sizes.filter(size => size === selectedSize || size === 'all');
+export const filterProductsBySize = (
+  products: Product[],
+  size: ProductSize,
+  searchKeyword: string = ''
+): Product[] => {
+  return products.filter(product => {
+    const sizeMatch = size === 'all' || product.size === size;
+    const keywordMatch = searchKeyword === '' || 
+      product.name.toLowerCase().includes(searchKeyword.toLowerCase());
+    
+    return sizeMatch && keywordMatch;
+  });
 };
 
 export const filterProducts = (
   products: Product[], 
-  category: ProductCategory, 
-  size: ProductSize,
+  category: ProductCategory,
   searchKeyword: string = '',
   showNewOnly: boolean = false,
   showSaleOnly: boolean = false
@@ -58,10 +58,9 @@ export const filterProducts = (
       (category === 'sale' && isSaleProduct) ||
       (category === product.category);
     
-    const sizeMatch = size === 'all' || product.sizes.includes(size);
     const keywordMatch = searchKeyword === '' || 
       product.name.toLowerCase().includes(searchKeyword.toLowerCase());
     
-    return categoryMatch && sizeMatch && keywordMatch;
+    return categoryMatch && keywordMatch;
   });
 }; 

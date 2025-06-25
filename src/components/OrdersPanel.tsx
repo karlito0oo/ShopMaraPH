@@ -109,7 +109,7 @@ const OrdersPanel: React.FC<OrdersPanelProps> = ({
         <div className="bg-white shadow rounded p-6 text-center">
           <p className="text-gray-600">Loading orders...</p>
         </div>
-      ) : filteredOrders.length === 0 ? (
+      ) : filteredOrders?.length === 0 ? (
         <div className="bg-white shadow rounded p-6">
           <div className="text-center py-8">
             <h2 className="text-lg font-medium mb-2">No orders found</h2>
@@ -129,7 +129,7 @@ const OrdersPanel: React.FC<OrdersPanelProps> = ({
           {/* Order List */}
           <div className={`${selectedOrder && mobileView ? 'hidden' : ''} md:col-span-5 lg:col-span-4 bg-white shadow rounded overflow-auto`} style={{ maxHeight: 'calc(100vh - 200px)' }}>
             <div className="p-4 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
-              <h2 className="font-semibold">Orders ({filteredOrders.length})</h2>
+              <h2 className="font-semibold">Orders ({filteredOrders?.length})</h2>
               {mobileView && selectedOrder && (
                 <button
                   className="text-sm text-blue-600"
@@ -140,7 +140,7 @@ const OrdersPanel: React.FC<OrdersPanelProps> = ({
               )}
             </div>
             <div className="divide-y divide-gray-200">
-              {filteredOrders.map(order => (
+              {filteredOrders?.map(order => (
                 <div
                   key={order.id}
                   className={`p-4 cursor-pointer hover:bg-gray-50 ${selectedOrder?.id === order.id ? 'bg-gray-100' : ''}`}
@@ -248,12 +248,7 @@ const OrdersPanel: React.FC<OrdersPanelProps> = ({
                             <td className="px-2 py-2 text-xs sm:text-sm text-gray-900">
                               {item.product_name}
                             </td>
-                            <td className="px-2 py-2 text-xs sm:text-sm text-gray-500">
-                              {item.size.toUpperCase()}
-                            </td>
-                            <td className="px-2 py-2 text-xs sm:text-sm text-gray-500 text-right">
-                              {item.quantity}
-                            </td>
+                            
                             <td className="px-2 py-2 text-xs sm:text-sm text-gray-500 text-right">
                               ₱{parseFloat(item.price.toString()).toFixed(2)}
                             </td>

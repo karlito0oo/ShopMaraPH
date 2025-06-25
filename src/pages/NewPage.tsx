@@ -1,14 +1,12 @@
 import { useState, useEffect } from 'react';
 import ProductFilter from '../components/ProductFilter';
 import ProductGrid from '../components/ProductGrid';
-import type { ProductCategory, ProductSize, Product } from '../types/product';
-import { filterProducts } from '../types/product';
-import { getAllProducts } from '../services/ProductService';
+import type { ProductSize, Product } from '../types/product';
+import { filterProductsBySize } from '../types/product';
+import { getNewArrivalProducts } from '../services/ProductService';
 
 const NewPage = () => {
-  const [activeCategory, setActiveCategory] = useState<ProductCategory>('new_arrival');
   const [activeSize, setActiveSize] = useState<ProductSize>('all');
-  const [showNewOnly, setShowNewOnly] = useState(true);
   const [searchKeyword, setSearchKeyword] = useState('');
   const [products, setProducts] = useState<Product[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
@@ -20,11 +18,11 @@ const NewPage = () => {
     const fetchProducts = async () => {
       try {
         setIsLoading(true);
-        const productsData = await getAllProducts();
+        const productsData = await getNewArrivalProducts();
         setProducts(productsData);
       } catch (err) {
-        console.error('Error fetching products:', err);
-        setError('Failed to load products');
+        console.error('Error fetching new arrival products:', err);
+        setError('Failed to load new arrival products');
       } finally {
         setIsLoading(false);
       }
@@ -36,20 +34,16 @@ const NewPage = () => {
   // Apply filters to products
   useEffect(() => {
     if (products.length > 0) {
-      setFilteredProducts(filterProducts(
-        products, 
-        activeCategory, 
-        activeSize, 
-        searchKeyword,
-        showNewOnly
+      setFilteredProducts(filterProductsBySize(
+        products,
+        activeSize,
+        searchKeyword
       ));
     }
-  }, [products, activeCategory, activeSize, showNewOnly, searchKeyword]);
+  }, [products, activeSize, searchKeyword]);
 
   const resetFilters = () => {
-    setActiveCategory('new_arrival');
     setActiveSize('all');
-    setShowNewOnly(true);
     setSearchKeyword('');
   };
 
@@ -83,21 +77,22 @@ const NewPage = () => {
         {/* Filters sidebar */}
         <div className="md:col-span-1">
           <ProductFilter 
-            activeCategory={activeCategory}
             activeSize={activeSize}
             searchKeyword={searchKeyword}
-            onCategoryChange={setActiveCategory}
             onSizeChange={setActiveSize}
             onKeywordChange={setSearchKeyword}
+            showCategoryFilter={false}
           />
         </div>
         
         {/* Products grid */}
-        <ProductGrid 
-          products={filteredProducts} 
-          onResetFilters={resetFilters}
-          searchKeyword={searchKeyword}
-        />
+        <div className="md:col-span-3">
+          <ProductGrid 
+            products={filteredProducts} 
+            onResetFilters={resetFilters}
+            searchKeyword={searchKeyword}
+          />
+        </div>
       </div>
     </div>
   )

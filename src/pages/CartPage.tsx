@@ -86,7 +86,7 @@ const CartPage = () => {
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
                     {cartItems.map((item) => (
-                      <tr key={`desktop-${item.product.id}-${item.size}`}>
+                      <tr key={`desktop-${item.product.id}`}>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center">
                             <div className="h-16 w-16 bg-gray-200 rounded flex-shrink-0 overflow-hidden">
@@ -98,12 +98,12 @@ const CartPage = () => {
                             </div>
                             <div className="ml-4">
                               <div className="text-sm font-medium text-gray-900">{item.product.name}</div>
-                              <div className="text-sm text-gray-500">Size: {item.size.toUpperCase()}</div>
+                              <div className="text-sm text-gray-500">Size: {item.product.size?.toUpperCase()}</div>
                             </div>
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-medium text-gray-900">₱{item.product.price.toFixed(2)}</div>
+                          <div className="text-sm font-medium text-gray-900">₱{Number(item.product.price).toFixed(2)}</div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                           <button 
@@ -123,7 +123,7 @@ const CartPage = () => {
               <div className="md:hidden">
                 <div className="divide-y divide-gray-200">
                   {cartItems.map((item) => (
-                    <div key={`mobile-${item.product.id}-${item.size}`} className="p-4">
+                    <div key={`mobile-${item.product.id}`} className="p-4">
                       <div className="flex mb-4">
                         <div className="h-20 w-20 bg-gray-200 rounded flex-shrink-0 overflow-hidden">
                           <img 
@@ -134,8 +134,8 @@ const CartPage = () => {
                         </div>
                         <div className="ml-4 flex-grow">
                           <div className="text-sm font-medium text-gray-900">{item.product.name}</div>
-                          <div className="text-sm text-gray-500">Size: {item.size.toUpperCase()}</div>
-                          <div className="text-sm font-medium text-gray-900 mt-1">₱{item.product.price.toFixed(2)}</div>
+                          <div className="text-sm text-gray-500">Size: {item.product.size?.toUpperCase()}</div>
+                          <div className="text-sm font-medium text-gray-900 mt-1">₱{Number(item.product.price).toFixed(2)}</div>
                         </div>
                       </div>
                       
@@ -175,7 +175,7 @@ const CartPage = () => {
             <div className="space-y-4">
               <div className="flex justify-between">
                 <span className="text-gray-600">Subtotal ({cartItems.length} {cartItems.length === 1 ? 'item' : 'items'})</span>
-                <span className="font-medium">₱{subtotal.toFixed(2)}</span>
+                <span className="font-medium">₱{Number(subtotal).toFixed(2)}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-gray-600">Shipping</span>
@@ -191,13 +191,13 @@ const CartPage = () => {
                 </select>
                 <span className="font-medium ml-2">
                   {province
-                    ? (settingsLoading ? 'Loading...' : `₱${shipping.toFixed(2)}`)
+                    ? (settingsLoading ? 'Loading...' : `₱${Number(shipping).toFixed(2)}`)
                     : '—'}
                 </span>
               </div>
               <div className="border-t pt-4 flex justify-between">
                 <span className="font-medium text-lg">Total</span>
-                <span className="font-medium text-lg">₱{total.toFixed(2)}</span>
+                <span className="font-medium text-lg">₱{Number(total).toFixed(2)}</span>
               </div>
               <button
                 onClick={handleCheckoutClick}

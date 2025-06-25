@@ -1,58 +1,47 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
+import { useToast } from '../context/ToastContext';
 import type { Product } from '../types/product';
-import { getProductById } from '../services/ProductService';
 
 const ProductDetailPage = () => {
-  const { productId } = useParams<{ productId: string }>();
+  const { id } = useParams<{ id: string }>();
+  const { addToCart } = useCart();
+  const { showToast } = useToast();
   const [product, setProduct] = useState<Product | null>(null);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
-  const { addToCart } = useCart();
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   useEffect(() => {
     const fetchProduct = async () => {
-      if (!productId) return;
-      
       try {
-        setIsLoading(true);
-        setLoadError(null);
-        const fetchedProduct = await getProductById(productId);
-        setProduct(fetchedProduct);
-        setCurrentImageIndex(0); // Reset to first image when product changes
-      } catch (err) {
-        console.error(`Error fetching product ${productId}:`, err);
+        const response = await fetch(`/api/products/${id}`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch product');
+        }
+        const data = await response.json();
+        setProduct(data.data);
+      } catch (error) {
+        console.error('Error:', error);
         setLoadError('Failed to load product details');
       } finally {
         setIsLoading(false);
       }
     };
-    
+
     fetchProduct();
-  }, [productId]);
+  }, [id]);
 
   const handleAddToCart = async () => {
-    if (!product) return;
-
-    const size = product.sizes[0]; // Get the single size
-    const availableStock = product.sizeStock[0]?.stock || 0;
-    
-    // Check if item is in stock
-    if (availableStock <= 0) {
-      return; // Don't add out-of-stock items
-    }
-
-    // Always add quantity of 1
-    const quantity = 1;
+    if (!product || product.status === 'Sold') return;
 
     try {
-      await addToCart(product, size, quantity);
-      // No need to navigate to cart - we show a toast notification instead
-    } catch (err) {
-      // Error handling is now done in CartContext with toast notifications
-      console.error('Error adding to cart:', err);
+      await addToCart(product);
+      showToast('Product added to cart!', 'success');
+    } catch (error) {
+      console.error('Error:', error);
+      showToast('Failed to add product to cart', 'error');
     }
   };
 
@@ -107,48 +96,39 @@ const ProductDetailPage = () => {
   }
 
   const productImages = getProductImages();
-  const size = product.sizes[0]; // Get the single size
-  const stock = product.sizeStock[0]?.stock || 0;
-  const isOutOfStock = stock <= 0;
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* Product Images */}
-        <div className="space-y-4">
+        <div>
           {/* Main Image */}
-          <div className="bg-gray-100 p-4 rounded">
-            <div className="aspect-w-1 aspect-h-1 bg-white relative">
-              <img 
-                src={productImages[currentImageIndex]} 
-                alt={product.name}
-                className="w-full h-full object-contain"
-              />
-              
-              {/* SOLD Overlay for out of stock items */}
-              {isOutOfStock && (
-                <div className="absolute inset-0 bg-white bg-opacity-60 flex items-center justify-center">
-                  <span className="text-black text-4xl font-bold font-como">SOLD</span>
-                </div>
-              )}
-            </div>
+          <div className="relative aspect-square mb-4 bg-gray-100 rounded-lg overflow-hidden">
+            <img
+              src={productImages[currentImageIndex]}
+              alt={product.name}
+              className="w-full h-full object-cover"
+            />
+            {product.status === 'Sold' && (
+              <div className="absolute inset-0 bg-white bg-opacity-60 flex items-center justify-center">
+                <span className="text-black text-2xl font-bold font-como">SOLD</span>
+              </div>
+            )}
           </div>
           
-          {/* Image Thumbnails */}
+          {/* Thumbnails */}
           {productImages.length > 1 && (
-            <div className="flex space-x-2 overflow-x-auto">
-              {productImages.map((img, index) => (
-                <button 
+            <div className="grid grid-cols-5 gap-2">
+              {productImages.map((image, index) => (
+                <button
                   key={index}
                   onClick={() => handleThumbnailClick(index)}
-                  className={`flex-shrink-0 w-16 h-16 border-2 rounded overflow-hidden ${
-                    currentImageIndex === index 
-                      ? 'border-black' 
-                      : 'border-gray-200 hover:border-gray-400'
+                  className={`aspect-square bg-gray-100 rounded-lg overflow-hidden border-2 ${
+                    currentImageIndex === index ? 'border-black' : 'border-transparent'
                   }`}
                 >
-                  <img 
-                    src={img} 
+                  <img
+                    src={image}
                     alt={`${product.name} thumbnail ${index + 1}`}
                     className="w-full h-full object-cover"
                   />
@@ -158,7 +138,7 @@ const ProductDetailPage = () => {
           )}
         </div>
 
-        {/* Product Details */}
+        {/* Product Info */}
         <div>
           <div className="mb-6">
             <div className="flex justify-between items-start">
@@ -176,12 +156,9 @@ const ProductDetailPage = () => {
                 )}
               </div>
             </div>
-            <div className="mt-2 flex items-center">
-              <span className="bg-gray-100 text-gray-800 text-sm font-medium px-2 py-1 rounded mr-2">
-                Size: {size.toUpperCase()}
-              </span>
-              <span className={`text-sm font-medium px-2 py-1 rounded ${isOutOfStock ? 'text-red-600' : 'text-green-600'}`}>
-                {isOutOfStock ? 'Sold' : ``}
+            <div className="mt-2">
+              <span className={`text-sm font-medium px-2 py-1 rounded ${product.status === 'Sold' ? 'text-red-600' : 'text-green-600'}`}>
+                {product.status === 'Sold' ? 'Sold' : 'Available'}
               </span>
             </div>
             <div className="mt-4">
@@ -204,22 +181,17 @@ const ProductDetailPage = () => {
           )}
 
           {/* Add to Cart Button */}
-          <div>
-            <button
-              onClick={handleAddToCart}
-              disabled={isOutOfStock}
-              className={`w-full py-3 px-4 rounded-md font-medium ${
-                isOutOfStock
-                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                  : 'bg-black text-white hover:bg-gray-800'
-              }`}
-            >
-              {isOutOfStock ? 'Sold' : 'Add to Cart'}
-            </button>
-            <p className="text-xs text-gray-500 mt-2 text-center">
-              Note: Only one of each product can be added to cart
-            </p>
-          </div>
+          <button
+            onClick={handleAddToCart}
+            disabled={product.status === 'Sold'}
+            className={`w-full py-3 px-6 text-center font-medium rounded-md transition-colors ${
+              product.status === 'Sold'
+                ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                : 'bg-black text-white hover:bg-gray-800'
+            }`}
+          >
+            {product.status === 'Sold' ? 'Sold Out' : 'Add to Cart'}
+          </button>
         </div>
       </div>
     </div>

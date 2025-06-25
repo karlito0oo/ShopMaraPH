@@ -35,7 +35,7 @@ const UserOrdersPage: React.FC = () => {
   }, [token, guestId]);
 
   useEffect(() => {
-    if (orders.length > 0) {
+    if (orders?.length > 0) {
       filterOrdersByStatus();
       updateTabsWithCounts();
     }
@@ -55,7 +55,7 @@ const UserOrdersPage: React.FC = () => {
   // Add a function to count orders by status
   const getStatusCounts = () => {
     const counts = {
-      all: orders.length,
+      all: orders?.length,
       pending: 0,
       approved: 0,
       shipped: 0,
@@ -63,7 +63,7 @@ const UserOrdersPage: React.FC = () => {
       cancelled: 0
     };
     
-    orders.forEach(order => {
+    orders?.forEach(order => {
       if (counts[order.status as keyof typeof counts] !== undefined) {
         counts[order.status as keyof typeof counts]++;
       }

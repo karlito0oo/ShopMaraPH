@@ -1,14 +1,12 @@
 import { useState, useEffect } from 'react';
 import ProductFilter from '../components/ProductFilter';
 import ProductGrid from '../components/ProductGrid';
-import type { ProductCategory, ProductSize, Product } from '../types/product';
-import { filterProducts } from '../types/product';
+import type { ProductSize, Product } from '../types/product';
+import { filterProductsBySize } from '../types/product';
 import { getAllProducts } from '../services/ProductService';
 
 const AllProductsPage = () => {
-  const [activeCategory, setActiveCategory] = useState<ProductCategory>('all');
   const [activeSize, setActiveSize] = useState<ProductSize>('all');
-  const [showNewOnly, setShowNewOnly] = useState(false);
   const [searchKeyword, setSearchKeyword] = useState('');
   const [products, setProducts] = useState<Product[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
@@ -36,20 +34,16 @@ const AllProductsPage = () => {
   // Apply filters when products change or filter settings change
   useEffect(() => {
     if (products.length > 0) {
-      setFilteredProducts(filterProducts(
-        products, 
-        activeCategory, 
-        activeSize, 
-        searchKeyword,
-        showNewOnly
+      setFilteredProducts(filterProductsBySize(
+        products,
+        activeSize,
+        searchKeyword
       ));
     }
-  }, [products, activeCategory, activeSize, showNewOnly, searchKeyword]);
+  }, [products, activeSize, searchKeyword]);
 
   const resetFilters = () => {
-    setActiveCategory('all');
     setActiveSize('all');
-    setShowNewOnly(false);
     setSearchKeyword('');
   };
 
@@ -83,21 +77,22 @@ const AllProductsPage = () => {
         {/* Filters sidebar */}
         <div className="md:col-span-1">
           <ProductFilter 
-            activeCategory={activeCategory}
             activeSize={activeSize}
             searchKeyword={searchKeyword}
-            onCategoryChange={setActiveCategory}
             onSizeChange={setActiveSize}
             onKeywordChange={setSearchKeyword}
+            showCategoryFilter={false}
           />
         </div>
         
         {/* Products grid */}
-        <ProductGrid 
-          products={filteredProducts} 
-          onResetFilters={resetFilters}
-          searchKeyword={searchKeyword}
-        />
+        <div className="md:col-span-3">
+          <ProductGrid 
+            products={filteredProducts} 
+            onResetFilters={resetFilters}
+            searchKeyword={searchKeyword}
+          />
+        </div>
       </div>
     </div>
   )

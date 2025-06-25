@@ -1,26 +1,23 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
-import type { Product, ProductSize } from '../types/product';
+import type { Product } from '../types/product';
 import { useAuth } from './AuthContext';
 import { CartApi } from '../services/ApiService';
 import { useToast } from './ToastContext';
 
 interface CartItem {
   product: Product;
-  quantity: number;
-  size: ProductSize;
   id?: number | string; // Cart item ID from the database or string ID for guest cart
 }
 
 interface CartContextType {
   cartItems: CartItem[];
-  addToCart: (product: Product, size: ProductSize, quantity: number) => Promise<void>;
+  addToCart: (product: Product) => Promise<void>;
   removeFromCart: (itemId: number | string) => Promise<void>;
-  updateQuantity: (itemId: number | string, quantity: number) => Promise<void>;
   clearCart: () => Promise<void>;
   getTotalItems: () => number;
   getTotalPrice: () => number;
-  isInCart: (productId: string | number, size: ProductSize) => boolean;
+  isInCart: (productId: string | number) => boolean;
   isLoading: boolean;
   error: string | null;
   token: string | null;
@@ -105,8 +102,8 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     try {
       // Add each item to the user's cart via API
       for (const item of items) {
-        console.log('Manually adding item to cart:', item.product.id, item.size, item.quantity);
-        await CartApi.addToCart(token, item.product.id, item.size, item.quantity);
+        console.log('Manually adding item to cart:', item.product.id, item.quantity);
+        await CartApi.addToCart(token, item.product.id, item.quantity);
       }
       
       // After adding all items, fetch the cart to get updated state
@@ -139,20 +136,17 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
-  const addToCart = async (product: Product, size: ProductSize, quantity: number = 1) => {
+  const addToCart = async (product: Product) => {
     // Check if product is already in cart
     const isProductInCart = cartItems.some(item => 
-      item.product.id === product.id && item.size === size
+      item.product.id === product.id
     );
     
     if (isProductInCart) {
       // Show toast notification instead of alert
-      showToast(`${product.name} (Size: ${size.toUpperCase()}) is already in your cart.`, 'warning');
+      showToast(`${product.name} is already in your cart.`, 'warning');
       return;
     }
-    
-    // Always set quantity to 1, regardless of what was passed
-    quantity = 1;
     
     // For authenticated users, use the API
     if (isAuthenticated && token) {
@@ -160,7 +154,7 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       setError(null);
       
       try {
-        const response = await CartApi.addToCart(token, product.id, size, quantity);
+        const response = await CartApi.addToCart(token, product.id);
         setCartItems(response.data.items || []);
         showToast(`${product.name} added to cart!`, 'success');
       } catch (error) {
@@ -177,19 +171,17 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       // Check if item already exists in cart - this should not happen due to our check above,
       // but keeping as a safeguard
       const existingItemIndex = newCartItems.findIndex(
-        item => item.product.id === product.id && item.size === size
+        item => item.product.id === product.id
       );
       
       if (existingItemIndex !== -1) {
         // Show toast notification instead of alert
-        showToast(`${product.name} (Size: ${size.toUpperCase()}) is already in your cart.`, 'warning');
+        showToast(`${product.name} is already in your cart.`, 'warning');
         return;
       } else {
         // Add new item with a unique string ID for guest cart items
         newCartItems.push({
           product,
-          size,
-          quantity, // This will always be 1
           id: `guest-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`
         } as CartItem); // Use type assertion to satisfy TypeScript
       }
@@ -229,17 +221,6 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
-  const updateQuantity = async (itemId: number | string, quantity: number) => {
-    // Since we're restricting users to 1 item per product, we'll only allow removing items
-    // If quantity is 0 or less, we'll remove the item
-    if (quantity <= 0) {
-      return removeFromCart(itemId);
-    }
-    
-    // Otherwise, we'll ignore quantity changes as we're enforcing 1 item per product
-    return;
-  };
-
   const clearCart = async () => {
     // For authenticated users, use the API
     if (isAuthenticated && token) {
@@ -266,18 +247,16 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   const getTotalItems = () => {
-    return cartItems.reduce((total, item) => total + item.quantity, 0);
+    return cartItems.length;
   };
 
   const getTotalPrice = () => {
-    return cartItems.reduce(
-      (total, item) => total + item.product.price * item.quantity, 
-      0
-    );
+    return cartItems.reduce((total, item) => total + Number(item.product.price || 0), 0);
+
   };
 
-  const isInCart = (productId: string | number, size: ProductSize) => {
-    return cartItems.some(item => item.product.id === productId && item.size === size);
+  const isInCart = (productId: string | number) => {
+    return cartItems.some(item => item.product.id === productId);
   };
 
   return (
@@ -286,7 +265,6 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         cartItems,
         addToCart,
         removeFromCart,
-        updateQuantity,
         clearCart,
         getTotalItems,
         getTotalPrice,

@@ -10,19 +10,13 @@ interface ProductCardProps {
 const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const { addToCart } = useCart();
   
-  // Since we now only have one size per product
-  const size = product.sizes[0];
-  
-  // Check if product is out of stock
-  const isOutOfStock = product.sizeStock[0]?.stock <= 0;
-  
   const handleAddToCart = async (e: React.MouseEvent) => {
     e.preventDefault(); // Prevent navigation to product page
     e.stopPropagation(); // Stop event propagation
     
-    if (!isOutOfStock) {
+    if (product.status === 'Available' && product.size) {
       try {
-        await addToCart(product, size, 1);
+        await addToCart(product, product.size, 1);
       } catch (err) {
         console.error('Error adding to cart:', err);
         // Error handling is now done in CartContext with toast notifications
@@ -55,8 +49,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             className="product-card__image"
           />
           
-          {/* SOLD Overlay for out of stock items */}
-          {isOutOfStock && (
+          {/* SOLD Overlay for sold items */}
+          {product.status === 'Sold' && (
             <div className="absolute inset-0 bg-white bg-opacity-60 flex items-center justify-center">
               <span className="text-black text-2xl font-bold font-como">SOLD</span>
             </div>
@@ -65,40 +59,38 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       </Link>
       
       {/* Product Content */}
-      <div className="product-card__content">
+      <div className="product-card__content p-3">
         {/* Product Name and Size Row */}
-        <div className="flex items-start gap-2 justify-between">
+        <div className="flex items-start justify-between mb-1" style={{height: '20px'}}>
           {/* Product Name */}
-          <Link to={`/product/${product.id}`} className="no-underline text-inherit flex-1 mr-2">
-            <h3 className="product-card__title line-clamp-2">{product.name}</h3>
+          <Link to={`/product/${product.id}`} className="no-underline text-inherit flex-1">
+            <h3 className="product-card__title text-sm font-medium line-clamp-1 m-0">{product.name}</h3>
           </Link>
           
           {/* Size Badge */}
-          <span className="bg-gray-100 text-gray-800 text-xs font-medium px-2 py-1 rounded">
-            Size: {size.toUpperCase()}
+          <span className="ml-2 bg-gray-100 text-gray-800 text-xs font-medium px-2 py-0.5 rounded whitespace-nowrap">
+            Size: {product.size?.toUpperCase()}
           </span>
         </div>
         
         {/* Price */}
-        <div className="product-card__price">
+        <div className="product-card__price text-sm font-semibold mb-2">
           ₱{product.price.toFixed(2)}
         </div>
         
-        {/* Buttons - Fixed height area */}
-        <div className="product-card__actions">
-          <button
-            type="button"
-            onClick={handleAddToCart}
-            disabled={isOutOfStock}
-            className={`add-to-cart-button w-full ${
-              isOutOfStock 
-                ? 'add-to-cart-button--disabled' 
-                : ''
-            }`}
-          >
-            {isOutOfStock ? 'Sold' : 'Add to Cart'}
-          </button>
-        </div>
+        {/* Add to Cart Button */}
+        <button
+          type="button"
+          onClick={handleAddToCart}
+          disabled={product.status === 'Sold' || !product.size}
+          className={`w-full py-1.5 px-3 text-sm font-medium rounded transition-colors ${
+            product.status === 'Sold' || !product.size
+              ? 'bg-gray-200 text-gray-500 cursor-not-allowed' 
+              : 'bg-black text-white hover:bg-gray-800'
+          }`}
+        >
+          {product.status === 'Sold' ? 'Sold' : 'Add to Cart'}
+        </button>
       </div>
     </div>
   );

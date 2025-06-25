@@ -134,11 +134,8 @@ export const CartApi = {
   getCart: (token: string) => 
     apiRequest('/cart', 'GET', null, token),
   
-  addToCart: (token: string, productId: number | string, size: string, quantity: number) => 
-    apiRequest('/cart/add', 'POST', { product_id: productId, size, quantity }, token),
-  
-  updateCartItem: (token: string, cartItemId: number, quantity: number) => 
-    apiRequest('/cart/update', 'POST', { cart_item_id: cartItemId, quantity }, token),
+  addToCart: (token: string, productId: number | string) => 
+    apiRequest('/cart/add', 'POST', { product_id: productId }, token),
   
   removeFromCart: (token: string, cartItemId: number) => 
     apiRequest('/cart/remove', 'POST', { cart_item_id: cartItemId }, token),

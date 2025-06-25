@@ -12,24 +12,25 @@ class Product extends Model
 {
     use HasFactory;
     
+    const STATUS_AVAILABLE = 'Available';
+    const STATUS_SOLD = 'Sold';
+
     /**
      * The attributes that are mass assignable.
      *
      * @var array<int, string>
      */
     protected $fillable = [
-        'sku',
         'name',
         'description',
-        'care_instructions',
         'price',
         'image',
-        'images',
-        'category',
-        'is_best_seller',
+        'sku',
+        'care_instructions',
         'is_new_arrival',
         'is_sale',
-        'active',
+        'status',
+        'size'
     ];
 
     /**
@@ -38,46 +39,18 @@ class Product extends Model
      * @var array<string, string>
      */
     protected $casts = [
-        'images' => 'array',
-        'is_best_seller' => 'boolean',
         'is_new_arrival' => 'boolean',
         'is_sale' => 'boolean',
-        'active' => 'boolean',
-        'price' => 'float',
+        'price' => 'decimal:2'
     ];
 
-    /**
-     * Get the stock record associated with the product.
-     */
-    public function stock(): HasOne
+    public function orderItems()
     {
-        return $this->hasOne(Stock::class);
+        return $this->hasMany(OrderItem::class);
     }
 
-    /**
-     * Get the sizes available for this product.
-     */
-    public function sizes(): HasMany
+    public function cartItems()
     {
-        return $this->hasMany(ProductSize::class);
-    }
-
-    /**
-     * Get the available sizes for this product.
-     */
-    public function getAvailableSizesAttribute(): array
-    {
-        return $this->sizes()->pluck('size')->toArray();
-    }
-
-    /**
-     * Get the size stock information for this product.
-     */
-    public function getSizeStockAttribute(): array
-    {
-        return $this->sizes()
-            ->select(['size', 'stock'])
-            ->get()
-            ->toArray();
+        return $this->hasMany(CartItem::class);
     }
 }
