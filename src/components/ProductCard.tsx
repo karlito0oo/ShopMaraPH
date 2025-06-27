@@ -16,7 +16,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     
     if (product.status === 'Available' && product.size) {
       try {
-        await addToCart(product, product.size, 1);
+        await addToCart(product);
       } catch (err) {
         console.error('Error adding to cart:', err);
         // Error handling is now done in CartContext with toast notifications

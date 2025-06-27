@@ -245,9 +245,7 @@ const UnifiedCheckoutModal: React.FC<UnifiedCheckoutModalProps> = ({
         formData.password,
         formData.password_confirmation,
         JSON.stringify(cartItems.map(item => ({
-          product_id: item.product.id,
-          size: item.size,
-          quantity: item.quantity,
+          product_id: item.product.id
         })))
       );
       setAccountCreated(true);
@@ -294,9 +292,7 @@ const UnifiedCheckoutModal: React.FC<UnifiedCheckoutModalProps> = ({
         orderData.append('guest_id', guestId);
         orderData.append('email', formData.email);
         orderData.append('cart_items', JSON.stringify(cartItems.map(item => ({
-          product_id: item.product.id,
-          size: item.size,
-          quantity: item.quantity,
+          product_id: item.product.id
         }))));
         await OrderApi.createGuestOrder(orderData);
       } else {
