@@ -14,6 +14,7 @@ class Product extends Model
     
     const STATUS_AVAILABLE = 'Available';
     const STATUS_SOLD = 'Sold';
+    const STATUS_ON_HOLD = 'OnHold';
 
     /**
      * The attributes that are mass assignable.
@@ -30,7 +31,10 @@ class Product extends Model
         'is_new_arrival',
         'is_sale',
         'status',
-        'size'
+        'size',
+        'onhold_by_type',
+        'onhold_by_id',
+        'onhold_at'
     ];
 
     /**
@@ -53,5 +57,50 @@ class Product extends Model
     public function cartItems()
     {
         return $this->hasMany(CartItem::class);
+    }
+    
+    /**
+     * Put the product on hold for a user or guest
+     */
+    public function putOnHold(string $type, string $id): void
+    {
+        $this->update([
+            'status' => self::STATUS_ON_HOLD,
+            'onhold_by_type' => $type,
+            'onhold_by_id' => $id,
+            'onhold_at' => now()
+        ]);
+    }
+
+    
+    /**
+     * Check if the product is on hold by a specific user/guest
+     */
+    public function isHeldBy(string $type, string $id): bool
+    {
+        //check if the product is on hold by the same user/guest
+        return $this->status === self::STATUS_ON_HOLD &&
+               $this->onhold_by_type === $type &&
+               $this->onhold_by_id === $id;
+    }
+
+    public function isHoldExpired(): bool
+    {
+        if ($this->status !== self::STATUS_ON_HOLD || !$this->onhold_at) {
+            return false;
+        }
+
+        $holdDuration = Setting::where('key', 'product_hold_duration')->value('value') ?? 30;
+        return $this->onhold_at->addMinutes($holdDuration)->isPast();
+    }
+    
+    /**
+     * Release hold if expired
+     */
+    public function releaseHoldIfExpired(): void
+    {
+        if ($this->isHoldExpired()) {
+            $this->releaseFromHold();
+        }
     }
 }

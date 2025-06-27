@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\Product;
+use App\Models\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
@@ -29,7 +30,7 @@ class CartController extends Controller
                     $cart = Cart::with(['items.product'])->where('guest_id', $guestId)->first();
                 }
             }
-
+            
             if (!$cart) {
                 return response()->json([
                     'success' => true,
@@ -42,7 +43,9 @@ class CartController extends Controller
 
             // Filter and transform items
             $cart->items = $cart->items->filter(function ($item) {
-                return $item->product && $item->product->status === 'Available';
+                return $item->product && $item->product->status === 'Available'
+                 || ($item->product->status === 'OnHold' && $item->product->onhold_by_id === $this->getGuestId($request) && $item->product->onhold_by_type === 'guest')
+                 || ($item->product->status === 'OnHold' && $item->product->onhold_by_id === $user->id && $item->product->onhold_by_type === 'user');
             })->map(function ($item) {
                 if ($item->product && $item->product->image) {
                     $item->product->image = asset('storage/' . $item->product->image);
@@ -227,5 +230,80 @@ class CartController extends Controller
                 'error' => $e->getMessage(),
             ], 500);
         }
+    }
+    
+    private function getGuestId(Request $request)
+    {
+        // Try to get guest_id from header first
+        $guestId = $request->header('X-Guest-ID');
+        
+        // If not in header, try request body
+        if (!$guestId) {
+            $guestId = $request->input('guest_id');
+        }
+
+        return $guestId;
+    }
+
+    public function putProductsOnHold(Request $request)
+    {
+        $guestId = $this->getGuestId($request);
+
+        // For guest routes, guest_id is required
+        if (!auth()->id() && !$guestId) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Guest ID is required',
+            ], 422);
+        }
+
+        if(auth()->id()){
+            $cart = Cart::with(['items.product'])
+            ->where('user_id', auth()->id())
+            ->first();
+        } else {
+            $cart = Cart::with(['items.product'])
+            ->where('guest_id', $guestId)
+            ->first();
+        }
+
+        if (!$cart || $cart->items->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Cart is empty',
+            ], 400);
+        }
+
+        $type = auth()->id() ? 'user' : 'guest';
+        $id = auth()->id() ?? $guestId;
+        $holdDuration = Setting::where('key', 'product_hold_duration')->value('value') ?? 30;
+
+        foreach ($cart->items as $item) {
+            $product = $item->product;
+            
+            // Skip if product is already held by this user/guest
+            if ($product->isHeldBy($type, $id)) {
+                continue;
+            }
+
+            if ($cart) {
+                $cart->items()->delete();
+            }
+            // Check if product is held by someone else
+            if ($product->status === Product::STATUS_ON_HOLD) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Some products in your cart are no longer available',
+                ], 400);
+            }
+
+            $product->putOnHold($type, $id);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Products put on hold',
+            'hold_duration' => $holdDuration,
+        ]);
     }
 } 

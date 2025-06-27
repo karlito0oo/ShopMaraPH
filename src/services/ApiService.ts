@@ -127,8 +127,10 @@ export const ProductApi = {
 /**
  * Cart related API endpoints
  */
+
 export const CartApi = {
   getCart: (headers: Record<string, string>) => {
+    console.log(headers);
     const isGuest = headers['X-Guest-ID'];
     const endpoint = isGuest ? '/guest/cart' : '/cart';
     return apiRequest(endpoint, 'GET', null, headers);
@@ -149,6 +151,12 @@ export const CartApi = {
   clearCart: (headers: Record<string, string>) => {
     const isGuest = headers['X-Guest-ID'];
     const endpoint = isGuest ? '/guest/cart/clear' : '/cart/clear';
+    return apiRequest(endpoint, 'POST', null, headers);
+  },
+
+  putProductsOnHold: (headers: Record<string, string>) => {
+    const isGuest = headers['X-Guest-ID'];
+    const endpoint = isGuest ? '/guest/cart/hold' : '/cart/hold';
     return apiRequest(endpoint, 'POST', null, headers);
   },
 };

@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { useProfile } from '../context/ProfileContext';
 import { useGuestProfile } from '../context/GuestProfileContext';
 import { useSettings } from '../context/SettingsContext';
-import { OrderApi } from '../services/ApiService';
+import { CartApi, OrderApi } from '../services/ApiService';
 import { nanoid } from 'nanoid';
 import { useCart } from '../context/CartContext';
 
@@ -131,7 +131,7 @@ const UnifiedCheckoutModal: React.FC<UnifiedCheckoutModalProps> = ({
   const { profile, updateProfile } = useProfile();
   const { profile: guestProfile } = useGuestProfile();
   const settings = useSettings();
-  const { cartItems, clearCart } = useCart();
+  const { cartItems, clearCart, holdProducts } = useCart();
   const [formMode, setFormMode] = useState<FormMode>(isAuthenticated ? 'checkout' : 'initial');
   const [currentStep, setCurrentStep] = useState<Step>(1);
   const [formData, setFormData] = useState({ ...initialFormData });
@@ -140,6 +140,12 @@ const UnifiedCheckoutModal: React.FC<UnifiedCheckoutModalProps> = ({
   const [orderSuccess, setOrderSuccess] = useState(false);
   const [orderError, setOrderError] = useState<string | null>(null);
   const [accountCreated, setAccountCreated] = useState(false);
+  
+  useEffect(() => {
+    if (currentStep === 2) {
+      holdProducts();
+    }
+  }, [currentStep]);
 
   // Prefill for logged-in users and guests, and update province from prop
   useEffect(() => {
@@ -331,6 +337,9 @@ const UnifiedCheckoutModal: React.FC<UnifiedCheckoutModalProps> = ({
       setIsSubmitting(false);
     }
   };
+
+  
+
 
   const ModalHeader = ({title}: {title: string}) => {
     return (

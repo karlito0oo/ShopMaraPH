@@ -42,6 +42,8 @@ Route::get('guest/cart', [CartController::class, 'getCart']);
 Route::post('guest/cart/add', [CartController::class, 'addToCart']);
 Route::post('guest/cart/remove', [CartController::class, 'removeFromCart']);
 Route::post('guest/cart/clear', [CartController::class, 'clearCart']);
+Route::post('guest/cart/hold', [CartController::class, 'putProductsOnHold']);
+Route::post('guest/cart/release', [CartController::class, 'releaseProductsFromHold']);
 
 // Guest profile routes
 Route::get('guest/profile', [GuestProfileController::class, 'getProfile']);
@@ -73,6 +75,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('cart/update', [CartController::class, 'updateCartItem']);
     Route::post('cart/remove', [CartController::class, 'removeFromCart']);
     Route::post('cart/clear', [CartController::class, 'clearCart']);
+    Route::post('cart/hold', [CartController::class, 'putProductsOnHold']);
+    Route::post('cart/release', [CartController::class, 'releaseProductsFromHold']);
     
     // Order routes
     Route::post('orders', [OrderController::class, 'createOrder']);

@@ -22,7 +22,7 @@ interface CartContextType {
   error: string | null;
   token: string | null;
   fetchCart: () => Promise<void>;
-  backupGuestCart: () => CartItem[];
+  holdProducts: () => Promise<void>;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -139,6 +139,22 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
+  const holdProducts = async () => {
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      const response = await CartApi.putProductsOnHold(getHeaders());
+      setCartItems(response.data.items || []);
+    } catch (error) {
+      console.error('Error clearing cart:', error);
+      setError(error instanceof Error ? error.message : 'An error occurred while holding cart');
+      showToast('Failed to clear cart', 'error');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const getTotalItems = () => {
     return cartItems.length;
   };
@@ -149,17 +165,6 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const isInCart = (productId: string | number) => {
     return cartItems.some(item => item.product.id === productId);
-  };
-
-  // Backup guest cart before registration
-  const backupGuestCart = (): CartItem[] => {
-    try {
-      const currentCartItems = [...cartItems];
-      return currentCartItems;
-    } catch (error) {
-      console.error('Error backing up guest cart:', error);
-      return [];
-    }
   };
 
   return (
@@ -176,7 +181,7 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         error,
         token,
         fetchCart,
-        backupGuestCart,
+        holdProducts
       }}
     >
       {children}
