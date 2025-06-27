@@ -43,6 +43,11 @@ class CartController extends Controller
             }
             // Filter and transform items
             $cart->items = $cart->items->map(function ($item) {
+                if ($item->product->status === Product::STATUS_ON_HOLD) {
+                    $item->product->releaseHoldIfExpired();
+                    $item->product->refresh(); // Refresh the model to get updated status
+                }
+    
                 if ($item->product && $item->product->image) {
                     $item->product->image = asset('storage/' . $item->product->image);
                 }

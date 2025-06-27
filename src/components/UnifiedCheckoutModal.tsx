@@ -105,9 +105,10 @@ interface UnifiedCheckoutModalProps {
 
 interface HoldTimerProps {
   expiryTime: number;
+  handleExpired: () => void;
 }
 
-const HoldTimer: React.FC<HoldTimerProps> = ({ expiryTime }) => {
+const HoldTimer: React.FC<HoldTimerProps> = ({ expiryTime, handleExpired }) => {
   const [timeLeft, setTimeLeft] = useState<number>(Math.abs(expiryTime));
   useEffect(() => {
     if (timeLeft <= 0) return;
@@ -126,7 +127,10 @@ const HoldTimer: React.FC<HoldTimerProps> = ({ expiryTime }) => {
   }, [timeLeft]);
 
   const formatTime = (seconds: number): string => {
-    if (seconds <= 0) return 'Expired';
+    if (seconds <= 0){
+      handleExpired();
+      return 'Expired';
+    } 
   
     const totalSeconds = Math.floor(seconds); // 👈 Ensure it's a whole number
     const mins = Math.floor(totalSeconds / 60);
@@ -187,6 +191,7 @@ const UnifiedCheckoutModal: React.FC<UnifiedCheckoutModalProps> = ({
   const [orderError, setOrderError] = useState<string | null>(null);
   const [accountCreated, setAccountCreated] = useState(false);
   const [holdExpiryTime, setHoldExpiryTime] = useState<number | null>(null);
+  const [isExpired, setIsExpired] = useState<boolean>(false);
   
   useEffect(() => {
     const handleEffect = async () => {
@@ -547,7 +552,10 @@ const UnifiedCheckoutModal: React.FC<UnifiedCheckoutModalProps> = ({
                     </div>
                   )}
                   { holdExpiryTime && (
-                    <HoldTimer expiryTime={holdExpiryTime} />
+                    <HoldTimer expiryTime={holdExpiryTime} handleExpired={async () => {
+                      await fetchCart();
+                      onClose();
+                    }} />
                   )}
                   <form onSubmit={handleOrderSubmit}>
                     {/* Step 1: Customer Information */}

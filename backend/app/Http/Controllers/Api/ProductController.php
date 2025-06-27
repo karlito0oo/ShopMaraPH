@@ -17,10 +17,15 @@ class ProductController extends Controller
     public function index()
     {
         $products = Product::all();
-        
-        // Transform to match frontend format
-        $products->transform(function ($product) {
-            return [
+
+        $data = [];
+        foreach($products as $product){
+            if ($product->status === Product::STATUS_ON_HOLD) {
+                $product->releaseHoldIfExpired();
+                $product->refresh(); // Refresh the model to get updated status
+            }
+
+            $data[] =  [
                 'id' => $product->id,
                 'sku' => $product->sku,
                 'name' => $product->name,
@@ -34,11 +39,12 @@ class ProductController extends Controller
                 'status' => $product->status,
                 'size' => $product->size
             ];
-        });
+        }
+        
         
         return response()->json([
             'success' => true,
-            'data' => $products,
+            'data' => $data,
         ]);
     }
 

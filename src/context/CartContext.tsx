@@ -160,6 +160,7 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       if (response.data?.items) {
         setCartItems(response.data.items);
       }
+      fetchCart();
       return {
         success: response.success,
         message: response.message,

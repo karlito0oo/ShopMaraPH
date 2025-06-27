@@ -92,7 +92,9 @@ class Product extends Model
         }
 
         $holdDuration = Setting::where('key', 'product_hold_duration')->value('value') ?? 30;
-        return $this->onhold_at->addMinutes($holdDuration)->isPast();
+
+        $onHoldAt = \Carbon\Carbon::parse($this->onhold_at); // 👈 convert to Carbon
+        return $onHoldAt->addMinutes((int) $holdDuration)->isPast();
     }
 
     /**
@@ -103,5 +105,18 @@ class Product extends Model
         if ($this->isHoldExpired()) {
             $this->releaseFromHold();
         }
+    }
+
+    /**
+     * Release the product from hold
+     */
+    public function releaseFromHold(): void
+    {
+        $this->update([
+            'status' => self::STATUS_AVAILABLE,
+            'onhold_by_type' => null,
+            'onhold_by_id' => null,
+            'onhold_at' => null
+        ]);
     }
 }
