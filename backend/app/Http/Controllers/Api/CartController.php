@@ -42,16 +42,7 @@ class CartController extends Controller
                 ]);
             }
             // Filter and transform items
-            $cart->items = $cart->items->filter(function ($item) use ($request, $user) {
-                $guestId = $request->header('X-Guest-ID');
-                return $item->product && (
-                    $item->product->status === 'Available' ||
-                    ($item->product->status === 'OnHold' && 
-                     (($item->product->onhold_by_type === 'guest' && $item->product->onhold_by_id === $guestId) ||
-                      ($item->product->onhold_by_type === 'user' && $user && $item->product->onhold_by_id === $user->id))
-                    )
-                );
-            })->map(function ($item) {
+            $cart->items = $cart->items->map(function ($item) {
                 if ($item->product && $item->product->image) {
                     $item->product->image = asset('storage/' . $item->product->image);
                 }
