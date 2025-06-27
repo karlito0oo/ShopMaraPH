@@ -287,7 +287,7 @@ class CartController extends Controller
                 return response()->json([
                     'success' => false,
                     'message' => 'Some products in your cart are no longer available',
-                ], 400);
+                ], 200);
             }
 
             $product->putOnHold($type, $id);

@@ -96,7 +96,7 @@ const CartPage = () => {
             ? 'bg-green-100 text-green-800'
             : 'bg-yellow-100 text-yellow-800'
         }`}>
-          {isHeldByCurrentUser ? 'Reserved by You' : 'On Hold'}
+          {isHeldByCurrentUser ? 'Reserved by You' : 'On hold by other user'}
         </span>
       );
     }

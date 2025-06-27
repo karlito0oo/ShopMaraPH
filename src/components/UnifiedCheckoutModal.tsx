@@ -6,6 +6,7 @@ import { useSettings } from '../context/SettingsContext';
 import { CartApi, OrderApi } from '../services/ApiService';
 import { nanoid } from 'nanoid';
 import { useCart } from '../context/CartContext';
+import { GUEST_ID_KEY } from '../constants';
 
 // PH_PROVINCES constant moved here from CheckoutModal.tsx
 export const PH_PROVINCES = [
@@ -176,7 +177,7 @@ const UnifiedCheckoutModal: React.FC<UnifiedCheckoutModalProps> = ({
   const { profile, updateProfile } = useProfile();
   const { profile: guestProfile } = useGuestProfile();
   const settings = useSettings();
-  const { cartItems, clearCart, holdProducts } = useCart();
+  const { cartItems, clearCart, holdProducts, fetchCart } = useCart();
   const [formMode, setFormMode] = useState<FormMode>(isAuthenticated ? 'checkout' : 'initial');
   const [currentStep, setCurrentStep] = useState<Step>(1);
   const [formData, setFormData] = useState({ ...initialFormData });
@@ -188,14 +189,24 @@ const UnifiedCheckoutModal: React.FC<UnifiedCheckoutModalProps> = ({
   const [holdExpiryTime, setHoldExpiryTime] = useState<number | null>(null);
   
   useEffect(() => {
-    if (currentStep === 2) {
-      holdProducts().then((response) => {
+    const handleEffect = async () => {
+      if (currentStep === 2) {
+        const response = await holdProducts();
         console.log(response);
-        if (!response.is_hold_expired) {
-          setHoldExpiryTime(response.hold_expiry_time_in_seconds);
+        if(response.success){
+          if (!response.is_hold_expired) {
+            setHoldExpiryTime(response.hold_expiry_time_in_seconds);
+          }
         }
-      });
+        else{
+          onClose();
+          await fetchCart();
+          return;
+        }
+        
+      }
     }
+    handleEffect();
   }, [currentStep]);
 
   // Prefill for logged-in users and guests, and update province from prop
@@ -300,7 +311,7 @@ const UnifiedCheckoutModal: React.FC<UnifiedCheckoutModalProps> = ({
   };
 
   // --- Stepper ---
-  const nextStep = () => {
+  const nextStep =  () => {
     if (validateStep(currentStep)) setCurrentStep((s) => (s < 3 ? ((s + 1) as Step) : s));
   };
   const prevStep = () => setCurrentStep((s) => (s > 1 ? ((s - 1) as Step) : s));

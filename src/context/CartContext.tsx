@@ -170,7 +170,7 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     } catch (error) {
       console.error('Error holding products:', error);
       setError(error instanceof Error ? error.message : 'An error occurred while holding products');
-      showToast('Failed to hold products', 'error');
+      showToast('Some items in your cart are no longer available. Please remove them before proceeding to checkout.', 'error');
       throw error;
     } finally {
       setIsLoading(false);
