@@ -13,7 +13,7 @@ export interface Product {
   category: ProductCategory;
   isNewArrival?: boolean;
   isSale?: boolean;
-  status: 'Available' | 'Sold';
+  status: 'Available' | 'Sold' | 'OnHold';
   size?: ProductSize;
 }
 

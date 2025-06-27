@@ -49,17 +49,19 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             className="product-card__image"
           />
           
-          {/* SOLD Overlay for sold items */}
-          {product.status === 'Sold' && (
+          {/* Status Overlay */}
+          {(product.status === 'Sold' || product.status === 'OnHold') && (
             <div className="absolute inset-0 bg-white bg-opacity-60 flex items-center justify-center">
-              <span className="text-black text-2xl font-bold font-como">SOLD</span>
+              <span className={`text-2xl font-bold font-como ${product.status === 'Sold' ? 'text-black' : 'text-yellow-800'}`}>
+                {product.status === 'Sold' ? 'SOLD' : 'ON HOLD'}
+              </span>
             </div>
           )}
         </div>
       </Link>
       
       {/* Product Content */}
-      <div className="product-card__content p-3">
+      <div className="p-4">
         {/* Product Name and Size Row */}
         <div className="flex items-start justify-between mb-1" style={{height: '20px'}}>
           {/* Product Name */}
@@ -82,14 +84,15 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         <button
           type="button"
           onClick={handleAddToCart}
-          disabled={product.status === 'Sold' || !product.size}
+          disabled={product.status !== 'Available' || !product.size}
           className={`w-full py-1.5 px-3 text-sm font-medium rounded transition-colors ${
-            product.status === 'Sold' || !product.size
+            product.status !== 'Available' || !product.size
               ? 'bg-gray-200 text-gray-500 cursor-not-allowed' 
               : 'bg-black text-white hover:bg-gray-800'
           }`}
         >
-          {product.status === 'Sold' ? 'Sold' : 'Add to Cart'}
+          {product.status === 'Sold' ? 'Sold' : 
+           product.status === 'OnHold' ? 'On Hold' : 'Add to Cart'}
         </button>
       </div>
     </div>

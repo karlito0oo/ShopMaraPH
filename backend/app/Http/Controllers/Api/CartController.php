@@ -10,6 +10,7 @@ use App\Models\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
+use Carbon\Carbon;
 
 class CartController extends Controller
 {
@@ -20,9 +21,9 @@ class CartController extends Controller
     {
         try {
             $cart = null;
+            $user = Auth::user();
             
             if (Auth::check()) {
-                $user = Auth::user();
                 $cart = Cart::with(['items.product'])->where('user_id', $user->id)->first();
             } else {
                 $guestId = $request->header('X-Guest-ID');
@@ -40,12 +41,16 @@ class CartController extends Controller
                     ],
                 ]);
             }
-
             // Filter and transform items
-            $cart->items = $cart->items->filter(function ($item) {
-                return $item->product && $item->product->status === 'Available'
-                 || ($item->product->status === 'OnHold' && $item->product->onhold_by_id === $this->getGuestId($request) && $item->product->onhold_by_type === 'guest')
-                 || ($item->product->status === 'OnHold' && $item->product->onhold_by_id === $user->id && $item->product->onhold_by_type === 'user');
+            $cart->items = $cart->items->filter(function ($item) use ($request, $user) {
+                $guestId = $request->header('X-Guest-ID');
+                return $item->product && (
+                    $item->product->status === 'Available' ||
+                    ($item->product->status === 'OnHold' && 
+                     (($item->product->onhold_by_type === 'guest' && $item->product->onhold_by_id === $guestId) ||
+                      ($item->product->onhold_by_type === 'user' && $user && $item->product->onhold_by_id === $user->id))
+                    )
+                );
             })->map(function ($item) {
                 if ($item->product && $item->product->image) {
                     $item->product->image = asset('storage/' . $item->product->image);
@@ -286,9 +291,6 @@ class CartController extends Controller
                 continue;
             }
 
-            if ($cart) {
-                $cart->items()->delete();
-            }
             // Check if product is held by someone else
             if ($product->status === Product::STATUS_ON_HOLD) {
                 return response()->json([
@@ -299,11 +301,17 @@ class CartController extends Controller
 
             $product->putOnHold($type, $id);
         }
+        $holdUntil = Carbon::parse($cart->items->first()->product->onhold_at)
+            ->addMinutes((int) ($holdDuration ?? 30));
+        
+        $diffInSeconds = $holdUntil->diffInSeconds(now());
 
         return response()->json([
             'success' => true,
             'message' => 'Products put on hold',
             'hold_duration' => $holdDuration,
+            'hold_expiry_time_in_seconds' => $diffInSeconds,
+            'is_hold_expired' => $holdUntil->isPast(),
         ]);
     }
 } 

@@ -1,3 +1,5 @@
+import type { Product } from './product';
+
 export type Step = 'cart' | 'shipping' | 'payment' | 'confirmation';
 
 export interface CheckoutFormData {
@@ -15,4 +17,10 @@ export interface CheckoutFormData {
 
 export interface FormErrors {
   [key: string]: string | null;
+}
+
+export interface CartItem {
+  id?: number | string;
+  product: Product;
+  quantity: number;
 } 

@@ -102,6 +102,51 @@ interface UnifiedCheckoutModalProps {
   province?: string;
 }
 
+interface HoldTimerProps {
+  expiryTime: number;
+}
+
+const HoldTimer: React.FC<HoldTimerProps> = ({ expiryTime }) => {
+  const [timeLeft, setTimeLeft] = useState<number>(Math.abs(expiryTime));
+  useEffect(() => {
+    if (timeLeft <= 0) return;
+
+    const timer = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [timeLeft]);
+
+  const formatTime = (seconds: number): string => {
+    if (seconds <= 0) return 'Expired';
+  
+    const totalSeconds = Math.floor(seconds); // 👈 Ensure it's a whole number
+    const mins = Math.floor(totalSeconds / 60);
+    const secs = totalSeconds % 60;
+  
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  return (
+    <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4 mb-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-yellow-800 font-medium">Products on hold</p>
+          <p className="text-sm text-yellow-600">Your selected items are reserved for:</p>
+        </div>
+        <div className="text-2xl font-bold text-yellow-800">{formatTime(timeLeft)}</div>
+      </div>
+    </div>
+  );
+};
+
 const initialFormData = {
   name: '',
   email: '',
@@ -140,11 +185,15 @@ const UnifiedCheckoutModal: React.FC<UnifiedCheckoutModalProps> = ({
   const [orderSuccess, setOrderSuccess] = useState(false);
   const [orderError, setOrderError] = useState<string | null>(null);
   const [accountCreated, setAccountCreated] = useState(false);
+  const [holdExpiryTime, setHoldExpiryTime] = useState<number | null>(null);
   
   useEffect(() => {
-    if (currentStep === 2) {
-      holdProducts();
-    }
+      holdProducts().then((response) => {
+        console.log(response);
+        if (!response.is_hold_expired) {
+          setHoldExpiryTime(response.hold_expiry_time_in_seconds);
+        }
+      });
   }, [currentStep]);
 
   // Prefill for logged-in users and guests, and update province from prop
@@ -338,9 +387,6 @@ const UnifiedCheckoutModal: React.FC<UnifiedCheckoutModalProps> = ({
     }
   };
 
-  
-
-
   const ModalHeader = ({title}: {title: string}) => {
     return (
         <div className="flex justify-between items-center mb-4">
@@ -486,6 +532,9 @@ const UnifiedCheckoutModal: React.FC<UnifiedCheckoutModalProps> = ({
                       <p className="text-red-800">{orderError}</p>
                       <p className="text-sm text-red-600 mt-1">Please try again or contact support for assistance.</p>
                     </div>
+                  )}
+                  { holdExpiryTime && (
+                    <HoldTimer expiryTime={holdExpiryTime} />
                   )}
                   <form onSubmit={handleOrderSubmit}>
                     {/* Step 1: Customer Information */}

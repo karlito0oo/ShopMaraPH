@@ -70,6 +70,7 @@ class Product extends Model
             'onhold_by_id' => $id,
             'onhold_at' => now()
         ]);
+        
     }
 
     
@@ -93,7 +94,7 @@ class Product extends Model
         $holdDuration = Setting::where('key', 'product_hold_duration')->value('value') ?? 30;
         return $this->onhold_at->addMinutes($holdDuration)->isPast();
     }
-    
+
     /**
      * Release hold if expired
      */

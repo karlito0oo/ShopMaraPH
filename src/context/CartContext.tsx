@@ -10,6 +10,14 @@ interface CartItem {
   id?: number | string; // Cart item ID from the database
 }
 
+interface HoldProductsResponse {
+  success: boolean;
+  message: string;
+  hold_duration: number;
+  hold_expiry_time_in_seconds: number;
+  is_hold_expired: boolean;
+}
+
 interface CartContextType {
   cartItems: CartItem[];
   addToCart: (product: Product) => Promise<void>;
@@ -22,7 +30,7 @@ interface CartContextType {
   error: string | null;
   token: string | null;
   fetchCart: () => Promise<void>;
-  holdProducts: () => Promise<void>;
+  holdProducts: () => Promise<HoldProductsResponse>;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -139,17 +147,27 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   };
 
-  const holdProducts = async () => {
+  const holdProducts = async (): Promise<HoldProductsResponse> => {
     setIsLoading(true);
     setError(null);
     
     try {
       const response = await CartApi.putProductsOnHold(getHeaders());
-      setCartItems(response.data.items || []);
+      if (response.data?.items) {
+        setCartItems(response.data.items);
+      }
+      return {
+        success: response.success,
+        message: response.message,
+        hold_duration: response.hold_duration,
+        hold_expiry_time_in_seconds: response.hold_expiry_time_in_seconds,
+        is_hold_expired: response.is_hold_expired
+      };
     } catch (error) {
-      console.error('Error clearing cart:', error);
-      setError(error instanceof Error ? error.message : 'An error occurred while holding cart');
-      showToast('Failed to clear cart', 'error');
+      console.error('Error holding products:', error);
+      setError(error instanceof Error ? error.message : 'An error occurred while holding products');
+      showToast('Failed to hold products', 'error');
+      throw error;
     } finally {
       setIsLoading(false);
     }

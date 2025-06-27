@@ -32,7 +32,7 @@ const ProductDetailPage = () => {
   }, [id]);
 
   const handleAddToCart = async () => {
-    if (!product || product.status === 'Sold') return;
+    if (!product || product.status !== 'Available') return;
 
     try {
       await addToCart(product);
@@ -107,9 +107,11 @@ const ProductDetailPage = () => {
               alt={product.name}
               className="w-full h-full object-cover"
             />
-            {product.status === 'Sold' && (
+            {(product.status === 'Sold' || product.status === 'OnHold') && (
               <div className="absolute inset-0 bg-white bg-opacity-60 flex items-center justify-center">
-                <span className="text-black text-2xl font-bold font-como">SOLD</span>
+                <span className={`text-2xl font-bold font-como ${product.status === 'Sold' ? 'text-black' : 'text-yellow-800'}`}>
+                  {product.status === 'Sold' ? 'SOLD' : 'ON HOLD'}
+                </span>
               </div>
             )}
           </div>
@@ -155,8 +157,11 @@ const ProductDetailPage = () => {
               </div>
             </div>
             <div className="mt-2">
-              <span className={`text-sm font-medium px-2 py-1 rounded ${product.status === 'Sold' ? 'text-red-600' : 'text-green-600'}`}>
-                {product.status === 'Sold' ? 'Sold' : 'Available'}
+              <span className={`text-sm font-medium px-2 py-1 rounded ${
+                product.status === 'Sold' ? 'text-red-600' : 
+                product.status === 'OnHold' ? 'text-yellow-600' : 'text-green-600'
+              }`}>
+                {product.status}
               </span>
             </div>
             <div className="mt-4">
@@ -181,14 +186,15 @@ const ProductDetailPage = () => {
           {/* Add to Cart Button */}
           <button
             onClick={handleAddToCart}
-            disabled={product.status === 'Sold'}
+            disabled={product.status !== 'Available'}
             className={`w-full py-3 px-6 text-center font-medium rounded-md transition-colors ${
-              product.status === 'Sold'
+              product.status !== 'Available'
                 ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
                 : 'bg-black text-white hover:bg-gray-800'
             }`}
           >
-            {product.status === 'Sold' ? 'Sold Out' : 'Add to Cart'}
+            {product.status === 'Sold' ? 'Sold Out' : 
+             product.status === 'OnHold' ? 'On Hold' : 'Add to Cart'}
           </button>
         </div>
       </div>
