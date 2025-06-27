@@ -15,12 +15,10 @@ return new class extends Migration
             $table->id();
             $table->foreignId('cart_id')->constrained()->onDelete('cascade');
             $table->foreignId('product_id')->constrained()->onDelete('cascade');
-            $table->string('size'); // small, medium, large, xlarge
-            $table->integer('quantity')->default(1);
             $table->timestamps();
             
-            // Ensure a product can only be in a cart once per size
-            $table->unique(['cart_id', 'product_id', 'size']);
+            // Ensure a product can only be in a cart once
+            $table->unique(['cart_id', 'product_id']);
         });
     }
 

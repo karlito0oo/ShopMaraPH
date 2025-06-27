@@ -15,6 +15,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
+use App\Models\UserProfile;
+use App\Models\GuestProfile;
 
 class OrderController extends Controller
 {
@@ -160,6 +162,25 @@ class OrderController extends Controller
 
         try {
             DB::beginTransaction();
+
+            // Save or update guest profile
+            $profile = GuestProfile::findByGuestId($request->guest_id);
+            if (!$profile) {
+                $profile = new GuestProfile();
+                $profile->guest_id = $request->guest_id;
+            }
+
+            $profile->fill([
+                'customer_name' => $request->customer_name,
+                'email' => $request->email,
+                'instagram_username' => $request->instagram_username,
+                'address_line1' => $request->address_line1,
+                'barangay' => $request->barangay,
+                'province' => $request->province,
+                'city' => $request->city,
+                'mobile_number' => $request->mobile_number,
+            ]);
+            $profile->save();
 
             // Parse the cart items from JSON
             $cartItems = json_decode($request->cart_items, true);

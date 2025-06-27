@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useProfile } from '../context/ProfileContext';
+import { useGuestProfile } from '../context/GuestProfileContext';
 import { useSettings } from '../context/SettingsContext';
 import { OrderApi } from '../services/ApiService';
 import { nanoid } from 'nanoid';
@@ -128,6 +129,7 @@ const UnifiedCheckoutModal: React.FC<UnifiedCheckoutModalProps> = ({
 }) => {
   const { user, isAuthenticated, register } = useAuth();
   const { profile, updateProfile } = useProfile();
+  const { profile: guestProfile } = useGuestProfile();
   const settings = useSettings();
   const { cartItems, clearCart } = useCart();
   const [formMode, setFormMode] = useState<FormMode>(isAuthenticated ? 'checkout' : 'initial');
@@ -139,7 +141,7 @@ const UnifiedCheckoutModal: React.FC<UnifiedCheckoutModalProps> = ({
   const [orderError, setOrderError] = useState<string | null>(null);
   const [accountCreated, setAccountCreated] = useState(false);
 
-  // Prefill for logged-in users and update province from prop
+  // Prefill for logged-in users and guests, and update province from prop
   useEffect(() => {
     if (isOpen) {
       let provinceToUse = province || '';
@@ -161,6 +163,19 @@ const UnifiedCheckoutModal: React.FC<UnifiedCheckoutModalProps> = ({
         } else {
           setFormData((prev) => ({ ...prev, ...initial, province: provinceToUse }));
         }
+      } else if (guestProfile) {
+        // Prefill with guest profile data if available
+        const guestFields = {
+          name: guestProfile.customer_name || '',
+          email: guestProfile.email || '',
+          instagramUsername: guestProfile.instagram_username || '',
+          addressLine1: guestProfile.address_line1 || '',
+          barangay: guestProfile.barangay || '',
+          city: guestProfile.city || '',
+          mobileNumber: guestProfile.mobile_number || '',
+          province: provinceToUse || guestProfile.province || '',
+        };
+        setFormData((prev) => ({ ...initialFormData, ...guestFields }));
       } else {
         setFormData((prev) => ({ ...initialFormData, province: provinceToUse }));
       }
@@ -172,7 +187,7 @@ const UnifiedCheckoutModal: React.FC<UnifiedCheckoutModalProps> = ({
       setIsSubmitting(false);
       setAccountCreated(false);
     }
-  }, [isOpen, isAuthenticated, user, profile, province]);
+  }, [isOpen, isAuthenticated, user, profile, guestProfile, province]);
 
   if (!isOpen) return null;
 

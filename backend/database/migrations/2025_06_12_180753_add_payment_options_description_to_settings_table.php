@@ -12,7 +12,7 @@ return new class extends Migration
     {
         DB::table('settings')->insert([
             'key' => 'payment_options_description',
-            'value' => null,
+            'value' => "",
             'type' => 'string',
             'display_name' => 'Payment Options Description',
             'description' => 'Description (HTML) for payment options shown to customers at checkout',

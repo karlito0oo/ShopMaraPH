@@ -4,9 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class UserProfile extends Model
+class GuestProfile extends Model
 {
     use HasFactory;
 
@@ -16,31 +15,24 @@ class UserProfile extends Model
      * @var array<int, string>
      */
     protected $fillable = [
-        'user_id',
         'guest_id',
+        'customer_name',
         'instagram_username',
         'address_line1',
         'barangay',
         'province',
         'city',
         'mobile_number',
+        'email',
     ];
-
-    /**
-     * Get the user that owns the profile.
-     */
-    public function user(): BelongsTo
-    {
-        return $this->belongsTo(User::class);
-    }
 
     /**
      * Find a profile by guest ID.
      *
      * @param string $guestId
-     * @return UserProfile|null
+     * @return GuestProfile|null
      */
-    public static function findByGuestId(string $guestId): ?UserProfile
+    public static function findByGuestId(string $guestId): ?GuestProfile
     {
         return static::where('guest_id', $guestId)->first();
     }

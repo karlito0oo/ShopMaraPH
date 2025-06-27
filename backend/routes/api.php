@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\SettingController;
 use App\Http\Controllers\AnnouncementController;
 use App\Http\Middleware\AdminMiddleware;
+use App\Http\Controllers\Api\GuestProfileController;
 
 /*
 |--------------------------------------------------------------------------
@@ -35,6 +36,16 @@ Route::get('announcements', [AnnouncementController::class, 'index']);
 
 // Public settings route
 Route::get('settings', [SettingController::class, 'getPublicSettings']);
+
+// Guest cart routes
+Route::get('guest/cart', [CartController::class, 'getCart']);
+Route::post('guest/cart/add', [CartController::class, 'addToCart']);
+Route::post('guest/cart/remove', [CartController::class, 'removeFromCart']);
+Route::post('guest/cart/clear', [CartController::class, 'clearCart']);
+
+// Guest profile routes
+Route::get('guest/profile', [GuestProfileController::class, 'getProfile']);
+Route::post('guest/profile', [GuestProfileController::class, 'saveProfile']);
 
 // Guest checkout routes
 Route::post('guest-orders', [OrderController::class, 'createGuestOrder']);

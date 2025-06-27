@@ -15,29 +15,26 @@ export const apiRequest = async (
   endpoint: string,
   method: 'GET' | 'POST' | 'PUT' | 'DELETE' = 'GET',
   data?: any,
-  token?: string | null,
+  headers?: Record<string, string>,
   isFormData = false
 ) => {
   const url = `${API_BASE_URL}${endpoint}`;
 
   // Prepare headers
-  const headers: HeadersInit = {};
-  
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
-  }
+  const requestHeaders: HeadersInit = {
+    ...headers,
+    'Accept': 'application/json'
+  };
 
   // If the data is not FormData, set the Content-Type to application/json
   if (!isFormData && method !== 'GET') {
-    headers['Content-Type'] = 'application/json';
+    requestHeaders['Content-Type'] = 'application/json';
   }
-  
-  headers['Accept'] = 'application/json';
 
   // Prepare request options
   const options: RequestInit = {
     method,
-    headers,
+    headers: requestHeaders,
     credentials: 'include',
   };
 
@@ -86,10 +83,10 @@ export const AuthApi = {
     apiRequest('/register', 'POST', { name, email, password, password_confirmation }),
   
   logout: (token: string) => 
-    apiRequest('/logout', 'POST', null, token),
+    apiRequest('/logout', 'POST', null, { 'Authorization': `Bearer ${token}` }),
   
   getUser: (token: string) => 
-    apiRequest('/user', 'GET', null, token),
+    apiRequest('/user', 'GET', null, { 'Authorization': `Bearer ${token}` }),
 };
 
 /**
@@ -112,36 +109,48 @@ export const ProductApi = {
     apiRequest(`/products/${id}`),
   
   createProduct: (token: string, productData: FormData) => 
-    apiRequest('/products', 'POST', productData, token, true),
+    apiRequest('/products', 'POST', productData, { 'Authorization': `Bearer ${token}` }, true),
   
   updateProduct: (token: string, id: string | number, productData: FormData) => {
     // Add _method=PUT for method spoofing
     productData.append('_method', 'PUT');
-    return apiRequest(`/products/${id}`, 'POST', productData, token, true);
+    return apiRequest(`/products/${id}`, 'POST', productData, { 'Authorization': `Bearer ${token}` }, true);
   },
   
   deleteProduct: (token: string, id: string | number) => 
-    apiRequest(`/products/${id}`, 'DELETE', null, token),
+    apiRequest(`/products/${id}`, 'DELETE', null, { 'Authorization': `Bearer ${token}` }),
   
   restockProduct: (token: string, id: string | number, restockData: any) => 
-    apiRequest(`/products/${id}/restock`, 'POST', restockData, token),
+    apiRequest(`/products/${id}/restock`, 'POST', restockData, { 'Authorization': `Bearer ${token}` }),
 };
 
 /**
  * Cart related API endpoints
  */
 export const CartApi = {
-  getCart: (token: string) => 
-    apiRequest('/cart', 'GET', null, token),
+  getCart: (headers: Record<string, string>) => {
+    const isGuest = headers['X-Guest-ID'];
+    const endpoint = isGuest ? '/guest/cart' : '/cart';
+    return apiRequest(endpoint, 'GET', null, headers);
+  },
   
-  addToCart: (token: string, productId: number | string) => 
-    apiRequest('/cart/add', 'POST', { product_id: productId }, token),
+  addToCart: (headers: Record<string, string>, productId: number | string) => {
+    const isGuest = headers['X-Guest-ID'];
+    const endpoint = isGuest ? '/guest/cart/add' : '/cart/add';
+    return apiRequest(endpoint, 'POST', { product_id: productId }, headers);
+  },
   
-  removeFromCart: (token: string, cartItemId: number) => 
-    apiRequest('/cart/remove', 'POST', { cart_item_id: cartItemId }, token),
+  removeFromCart: (headers: Record<string, string>, cartItemId: number | string) => {
+    const isGuest = headers['X-Guest-ID'];
+    const endpoint = isGuest ? '/guest/cart/remove' : '/cart/remove';
+    return apiRequest(endpoint, 'POST', { cart_item_id: cartItemId }, headers);
+  },
   
-  clearCart: (token: string) => 
-    apiRequest('/cart/clear', 'POST', null, token),
+  clearCart: (headers: Record<string, string>) => {
+    const isGuest = headers['X-Guest-ID'];
+    const endpoint = isGuest ? '/guest/cart/clear' : '/cart/clear';
+    return apiRequest(endpoint, 'POST', null, headers);
+  },
 };
 
 /**
@@ -149,10 +158,10 @@ export const CartApi = {
  */
 export const ProfileApi = {
   getProfile: (token: string) => 
-    apiRequest('/profile', 'GET', null, token),
+    apiRequest('/profile', 'GET', null, { 'Authorization': `Bearer ${token}` }),
   
   updateProfile: (token: string, profileData: any) => 
-    apiRequest('/profile', 'POST', profileData, token),
+    apiRequest('/profile', 'POST', profileData, { 'Authorization': `Bearer ${token}` }),
 };
 
 /**
@@ -161,32 +170,32 @@ export const ProfileApi = {
 export const OrderApi = {
   // User order endpoints
   createOrder: (token: string, orderData: FormData) => 
-    apiRequest('/orders', 'POST', orderData, token, true),
+    apiRequest('/orders', 'POST', orderData, { 'Authorization': `Bearer ${token}` }, true),
   
   // Guest checkout does not require token
   createGuestOrder: (orderData: FormData) => 
-    apiRequest('/guest-orders', 'POST', orderData, null, true),
+    apiRequest('/guest-orders', 'POST', orderData, {}, true),
   
   getUserOrders: (token: string) => 
-    apiRequest('/orders', 'GET', null, token),
+    apiRequest('/orders', 'GET', null, { 'Authorization': `Bearer ${token}` }),
   
   getUserOrder: (token: string, orderId: number | string) => 
-    apiRequest(`/orders/${orderId}`, 'GET', null, token),
+    apiRequest(`/orders/${orderId}`, 'GET', null, { 'Authorization': `Bearer ${token}` }),
   
   // Admin order endpoints
   getAllOrders: (token: string, status?: string) => {
     const queryParams = status ? `?status=${status}` : '';
-    return apiRequest(`/admin/orders${queryParams}`, 'GET', null, token);
+    return apiRequest(`/admin/orders${queryParams}`, 'GET', null, { 'Authorization': `Bearer ${token}` });
   },
   
   getOrder: (token: string, orderId: number | string) => 
-    apiRequest(`/admin/orders/${orderId}`, 'GET', null, token),
+    apiRequest(`/admin/orders/${orderId}`, 'GET', null, { 'Authorization': `Bearer ${token}` }),
   
   updateOrderStatus: (token: string, orderId: number | string, status: string, adminNotes?: string) => 
-    apiRequest(`/admin/orders/${orderId}/status`, 'POST', { status, admin_notes: adminNotes }, token),
+    apiRequest(`/admin/orders/${orderId}/status`, 'POST', { status, admin_notes: adminNotes }, { 'Authorization': `Bearer ${token}` }),
   
   getGuestOrders: (guestId: string) => 
-    apiRequest(`/guest-orders/${guestId}`, 'GET', null, null),
+    apiRequest(`/guest-orders/${guestId}`, 'GET', null, {}),
 };
 
 /**
@@ -194,14 +203,14 @@ export const OrderApi = {
  */
 export const HeroCarouselApi = {
   // Admin endpoints
-  getAll: (token: string) => apiRequest('/admin/hero-carousel', 'GET', null, token),
-  create: (token: string, data: FormData) => apiRequest('/admin/hero-carousel', 'POST', data, token, true),
+  getAll: (token: string) => apiRequest('/admin/hero-carousel', 'GET', null, { 'Authorization': `Bearer ${token}` }),
+  create: (token: string, data: FormData) => apiRequest('/admin/hero-carousel', 'POST', data, { 'Authorization': `Bearer ${token}` }, true),
   update: (token: string, id: number, data: FormData) => {
     data.append('_method', 'PUT');
-    return apiRequest(`/admin/hero-carousel/${id}`, 'POST', data, token, true);
+    return apiRequest(`/admin/hero-carousel/${id}`, 'POST', data, { 'Authorization': `Bearer ${token}` }, true);
   },
-  delete: (token: string, id: number) => apiRequest(`/admin/hero-carousel/${id}`, 'DELETE', null, token),
-  updateInterval: (token: string, interval: number) => apiRequest('/admin/hero-carousel/interval', 'POST', { interval }, token),
+  delete: (token: string, id: number) => apiRequest(`/admin/hero-carousel/${id}`, 'DELETE', null, { 'Authorization': `Bearer ${token}` }),
+  updateInterval: (token: string, interval: number) => apiRequest('/admin/hero-carousel/interval', 'POST', { interval }, { 'Authorization': `Bearer ${token}` }),
   // Public endpoint
   getPublic: () => apiRequest('/hero-carousel', 'GET'),
 };
@@ -211,8 +220,19 @@ export const HeroCarouselApi = {
  */
 export const AdminUserApi = {
   getAllUsers: (token: string) =>
-    apiRequest('/admin/users', 'GET', null, token),
+    apiRequest('/admin/users', 'GET', null, { 'Authorization': `Bearer ${token}` }),
 
   changeUserPassword: (token: string, userId: number, password: string, password_confirmation: string) =>
-    apiRequest(`/admin/users/${userId}/change-password`, 'POST', { password, password_confirmation }, token),
+    apiRequest(`/admin/users/${userId}/change-password`, 'POST', { password, password_confirmation }, { 'Authorization': `Bearer ${token}` }),
+};
+
+/**
+ * Guest Profile related API endpoints
+ */
+export const GuestProfileApi = {
+  getProfile: (headers: Record<string, string>) => 
+    apiRequest('/guest/profile', 'GET', null, headers),
+  
+  saveProfile: (headers: Record<string, string>, profileData: any) => 
+    apiRequest('/guest/profile', 'POST', profileData, headers),
 }; 

@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
 import UnifiedCheckoutModal, { PH_PROVINCES } from '../components/UnifiedCheckoutModal';
 import { useProfile } from '../context/ProfileContext';
+import { useGuestProfile } from '../context/GuestProfileContext';
 import { useSettings } from '../context/SettingsContext';
 
 const CartPage = () => {
@@ -18,14 +19,17 @@ const CartPage = () => {
   } = useCart();
 
   const { profile } = useProfile();
+  const { profile: guestProfile } = useGuestProfile();
   const { deliveryFeeNcr, deliveryFeeOutsideNcr, isLoading: settingsLoading } = useSettings();
-  const [province, setProvince] = useState<string>(profile?.province || '');
+  const [province, setProvince] = useState('');
 
   useEffect(() => {
-    if (profile && profile.province) {
+    if (isAuthenticated && profile?.province) {
       setProvince(profile.province);
+    } else if (!isAuthenticated && guestProfile?.province) {
+      setProvince(guestProfile.province);
     }
-  }, [profile]);
+  }, [isAuthenticated, profile, guestProfile]);
 
   const subtotal = getTotalPrice();
   let shipping = 0;
