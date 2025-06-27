@@ -198,8 +198,15 @@ class OrderController extends Controller
             
             foreach ($cartItems as $item) {
                 $product = Product::where('id', $item['product_id'])
-                    ->where('status', 'Available')
-                    ->first();
+                ->where(function ($query) use ($profile) {
+                    $query->where('status', 'Available')
+                          ->orWhere(function ($q) use ($profile) {
+                              $q->where('status', 'OnHold')
+                                ->where('onhold_by_type', 'guest')
+                                ->where('onhold_by_id', $profile->guest_id);
+                          });
+                })
+                ->first();
                 
                 if (!$product) {
                     return response()->json([
@@ -217,7 +224,7 @@ class OrderController extends Controller
                     'price' => $product->price,
                 ];
             }
-
+            
             // Handle payment proof upload
             $paymentProofPath = null;
             if ($request->hasFile('payment_proof')) {

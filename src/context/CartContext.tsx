@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import type { Product } from '../types/product';
 import { useAuth } from './AuthContext';
-import { CartApi } from '../services/ApiService';
+import { CartApi, ProductApi } from '../services/ApiService';
 import { useToast } from './ToastContext';
 
 interface CartItem {
@@ -87,27 +87,31 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   const addToCart = async (product: Product) => {
-    // Check if product is already in cart
-    const isProductInCart = cartItems.some(item => 
-      item.product.id === product.id
-    );
-    
-    if (isProductInCart) {
-      showToast(`${product.name} is already in your cart.`, 'warning');
-      return;
-    }
-    
     setIsLoading(true);
     setError(null);
     
     try {
-      const response = await CartApi.addToCart(getHeaders(), product.id);
-      setCartItems(response.data.items || []);
-      showToast(`${product.name} added to cart!`, 'success');
-    } catch (error) {
-      console.error('Error adding to cart:', error);
-      setError(error instanceof Error ? error.message : 'An error occurred while adding to cart');
-      showToast('Failed to add item to cart', 'error');
+      // Check product availability first
+      const productResponse = await ProductApi.getProductById(product.id);
+      const currentProduct = productResponse.data;
+      
+      if (currentProduct.status !== 'Available') {
+        throw new Error(
+          currentProduct.status === 'Sold' 
+            ? 'This product is no longer available as it has been sold.'
+            : 'This product is currently on hold by another customer.'
+        );
+      }
+
+      const headers = getHeaders();
+      await CartApi.addToCart(headers, product.id);
+      await fetchCart(); // Refresh cart after adding
+      showToast('Product added to cart!', 'success');
+    } catch (error: any) {
+      const errorMessage = error.message || 'Failed to add product to cart';
+      showToast(errorMessage, 'error');
+      setError(errorMessage);
+      throw error;
     } finally {
       setIsLoading(false);
     }

@@ -15,6 +15,8 @@ export interface Product {
   isSale?: boolean;
   status: 'Available' | 'Sold' | 'OnHold';
   size?: ProductSize;
+  onhold_by_id?: string | number;
+  onhold_by_type?: 'user' | 'guest';
 }
 
 export const filterProductsBySize = (

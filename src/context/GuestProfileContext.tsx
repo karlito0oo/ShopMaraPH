@@ -2,16 +2,17 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { GuestProfileApi } from '../services/ApiService';
 import { useToast } from './ToastContext';
+import { GUEST_ID_KEY } from '../constants';
 
 interface GuestProfile {
-  customer_name: string;
-  instagram_username?: string;
-  email?: string;
-  address_line1: string;
-  barangay: string;
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  address: string;
   province: string;
   city: string;
-  mobile_number: string;
+  postal_code: string;
 }
 
 interface GuestProfileContextType {
@@ -24,8 +25,6 @@ interface GuestProfileContextType {
 
 const GuestProfileContext = createContext<GuestProfileContextType | undefined>(undefined);
 
-// Key for guest ID in localStorage
-const GUEST_ID_KEY = 'guest_id';
 
 export const GuestProfileProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [profile, setProfile] = useState<GuestProfile | null>(null);

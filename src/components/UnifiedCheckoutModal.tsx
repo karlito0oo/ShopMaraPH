@@ -188,12 +188,14 @@ const UnifiedCheckoutModal: React.FC<UnifiedCheckoutModalProps> = ({
   const [holdExpiryTime, setHoldExpiryTime] = useState<number | null>(null);
   
   useEffect(() => {
+    if (currentStep === 2) {
       holdProducts().then((response) => {
         console.log(response);
         if (!response.is_hold_expired) {
           setHoldExpiryTime(response.hold_expiry_time_in_seconds);
         }
       });
+    }
   }, [currentStep]);
 
   // Prefill for logged-in users and guests, and update province from prop
