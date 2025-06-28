@@ -172,14 +172,20 @@ const ProductDetailPage = () => {
           {/* Product Description */}
           <div className="mb-6">
             <h2 className="text-lg font-medium mb-2">Description</h2>
-            <p className="text-gray-700">{product.description || 'No description available.'}</p>
+            <div 
+              className="text-gray-700 prose prose-sm"
+              dangerouslySetInnerHTML={{ __html: product.description || 'No description available.' }}
+            />
           </div>
 
           {/* Care Instructions */}
           {product.careInstructions && (
             <div className="mb-6">
               <h2 className="text-lg font-medium mb-2">Before You Buy</h2>
-              <div className="text-gray-700 whitespace-pre-line">{product.careInstructions}</div>
+              <div 
+                className="text-gray-700 prose prose-sm"
+                dangerouslySetInnerHTML={{ __html: product.careInstructions }}
+              />
             </div>
           )}
 
