@@ -92,8 +92,15 @@ class OrderController extends Controller
             foreach ($cart->items as $cartItem) {
                 // Check if product is available
                 $product = Product::where('id', $cartItem->product->id)
-                    ->where('status', 'Available')
-                    ->first();
+                ->where(function ($query) use ($user) {
+                    $query->where('status', 'Available')
+                          ->orWhere(function ($q) use ($user) {
+                              $q->where('status', 'OnHold')
+                                ->where('onhold_by_type', 'user')
+                                ->where('onhold_by_id', $user->id);
+                          });
+                })
+                ->first();
 
                 if (!$product) {
                     throw new \Exception("Product {$cartItem->product->name} is no longer available.");
@@ -184,8 +191,10 @@ class OrderController extends Controller
 
             // Parse the cart items from JSON
             $cartItems = json_decode($request->cart_items, true);
+            $cart = Cart::with(['items.product'])->where('guest_id', $profile->guest_id)->first();
             
-            if (empty($cartItems)) {
+
+            if (!$cart || $cart->items->isEmpty()) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Your cart is empty',
@@ -196,34 +205,6 @@ class OrderController extends Controller
             $totalAmount = 0;
             $orderItems = [];
             
-            foreach ($cartItems as $item) {
-                $product = Product::where('id', $item['product_id'])
-                ->where(function ($query) use ($profile) {
-                    $query->where('status', 'Available')
-                          ->orWhere(function ($q) use ($profile) {
-                              $q->where('status', 'OnHold')
-                                ->where('onhold_by_type', 'guest')
-                                ->where('onhold_by_id', $profile->guest_id);
-                          });
-                })
-                ->first();
-                
-                if (!$product) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'Product not available: ' . $item['product_id'],
-                    ], 422);
-                }
-                
-                $totalAmount += $product->price;
-                
-                // Build order item data
-                $orderItems[] = [
-                    'product_id' => $product->id,
-                    'product_name' => $product->name,
-                    'price' => $product->price,
-                ];
-            }
             
             // Handle payment proof upload
             $paymentProofPath = null;
@@ -251,21 +232,40 @@ class OrderController extends Controller
                 'shipping_fee' => $request->input('shipping_fee', 0),
             ]);
             $order->save();
-
             // Create order items and mark products as sold
-            foreach ($orderItems as $itemData) {
+            foreach ($cart->items as $cartItem) {
+                // Check if product is available
+                $product = Product::where('id', $cartItem->product->id)
+                ->where(function ($query) use ($profile) {
+                    $query->where('status', 'Available')
+                          ->orWhere(function ($q) use ($profile) {
+                              $q->where('status', 'OnHold')
+                                ->where('onhold_by_type', 'guest')
+                                ->where('onhold_by_id', $profile->guest_id);
+                          });
+                })
+                ->first();
+
+                if (!$product) {
+                    throw new \Exception("Product {$cartItem->product->name} is no longer available.");
+                }
+
                 $orderItem = new OrderItem([
                     'order_id' => $order->id,
-                    'product_id' => $itemData['product_id'],
-                    'product_name' => $itemData['product_name'],
-                    'price' => $itemData['price'],
+                    'product_id' => $cartItem->product->id,
+                    'product_name' => $cartItem->product->name,
+                    'price' => $cartItem->product->price,
                 ]);
                 $orderItem->save();
 
                 // Mark the product as sold
-                Product::where('id', $itemData['product_id'])->update(['status' => 'Sold']);
+                $product->status = 'Sold';
+                $product->save();
             }
 
+            // Clear the cart
+            $cart->items()->delete();
+            
             DB::commit();
 
             return response()->json([
