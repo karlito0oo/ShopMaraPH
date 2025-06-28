@@ -36,6 +36,7 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange }) => {
         class: 'prose prose-sm max-w-none focus:outline-none min-h-[150px] p-4',
       },
       handlePaste: (view, event) => {
+        console.log('handlePaste', view);
         const items = Array.from(event.clipboardData?.items || []);
         const imageItem = items.find(item => item.type.startsWith('image/'));
 

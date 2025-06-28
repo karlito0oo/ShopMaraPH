@@ -11,7 +11,7 @@ import type { Product } from '../types/product';
 import { GUEST_ID_KEY } from '../constants';
 
 const CartPage = () => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const [isUnifiedCheckoutOpen, setIsUnifiedCheckoutOpen] = useState(false);
   const { 
     cartItems, 
@@ -31,11 +31,11 @@ const CartPage = () => {
     if (item.product.status === 'Sold') return true;
     
     if (item.product.status === 'OnHold') {
-      const currentUserId = isAuthenticated ? profile?.id : localStorage.getItem(GUEST_ID_KEY);
+      const currentUserId = isAuthenticated ? user?.id : localStorage.getItem(GUEST_ID_KEY);
       const isHeldByCurrentUser = 
         item.product.onhold_by_id == currentUserId && 
         item.product.onhold_by_type == (isAuthenticated ? 'user' : 'guest');
-      
+      console.log({isHeldByCurrentUser, currentUserId, isAuthenticated, item, profile})
       return !isHeldByCurrentUser; // Only unavailable if NOT held by current user
     }
     
@@ -85,10 +85,12 @@ const CartPage = () => {
         </span>
       );
     } else if (product.status === 'OnHold') {
-      const currentUserId = isAuthenticated ? profile?.id : localStorage.getItem(GUEST_ID_KEY);
+      const currentUserId = isAuthenticated ? user?.id : localStorage.getItem(GUEST_ID_KEY);
       const isHeldByCurrentUser = 
         product.onhold_by_id == currentUserId && 
         product.onhold_by_type == (isAuthenticated ? 'user' : 'guest');
+        console.log("getProductStatusBadge")
+      console.log({isHeldByCurrentUser, currentUserId, isAuthenticated, product})
       return (
         <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${
           isHeldByCurrentUser 
