@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import type { Product } from '../types/product';
 import { useCart } from '../context/CartContext';
@@ -8,7 +8,8 @@ interface ProductCardProps {
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
-  const { addToCart } = useCart();
+  const { addToCart, isInCart } = useCart();
+  const [isLoading, setIsLoading] = useState(false);
   
   const handleAddToCart = async (e: React.MouseEvent) => {
     e.preventDefault(); // Prevent navigation to product page
@@ -16,10 +17,13 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     
     if (product.status === 'Available' && product.size) {
       try {
+        setIsLoading(true);
         await addToCart(product);
       } catch (err) {
         console.error('Error adding to cart:', err);
         // Error handling is now done in CartContext with toast notifications
+      } finally {
+        setIsLoading(false);
       }
     }
   };
@@ -84,15 +88,23 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         <button
           type="button"
           onClick={handleAddToCart}
-          disabled={product.status !== 'Available' || !product.size}
+          disabled={product.status !== 'Available' || !product.size || isLoading || isInCart(product.id)}
           className={`w-full py-1.5 px-3 text-sm font-medium rounded transition-colors ${
             product.status !== 'Available' || !product.size
-              ? 'bg-gray-200 text-gray-500 cursor-not-allowed' 
+              ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+              : isInCart(product.id)
+              ? 'bg-green-600 text-white cursor-not-allowed'
               : 'bg-black text-white hover:bg-gray-800'
           }`}
         >
-          {product.status === 'Sold' ? 'Sold' : 
-           product.status === 'OnHold' ? 'On Hold' : 'Add to Cart'}
+          {isLoading ? (
+            <div className="flex items-center justify-center">
+              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+              Adding...
+            </div>
+          ) : product.status === 'Sold' ? 'Sold' : 
+             product.status === 'OnHold' ? 'On Hold' :
+             isInCart(product.id) ? 'In Cart' : 'Add to Cart'}
         </button>
       </div>
     </div>

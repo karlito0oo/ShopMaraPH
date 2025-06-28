@@ -7,12 +7,13 @@ import { ProductApi } from '../services/ApiService';
 
 const ProductDetailPage = () => {
   const { id } = useParams<{ id: string }>();
-  const { addToCart } = useCart();
+  const { addToCart, isInCart } = useCart();
   const { showToast } = useToast();
   const [product, setProduct] = useState<Product | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isAddingToCart, setIsAddingToCart] = useState(false);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -35,11 +36,14 @@ const ProductDetailPage = () => {
     if (!product || product.status !== 'Available') return;
 
     try {
+      setIsAddingToCart(true);
       await addToCart(product);
       showToast('Product added to cart!', 'success');
     } catch (error) {
       console.error('Error:', error);
       showToast('Failed to add product to cart', 'error');
+    } finally {
+      setIsAddingToCart(false);
     }
   };
 
@@ -192,15 +196,23 @@ const ProductDetailPage = () => {
           {/* Add to Cart Button */}
           <button
             onClick={handleAddToCart}
-            disabled={product.status !== 'Available'}
+            disabled={!product || product.status !== 'Available' || isAddingToCart || isInCart(product.id)}
             className={`w-full py-3 px-6 text-center font-medium rounded-md transition-colors ${
-              product.status !== 'Available'
+              !product || product.status !== 'Available'
                 ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                : isInCart(product.id)
+                ? 'bg-green-600 text-white cursor-not-allowed'
                 : 'bg-black text-white hover:bg-gray-800'
             }`}
           >
-            {product.status === 'Sold' ? 'Sold Out' : 
-             product.status === 'OnHold' ? 'On Hold' : 'Add to Cart'}
+            {isAddingToCart ? (
+              <div className="flex items-center justify-center">
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                Adding to Cart...
+              </div>
+            ) : product?.status === 'Sold' ? 'Sold Out' : 
+               product?.status === 'OnHold' ? 'On Hold' :
+               isInCart(product?.id) ? 'In Cart' : 'Add to Cart'}
           </button>
         </div>
       </div>
