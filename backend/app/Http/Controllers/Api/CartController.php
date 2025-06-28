@@ -181,6 +181,8 @@ class CartController extends Controller
                 ], 404);
             }
 
+            $cartItem->product->releaseFromHold();
+
             $cartItem->delete();
 
             return $this->getCart($request);
@@ -212,6 +214,9 @@ class CartController extends Controller
             }
 
             if ($cart) {
+                foreach ($cart->items as $item) {
+                    $item->product->releaseFromHold();
+                }
                 $cart->items()->delete();
             }
 
