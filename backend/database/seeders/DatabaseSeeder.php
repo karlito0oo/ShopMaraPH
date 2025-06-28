@@ -34,8 +34,8 @@ class DatabaseSeeder extends Seeder
         // User::factory(10)->create();
 
         // Call product seeder
-        $this->call([
-            ProductSeeder::class,
-        ]);
+        //$this->call([
+       //     ProductSeeder::class,
+       // ]);
     }
 }

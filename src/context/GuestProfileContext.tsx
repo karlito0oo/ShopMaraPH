@@ -6,13 +6,17 @@ import { GUEST_ID_KEY } from '../constants';
 
 interface GuestProfile {
   id: string;
-  name: string;
+  customer_name: string;
   email: string;
   phone: string;
   address: string;
   province: string;
   city: string;
   postal_code: string;
+  instagram_username: string;
+  address_line1: string;
+  barangay: string;
+  mobile_number: string;
 }
 
 interface GuestProfileContextType {
@@ -31,12 +35,6 @@ export const GuestProfileProvider: React.FC<{ children: ReactNode }> = ({ childr
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const { showToast } = useToast();
-
-  // Get headers for API requests
-  const getHeaders = (): Record<string, string> => {
-    const guestId = localStorage.getItem(GUEST_ID_KEY);
-    return guestId ? { 'X-Guest-ID': guestId } : {};
-  };
 
   const fetchProfile = async () => {
     const guestId = localStorage.getItem(GUEST_ID_KEY);

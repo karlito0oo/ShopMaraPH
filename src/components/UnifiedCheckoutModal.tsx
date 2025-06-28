@@ -6,7 +6,6 @@ import { useSettings } from '../context/SettingsContext';
 import {  OrderApi } from '../services/ApiService';
 import { nanoid } from 'nanoid';
 import { useCart } from '../context/CartContext';
-import { GUEST_ID_KEY } from '../constants';
 
 // PH_PROVINCES constant moved here from CheckoutModal.tsx
 export const PH_PROVINCES = [
@@ -191,7 +190,6 @@ const UnifiedCheckoutModal: React.FC<UnifiedCheckoutModalProps> = ({
   const [orderError, setOrderError] = useState<string | null>(null);
   const [accountCreated, setAccountCreated] = useState(false);
   const [holdExpiryTime, setHoldExpiryTime] = useState<number | null>(null);
-  const [isExpired, setIsExpired] = useState<boolean>(false);
   
   useEffect(() => {
     const handleEffect = async () => {
@@ -248,9 +246,9 @@ const UnifiedCheckoutModal: React.FC<UnifiedCheckoutModalProps> = ({
           mobileNumber: guestProfile.mobile_number || '',
           province: provinceToUse || guestProfile.province || '',
         };
-        setFormData((prev) => ({ ...initialFormData, ...guestFields }));
+        setFormData(() => ({ ...initialFormData, ...guestFields }));
       } else {
-        setFormData((prev) => ({ ...initialFormData, province: provinceToUse }));
+        setFormData(() => ({ ...initialFormData, province: provinceToUse }));
       }
       setFormMode(isAuthenticated ? 'checkout' : 'initial');
       setCurrentStep(1);

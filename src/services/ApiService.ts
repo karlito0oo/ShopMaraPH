@@ -133,6 +133,8 @@ interface HoldProductsResponse {
   success: boolean;
   message: string;
   hold_duration: number;
+  hold_expiry_time_in_seconds: number;
+  is_hold_expired: boolean;
   data?: {
     items?: CartItem[];
   };
