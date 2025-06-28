@@ -12,7 +12,11 @@ interface RichTextEditorProps {
 const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange }) => {
   const editor = useEditor({
     extensions: [
-      StarterKit,
+      StarterKit.configure({
+        heading: {
+          levels: [1, 2, 3],
+        },
+      }),
       Link.configure({
         openOnClick: false,
         HTMLAttributes: {
@@ -23,25 +27,59 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange }) => {
         HTMLAttributes: {
           class: 'max-w-full h-auto rounded',
         },
+        allowBase64: true,
       }),
     ],
-    content: value,
-    onUpdate: ({ editor }) => {
-      onChange(editor.getHTML());
-    },
+    content: value || '',
     editorProps: {
       attributes: {
-        class: 'prose prose-sm max-w-none focus:outline-none min-h-[150px]',
+        class: 'prose prose-sm max-w-none focus:outline-none min-h-[150px] p-4',
+      },
+      handlePaste: (view, event) => {
+        const items = Array.from(event.clipboardData?.items || []);
+        const imageItem = items.find(item => item.type.startsWith('image/'));
+
+        if (imageItem) {
+          event.preventDefault();
+          const blob = imageItem.getAsFile();
+          if (!blob) return false;
+
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            const base64Image = e.target?.result as string;
+            if (base64Image) {
+              editor?.chain().focus().setImage({ src: base64Image }).run();
+            }
+          };
+          reader.readAsDataURL(blob);
+          return true;
+        }
+        return false;
       },
     },
   });
 
   // Update editor content when value prop changes
   useEffect(() => {
-    if (editor && value !== editor.getHTML()) {
-      editor.commands.setContent(value);
+    if (editor && value !== undefined) {
+      const currentContent = editor.getHTML();
+      if (currentContent !== value) {
+        editor.commands.setContent(value || '', false);
+      }
     }
   }, [value, editor]);
+
+  // Update parent component when content changes
+  useEffect(() => {
+    if (editor) {
+      editor.on('update', () => {
+        const html = editor.getHTML();
+        if (html !== value) {
+          onChange(html);
+        }
+      });
+    }
+  }, [editor, onChange, value]);
 
   if (!editor) {
     return null;
@@ -114,8 +152,24 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange }) => {
             <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
           </svg>
         </button>
+        <button
+          onClick={() => {
+            const url = window.prompt('Enter the image URL');
+            if (url) {
+              editor.chain().focus().setImage({ src: url }).run();
+            }
+          }}
+          className={`p-1 rounded hover:bg-gray-100`}
+          title="Add Image"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+            <circle cx="8.5" cy="8.5" r="1.5"></circle>
+            <polyline points="21 15 16 10 5 21"></polyline>
+          </svg>
+        </button>
       </div>
-      <EditorContent editor={editor} className="p-3" />
+      <EditorContent editor={editor} />
     </div>
   );
 };
