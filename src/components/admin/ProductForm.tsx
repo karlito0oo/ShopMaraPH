@@ -42,6 +42,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
 
   useEffect(() => {
     if (initialData && isEditing) {
+      console.log({initialData})
       setFormData({
         sku: initialData.sku || '',
         name: initialData.name || '',
@@ -148,6 +149,14 @@ const ProductForm: React.FC<ProductFormProps> = ({
     }
   };
 
+  const handleRichTextChange = (field: string, value: string) => {
+    console.log(`Updating ${field} with:`, value); // Debug log
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
   return (
     <form onSubmit={handleSubmit} className="space-y-8 divide-y divide-gray-200">
       <div className="space-y-6">
@@ -200,8 +209,9 @@ const ProductForm: React.FC<ProductFormProps> = ({
             </label>
             <div className="mt-1">
               <RichTextEditor
+                key={`description-${initialData?.id || 'new'}`}
                 value={formData.description}
-                onChange={(value) => setFormData(prev => ({ ...prev, description: value }))}
+                onChange={(value) => handleRichTextChange('description', value)}
               />
             </div>
           </div>
@@ -212,8 +222,9 @@ const ProductForm: React.FC<ProductFormProps> = ({
             </label>
             <div className="mt-1">
               <RichTextEditor
+                key={`care-${initialData?.id || 'new'}`}
                 value={formData.careInstructions}
-                onChange={(value) => setFormData(prev => ({ ...prev, careInstructions: value }))}
+                onChange={(value) => handleRichTextChange('careInstructions', value)}
               />
             </div>
           </div>

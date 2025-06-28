@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Link from '@tiptap/extension-link';
@@ -36,13 +36,20 @@ const RichTextEditor: React.FC<RichTextEditorProps> = ({ value, onChange }) => {
     },
   });
 
+  // Update editor content when value prop changes
+  useEffect(() => {
+    if (editor && value !== editor.getHTML()) {
+      editor.commands.setContent(value);
+    }
+  }, [value, editor]);
+
   if (!editor) {
     return null;
   }
 
   return (
     <div className="border border-gray-300 rounded-md shadow-sm">
-      <div className="border-b border-gray-300 bg-gray-50 p-2 flex gap-2">
+      <div className="flex gap-1 p-1 border-b border-gray-300">
         <button
           onClick={() => editor.chain().focus().toggleBold().run()}
           className={`p-1 rounded ${editor.isActive('bold') ? 'bg-gray-200' : 'hover:bg-gray-100'}`}
