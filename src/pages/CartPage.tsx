@@ -33,8 +33,8 @@ const CartPage = () => {
     if (item.product.status === 'OnHold') {
       const currentUserId = isAuthenticated ? profile?.id : localStorage.getItem(GUEST_ID_KEY);
       const isHeldByCurrentUser = 
-        item.product.onhold_by_id === currentUserId && 
-        item.product.onhold_by_type === (isAuthenticated ? 'user' : 'guest');
+        item.product.onhold_by_id == currentUserId && 
+        item.product.onhold_by_type == (isAuthenticated ? 'user' : 'guest');
       
       return !isHeldByCurrentUser; // Only unavailable if NOT held by current user
     }
@@ -87,9 +87,8 @@ const CartPage = () => {
     } else if (product.status === 'OnHold') {
       const currentUserId = isAuthenticated ? profile?.id : localStorage.getItem(GUEST_ID_KEY);
       const isHeldByCurrentUser = 
-        product.onhold_by_id === currentUserId && 
-        product.onhold_by_type === (isAuthenticated ? 'user' : 'guest');
-
+        product.onhold_by_id == currentUserId && 
+        product.onhold_by_type == (isAuthenticated ? 'user' : 'guest');
       return (
         <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${
           isHeldByCurrentUser 

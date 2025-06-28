@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { useProfile } from '../context/ProfileContext';
 import { useGuestProfile } from '../context/GuestProfileContext';
 import { useSettings } from '../context/SettingsContext';
-import { CartApi, OrderApi } from '../services/ApiService';
+import {  OrderApi } from '../services/ApiService';
 import { nanoid } from 'nanoid';
 import { useCart } from '../context/CartContext';
 import { GUEST_ID_KEY } from '../constants';

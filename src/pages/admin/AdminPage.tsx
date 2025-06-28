@@ -125,8 +125,6 @@ const AdminPage: React.FC = () => {
       <div className="bg-white shadow rounded overflow-hidden p-4">
         {activeTab === 'products' && (
           <ManageProducts 
-            onSuccess={handleSuccess} 
-            onError={handleError} 
           />
         )}
         {activeTab === 'orders' && <OrderManagement />}
