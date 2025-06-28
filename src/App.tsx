@@ -1,65 +1,51 @@
 import React from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom'
-import Navbar from './components/Navbar'
-import Footer from './components/Footer'
-import HomePage from './pages/HomePage'
-import NewPage from './pages/NewPage'
-import SalePage from './pages/SalePage'
-import LoginPage from './pages/LoginPage'
-import RegisterPage from './pages/RegisterPage'
-import CartPage from './pages/CartPage'
-import AllProductsPage from './pages/AllProductsPage'
-import ProductDetailPage from './pages/ProductDetailPage'
-import AdminPage from './pages/admin/AdminPage'
-import EditProductPage from './pages/admin/EditProductPage'
-import AddProductPage from './pages/admin/AddProductPage'
-import AdminOrdersPage from './pages/admin/AdminOrdersPage'
-import UserOrdersPage from './pages/UserOrdersPage'
-import AboutPage from './pages/AboutPage'
-import AnnouncementFormPage from './pages/admin/AnnouncementFormPage'
-import { CartProvider } from './context/CartContext'
-import { AuthProvider, useAuth } from './context/AuthContext'
-import { ProfileProvider } from './context/ProfileContext'
-import { SettingsProvider } from './context/SettingsContext'
-import { ToastProvider } from './context/ToastContext'
-import { GuestProfileProvider } from './context/GuestProfileContext'
+import { Routes, Route } from 'react-router-dom';
+import Navbar from './components/Navbar';
+import Footer from './components/Footer';
+import HomePage from './pages/HomePage';
+import NewPage from './pages/NewPage';
+import SalePage from './pages/SalePage';
+import AboutPage from './pages/AboutPage';
+import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
+import CartPage from './pages/CartPage';
+import UserOrdersPage from './pages/UserOrdersPage';
+import AllProductsPage from './pages/AllProductsPage';
+import ProductDetailPage from './pages/ProductDetailPage';
+import AdminPage from './pages/admin/AdminPage';
+import AddProductPage from './pages/admin/AddProductPage';
+import EditProductPage from './pages/admin/EditProductPage';
+import AdminOrdersPage from './pages/admin/AdminOrdersPage';
+import AnnouncementFormPage from './pages/admin/AnnouncementFormPage';
+import { AuthProvider } from './context/AuthContext';
+import { CartProvider } from './context/CartContext';
+import { ToastProvider } from './context/ToastContext';
+import { SettingsProvider } from './context/SettingsContext';
+import { GuestProfileProvider } from './context/GuestProfileContext';
+import { ProfileProvider } from './context/ProfileContext';
+import { AdminRoute } from './components/admin/AdminRoute';
+import { ProtectedRoute } from './components/ProtectedRoute';
 
-// Protected route component for authentication
-const ProtectedRoute = ({ children }: { children: React.ReactElement }) => {
-  const { isAuthenticated } = useAuth();
-  const hasGuestId = typeof window !== 'undefined' && localStorage.getItem('guest_id');
-  if (!isAuthenticated && !hasGuestId) {
-    return <Navigate to="/login" />;
-  }
-  return children;
-};
-
-// Admin route component for authorization
-const AdminRoute = ({ children }: { children: React.ReactElement }) => {
-  const { isAuthenticated, isAdmin } = useAuth();
-  
-  if (!isAuthenticated) {
-    return <Navigate to="/login" />;
-  }
-  
-  if (!isAdmin) {
-    return <Navigate to="/" />;
-  }
-  
-  return children;
-};
-
-function App() {
+// Layout wrapper component to handle padding for fixed navbar
+const MainLayout = ({ children }: { children: React.ReactNode }) => {
   return (
-    <AuthProvider><ToastProvider>
-      <ProfileProvider>
-        <GuestProfileProvider>
-          
-            <SettingsProvider>
-              <CartProvider>
-                <div className="min-h-screen bg-white flex flex-col">
+    <div className="min-h-screen pt-16 md:pt-20">
+      {children}
+    </div>
+  );
+};
+
+const App = () => {
+  return (
+    
+    <ToastProvider><AuthProvider>
+      <CartProvider>
+          <SettingsProvider>
+            <GuestProfileProvider>
+              <ProfileProvider>
+                <div className="app">
                   <Navbar />
-                  <main className="flex-grow">
+                  <MainLayout>
                     <Routes>
                       <Route path="/" element={<HomePage />} />
                       <Route path="/new" element={<NewPage />} />
@@ -117,16 +103,16 @@ function App() {
                         </AdminRoute>
                       } />
                     </Routes>
-                  </main>
+                  </MainLayout>
                   <Footer />
                 </div>
-              </CartProvider>
-            </SettingsProvider>
-        </GuestProfileProvider>
-      </ProfileProvider>
-      </ToastProvider>
+              </ProfileProvider>
+            </GuestProfileProvider>
+          </SettingsProvider>
+      </CartProvider>
     </AuthProvider>
-  )
-}
+        </ToastProvider>
+  );
+};
 
-export default App
+export default App;
