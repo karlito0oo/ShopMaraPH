@@ -11,6 +11,7 @@ const SalePage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [activeSize, setActiveSize] = useState<ProductSize>('all');
   const [searchKeyword, setSearchKeyword] = useState('');
+  const [hideSoldProducts, setHideSoldProducts] = useState(false);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -29,9 +30,9 @@ const SalePage = () => {
   }, []);
 
   useEffect(() => {
-    const filtered = filterProductsBySize(products, activeSize, searchKeyword);
+    const filtered = filterProductsBySize(products, activeSize, searchKeyword, hideSoldProducts);
     setFilteredProducts(filtered);
-  }, [products, activeSize, searchKeyword]);
+  }, [products, activeSize, searchKeyword, hideSoldProducts]);
 
   const handleSizeChange = (size: ProductSize) => {
     setActiveSize(size);
@@ -44,6 +45,7 @@ const SalePage = () => {
   const handleResetFilters = () => {
     setActiveSize('all');
     setSearchKeyword('');
+    setHideSoldProducts(false);
   };
 
   if (isLoading) {
@@ -74,6 +76,8 @@ const SalePage = () => {
             onSizeChange={handleSizeChange}
             onKeywordChange={handleSearchChange}
             showCategoryFilter={false}
+            hideSoldProducts={hideSoldProducts}
+            onHideSoldChange={setHideSoldProducts}
           />
         </div>
         

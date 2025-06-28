@@ -12,6 +12,7 @@ const NewPage = () => {
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [hideSoldProducts, setHideSoldProducts] = useState(false);
 
   // Fetch products from API
   useEffect(() => {
@@ -37,14 +38,16 @@ const NewPage = () => {
       setFilteredProducts(filterProductsBySize(
         products,
         activeSize,
-        searchKeyword
+        searchKeyword,
+        hideSoldProducts
       ));
     }
-  }, [products, activeSize, searchKeyword]);
+  }, [products, activeSize, searchKeyword, hideSoldProducts]);
 
   const resetFilters = () => {
     setActiveSize('all');
     setSearchKeyword('');
+    setHideSoldProducts(false);
   };
 
   if (isLoading) {
@@ -82,6 +85,8 @@ const NewPage = () => {
             onSizeChange={setActiveSize}
             onKeywordChange={setSearchKeyword}
             showCategoryFilter={false}
+            hideSoldProducts={hideSoldProducts}
+            onHideSoldChange={setHideSoldProducts}
           />
         </div>
         

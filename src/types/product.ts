@@ -21,48 +21,82 @@ export interface Product {
 
 export const filterProductsBySize = (
   products: Product[],
-  size: ProductSize,
-  searchKeyword: string = ''
+  size: ProductSize = 'all',
+  searchKeyword: string = '',
+  hideSoldProducts: boolean = false
 ): Product[] => {
-  return products.filter(product => {
-    const sizeMatch = size === 'all' || product.size === size;
-    const keywordMatch = searchKeyword === '' || 
-      product.name.toLowerCase().includes(searchKeyword.toLowerCase());
-    
-    return sizeMatch && keywordMatch;
+  let filteredProducts = [...products];
+
+  // Filter by size if not 'all'
+  if (size !== 'all') {
+    filteredProducts = filteredProducts.filter(product => product.size === size);
+  }
+
+  // Filter by search keyword
+  if (searchKeyword) {
+    const keyword = searchKeyword.toLowerCase();
+    filteredProducts = filteredProducts.filter(product =>
+      product.name.toLowerCase().includes(keyword) ||
+      (product.description?.toLowerCase().includes(keyword) ?? false)
+    );
+  }
+
+  // Filter out sold products if hideSoldProducts is true
+  if (hideSoldProducts) {
+    filteredProducts = filteredProducts.filter(product => product.status !== 'Sold');
+  }
+
+  // Sort products: Available/OnHold first, then Sold
+  return filteredProducts.sort((a, b) => {
+    if (a.status === 'Sold' && b.status !== 'Sold') return 1;
+    if (a.status !== 'Sold' && b.status === 'Sold') return -1;
+    return 0;
   });
 };
 
 export const filterProducts = (
-  products: Product[], 
-  category: ProductCategory,
+  products: Product[],
+  category: ProductCategory = 'all',
+  size: ProductSize = 'all',
   searchKeyword: string = '',
   showNewOnly: boolean = false,
-  showSaleOnly: boolean = false
+  hideSoldProducts: boolean = false
 ): Product[] => {
-  return products.filter(product => {
-    // If category is 'new_arrival', we'll show only new arrival products
-    // If showNewOnly is true, we'll also filter for new arrival products
-    const isNewArrivalProduct = product.isNewArrival || product.category === 'new_arrival';
-    
-    // If category is 'sale', we'll show only sale products
-    // If showSaleOnly is true, we'll also filter for sale products
-    const isSaleProduct = product.isSale || product.category === 'sale';
-    
-    // Category match logic: 
-    // - If 'all', show everything unless showNewOnly or showSaleOnly is true
-    // - If 'new_arrival', match with isNewArrivalProduct
-    // - If 'sale', match with isSaleProduct
-    // - If 'men' or 'women', match with the product's category
-    const categoryMatch = 
-      (category === 'all' && (!showNewOnly || isNewArrivalProduct) && (!showSaleOnly || isSaleProduct)) || 
-      (category === 'new_arrival' && isNewArrivalProduct) ||
-      (category === 'sale' && isSaleProduct) ||
-      (category === product.category);
-    
-    const keywordMatch = searchKeyword === '' || 
-      product.name.toLowerCase().includes(searchKeyword.toLowerCase());
-    
-    return categoryMatch && keywordMatch;
+  let filteredProducts = [...products];
+
+  // Filter by category if not 'all'
+  if (category !== 'all') {
+    filteredProducts = filteredProducts.filter(product => product.category === category);
+  }
+
+  // Filter by size if not 'all'
+  if (size !== 'all') {
+    filteredProducts = filteredProducts.filter(product => product.size === size);
+  }
+
+  // Filter by search keyword
+  if (searchKeyword) {
+    const keyword = searchKeyword.toLowerCase();
+    filteredProducts = filteredProducts.filter(product =>
+      product.name.toLowerCase().includes(keyword) ||
+      (product.description?.toLowerCase().includes(keyword) ?? false)
+    );
+  }
+
+  // Filter by new arrivals if showNewOnly is true
+  if (showNewOnly) {
+    filteredProducts = filteredProducts.filter(product => product.isNewArrival);
+  }
+
+  // Filter out sold products if hideSoldProducts is true
+  if (hideSoldProducts) {
+    filteredProducts = filteredProducts.filter(product => product.status !== 'Sold');
+  }
+
+  // Sort products: Available/OnHold first, then Sold
+  return filteredProducts.sort((a, b) => {
+    if (a.status === 'Sold' && b.status !== 'Sold') return 1;
+    if (a.status !== 'Sold' && b.status === 'Sold') return -1;
+    return 0;
   });
 }; 

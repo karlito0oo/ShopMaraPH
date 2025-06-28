@@ -9,6 +9,8 @@ interface ProductFilterProps {
   searchKeyword: string;
   onKeywordChange: (keyword: string) => void;
   showCategoryFilter?: boolean;
+  hideSoldProducts?: boolean;
+  onHideSoldChange?: (hide: boolean) => void;
 }
 
 const ProductFilter: React.FC<ProductFilterProps> = ({
@@ -19,6 +21,8 @@ const ProductFilter: React.FC<ProductFilterProps> = ({
   searchKeyword,
   onKeywordChange,
   showCategoryFilter = true,
+  hideSoldProducts = false,
+  onHideSoldChange
 }) => {
   return (
     <div className="bg-white p-6 rounded-lg shadow-sm space-y-6">
@@ -32,6 +36,23 @@ const ProductFilter: React.FC<ProductFilterProps> = ({
           placeholder="Search products..."
           className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-all"
         />
+      </div>
+
+      {/* Hide Sold Products Toggle */}
+      <div className="mb-6">
+        <h3 className="text-gray-800 font-semibold text-sm uppercase tracking-wider mb-3">Availability</h3>
+        <div className="flex items-center">
+          <input
+            type="checkbox"
+            id="hideSold"
+            checked={hideSoldProducts}
+            onChange={(e) => onHideSoldChange?.(e.target.checked)}
+            className="form-checkbox h-4 w-4 text-black focus:ring-black rounded"
+          />
+          <label htmlFor="hideSold" className="ml-2 text-gray-700 cursor-pointer select-none">
+            Hide Sold Products
+          </label>
+        </div>
       </div>
 
       {/* Category Filter */}
