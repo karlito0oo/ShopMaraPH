@@ -44,7 +44,9 @@ export const SettingService = {
    * Admin: Get all settings
    */
   getAllSettings: async (token: string): Promise<Setting[]> => {
-    const response = await apiRequest('/admin/settings', 'GET', null, token);
+    const headers: Record<string, string> = {};
+    headers['Authorization'] = `Bearer ${token}`;
+    const response = await apiRequest('/admin/settings', 'GET', null, headers);
     return response.data;
   },
 
@@ -52,7 +54,10 @@ export const SettingService = {
    * Admin: Update a setting
    */
   updateSetting: async (token: string, key: string, value: string | number | boolean): Promise<any> => {
-    const response = await apiRequest(`/admin/settings/${key}`, 'PUT', { value }, token);
+    
+    const headers: Record<string, string> = {};
+    headers['Authorization'] = `Bearer ${token}`;
+    const response = await apiRequest(`/admin/settings/${key}`, 'PUT', { value }, headers);
     return response.data;
   },
 
@@ -60,7 +65,10 @@ export const SettingService = {
    * Admin: Update multiple settings at once
    */
   updateMultipleSettings: async (token: string, settings: { key: string, value: any }[]): Promise<any> => {
-    const response = await apiRequest('/admin/settings', 'POST', { settings }, token);
+    
+    const headers: Record<string, string> = {};
+    headers['Authorization'] = `Bearer ${token}`;
+    const response = await apiRequest('/admin/settings', 'POST', { settings }, headers);
     return response.data;
   }
 }; 

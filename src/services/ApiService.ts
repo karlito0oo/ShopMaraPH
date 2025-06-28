@@ -4,6 +4,7 @@
  */
 
 import { API_CONFIG } from '../config';
+import type { CartItem } from '../types/checkout';
 
 // Get API base URL from configuration
 const API_BASE_URL = API_CONFIG.BASE_URL;
@@ -128,6 +129,15 @@ export const ProductApi = {
  * Cart related API endpoints
  */
 
+interface HoldProductsResponse {
+  success: boolean;
+  message: string;
+  hold_duration: number;
+  data?: {
+    items?: CartItem[];
+  };
+}
+
 export const CartApi = {
   getCart: (headers: Record<string, string>) => {
     console.log(headers);
@@ -154,7 +164,7 @@ export const CartApi = {
     return apiRequest(endpoint, 'POST', null, headers);
   },
 
-  putProductsOnHold: (headers: Record<string, string>) => {
+  putProductsOnHold: (headers: Record<string, string>): Promise<HoldProductsResponse> => {
     const isGuest = headers['X-Guest-ID'];
     const endpoint = isGuest ? '/guest/cart/hold' : '/cart/hold';
     return apiRequest(endpoint, 'POST', null, headers);

@@ -99,7 +99,7 @@ function App() {
                           <EditProductPage />
                         </AdminRoute>
                       } />
-                      <Route path="/admin/orders" element={
+                      <Route path="/admin-orders" element={
                         <AdminRoute>
                           <AdminOrdersPage />
                         </AdminRoute>

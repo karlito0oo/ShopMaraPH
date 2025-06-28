@@ -29,12 +29,16 @@ export const AnnouncementService = {
 
   // Admin functions
   getAllAnnouncements: async (token: string): Promise<AnnouncementData[]> => {
-    const response = await apiRequest('/admin/announcements', 'GET', null, token);
+    const headers: Record<string, string> = {};
+    headers['Authorization'] = `Bearer ${token}`;
+    const response = await apiRequest('/admin/announcements', 'GET', null, headers);
     return response.data.map(formatAnnouncement);
   },
 
   getAnnouncementById: async (token: string, id: number): Promise<AnnouncementData> => {
-    const response = await apiRequest(`/admin/announcements/${id}`, 'GET', null, token);
+    const headers: Record<string, string> = {};
+    headers['Authorization'] = `Bearer ${token}`;
+    const response = await apiRequest(`/admin/announcements/${id}`, 'GET', null, headers);
     return formatAnnouncement(response.data);
   },
 
@@ -50,7 +54,9 @@ export const AnnouncementService = {
       text_color: data.textColor
     };
     
-    const response = await apiRequest('/admin/announcements', 'POST', apiData, token);
+    const headers: Record<string, string> = {};
+    headers['Authorization'] = `Bearer ${token}`;
+    const response = await apiRequest('/admin/announcements', 'POST', apiData, headers);
     return formatAnnouncement(response.data);
   },
 
@@ -66,17 +72,25 @@ export const AnnouncementService = {
     if (data.backgroundColor !== undefined) apiData.background_color = data.backgroundColor;
     if (data.textColor !== undefined) apiData.text_color = data.textColor;
     
-    const response = await apiRequest(`/admin/announcements/${id}`, 'PUT', apiData, token);
+    const headers: Record<string, string> = {};
+    headers['Authorization'] = `Bearer ${token}`;
+    const response = await apiRequest(`/admin/announcements/${id}`, 'PUT', apiData, headers);
     return formatAnnouncement(response.data);
   },
 
   deleteAnnouncement: async (token: string, id: number) => {
-    await apiRequest(`/admin/announcements/${id}`, 'DELETE', null, token);
+    
+    const headers: Record<string, string> = {};
+    headers['Authorization'] = `Bearer ${token}`;
+    await apiRequest(`/admin/announcements/${id}`, 'DELETE', null, headers);
     return true;
   },
 
   toggleAnnouncementStatus: async (token: string, id: number, isActive: boolean) => {
-    const response = await apiRequest(`/admin/announcements/${id}/toggle`, 'POST', { is_active: isActive }, token);
+    
+    const headers: Record<string, string> = {};
+    headers['Authorization'] = `Bearer ${token}`;
+    const response = await apiRequest(`/admin/announcements/${id}/toggle`, 'POST', { is_active: isActive }, headers);
     return formatAnnouncement(response.data);
   }
 }; 

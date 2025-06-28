@@ -27,6 +27,8 @@ const UnifiedSettings: React.FC<UnifiedSettingsProps> = ({ onSuccess, onError })
   const [deliveryFeeNcr, setDeliveryFeeNcr] = useState<number>(80);
   const [deliveryFeeOutsideNcr, setDeliveryFeeOutsideNcr] = useState<number>(120);
   const [freeDeliveryThreshold, setFreeDeliveryThreshold] = useState<number>(0);
+  // Product hold duration
+  const [productHoldDuration, setProductHoldDuration] = useState<number>(30);
   // Carousel settings
   const [intervalInput, setIntervalInput] = useState<number>(5000);
   const [carousels, setCarousels] = useState<HeroCarousel[]>([]);
@@ -54,6 +56,7 @@ const UnifiedSettings: React.FC<UnifiedSettingsProps> = ({ onSuccess, onError })
     if (type === 'success' && onSuccess) onSuccess(message);
     if (type === 'error' && onError) onError(message);
   };
+  
 
   // Fetch all settings and carousels
   const fetchAll = async () => {
@@ -67,11 +70,13 @@ const UnifiedSettings: React.FC<UnifiedSettingsProps> = ({ onSuccess, onError })
       const thresholdSetting = settings.find(s => s.key === 'free_delivery_threshold');
       const paymentOptionsSetting = settings.find(s => s.key === 'payment_options_description');
       const whatHappensSetting = settings.find(s => s.key === 'what_happens_after_payment');
+      const holdDurationSetting = settings.find(s => s.key === 'product_hold_duration');
       if (ncrSetting) setDeliveryFeeNcr(parseInt(ncrSetting.value));
       if (outsideNcrSetting) setDeliveryFeeOutsideNcr(parseInt(outsideNcrSetting.value));
       if (thresholdSetting) setFreeDeliveryThreshold(parseInt(thresholdSetting.value));
       if (paymentOptionsSetting) setPaymentOptionsDescription(paymentOptionsSetting.value || '');
       if (whatHappensSetting) setWhatHappensAfterPayment(whatHappensSetting.value || '');
+      if (holdDurationSetting) setProductHoldDuration(parseInt(holdDurationSetting.value));
       // Carousel
       const carouselRes = await HeroCarouselApi.getAll(token);
       setCarousels(carouselRes.data.carousels);
@@ -102,6 +107,7 @@ const UnifiedSettings: React.FC<UnifiedSettingsProps> = ({ onSuccess, onError })
         { key: 'hero_carousel_interval', value: intervalInput },
         { key: 'payment_options_description', value: paymentOptionsDescription },
         { key: 'what_happens_after_payment', value: whatHappensAfterPayment },
+        { key: 'product_hold_duration', value: productHoldDuration }
       ]);
       showToast('Settings updated successfully.', 'success');
     } catch (err: any) {
@@ -195,6 +201,20 @@ const UnifiedSettings: React.FC<UnifiedSettingsProps> = ({ onSuccess, onError })
       />
       <h2 className="text-xl font-medium mb-6">Shop Settings</h2>
       <form onSubmit={handleSaveSettings}>
+        {/* Product Hold Duration */}
+        <div className="mb-4">
+          <label className="block text-sm font-medium text-gray-700 mb-1">Product Hold Duration (minutes)</label>
+          <input 
+            type="number" 
+            min={1} 
+            step={1} 
+            value={productHoldDuration} 
+            onChange={e => setProductHoldDuration(parseInt(e.target.value) || 30)} 
+            className="w-full border-gray-300 rounded-md shadow-sm p-2 border" 
+            required 
+          />
+          <p className="text-sm text-gray-500 mt-1">How long a product will be held for a customer during checkout before being released back to available status.</p>
+        </div>
         {/* Delivery Fee Settings */}
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700 mb-1">Standard Delivery Fee Within NCR (₱)</label>

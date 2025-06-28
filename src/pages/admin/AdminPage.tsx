@@ -82,16 +82,7 @@ const AdminPage: React.FC = () => {
       );
     }
     
-    if (activeTab === 'announcements') {
-      return (
-        <Link 
-          to="/admin/announcements/new" 
-          className="mt-4 sm:mt-0 inline-block bg-black text-white px-4 py-2"
-        >
-          Create New Announcement
-        </Link>
-      );
-    }
+   
     
     return null;
   };
