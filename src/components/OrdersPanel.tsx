@@ -214,7 +214,7 @@ const OrdersPanel: React.FC<OrdersPanelProps> = ({
                     <h3 className="text-md font-medium mb-2">Payment Proof</h3>
                     <div className="w-full max-w-sm border border-gray-200 rounded overflow-hidden">
                       <img
-                        src={`${API_CONFIG.BASE_URL.replace('/api', '')}/storage/${selectedOrder.payment_proof}`}
+                        src={`${API_CONFIG.BASE_URL.replace('api.', '')}/storage/${selectedOrder.payment_proof}`}
                         alt="Payment Proof"
                         className="w-full h-auto"
                       />
