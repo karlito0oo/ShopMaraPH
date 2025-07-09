@@ -363,7 +363,26 @@ class OrderController extends Controller
         }
 
         try {
-            $order = Order::findOrFail($id);
+            $order = Order::with('items.product')->findOrFail($id);
+
+            // Prevent updates if order is already cancelled
+            if ($order->status === Order::STATUS_CANCELLED) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Cannot update status of a cancelled order',
+                ], 422);
+            }
+
+            // If updating to cancelled status, mark all products as available
+            if ($request->status === Order::STATUS_CANCELLED) {
+                foreach ($order->items as $item) {
+                    if ($item->product) {
+                        $item->product->status = 'Available';
+                        $item->product->save();
+                    }
+                }
+            }
+
             $order->status = $request->status;
             $order->save();
 
