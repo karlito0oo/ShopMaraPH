@@ -708,7 +708,6 @@ const UnifiedCheckoutModal: React.FC<UnifiedCheckoutModalProps> = ({
                     {/* Step 3: Confirmation */}
                     {currentStep === 3 && settings.whatHappensAfterPayment && (
                       <div className="bg-yellow-50 p-4 rounded border border-yellow-200">
-                        <h4 className="font-medium text-yellow-800 mb-2">What happens next?</h4>
                         <div className="prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: settings.whatHappensAfterPayment }} />
                       </div>
                     )}
@@ -747,20 +746,19 @@ const UnifiedCheckoutModal: React.FC<UnifiedCheckoutModalProps> = ({
               {orderSuccess && (
                 <div className="space-y-4">
                   <div className="bg-green-50 p-4 rounded border border-green-200">
-                    <h4 className="font-medium text-green-800 mb-2">Your order has been placed!</h4>
                     <p className="text-gray-700 mb-2">
-                      Thank you for your order. We have received your payment proof and will verify it shortly.
-                    </p>
-                    <p className="text-gray-700">
-                      Your order is now on <span className="font-medium">hold</span> and the products have been reserved for you.
+                      Thank you, fairy✨
+                      <br />
+                      <br />
+                      Your order is now pending while we verify your payment within 24 hours. Once confirmed, your order will be carefully packed just for you. 💕
+                      <br />
+                      <br />
+                      We can hold paid orders for up to 2 weeks. If you’d like us to hold your order for single shipping with other items, please message us on Instagram (@shopmaraph). Otherwise, your order will be shipped automatically. You’ll receive tracking details via email (or on Instagram if you’ve shared your username).
+                      <br />
+                      <br />
+                      Thank you for your patience and understanding.
                     </p>
                   </div>
-                  {settings.whatHappensAfterPayment && (
-                    <div className="bg-yellow-50 p-4 rounded border border-yellow-200">
-                      <h4 className="font-medium text-yellow-800 mb-2">What happens next?</h4>
-                      <div className="prose prose-sm max-w-none" dangerouslySetInnerHTML={{ __html: settings.whatHappensAfterPayment }} />
-                    </div>
-                  )}
                 </div>
               )}
             </div>

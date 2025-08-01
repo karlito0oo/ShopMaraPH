@@ -242,7 +242,7 @@ const UnifiedSettings: React.FC<UnifiedSettingsProps> = ({ onSuccess, onError })
         </div>
         {/* What Happens After Payment */}
         <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700 mb-1">What Happens After Payment</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Checkout Prompt</label>
           <RichTextEditor
             value={whatHappensAfterPayment}
             onChange={setWhatHappensAfterPayment}
