@@ -54,10 +54,10 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           />
           
           {/* Status Overlay */}
-          {(product.status === 'Sold' || product.status === 'OnHold') && (
+          {(product.status === 'Sold' || product.status === 'OnHold' || product.status === 'Pending') && (
             <div className="absolute inset-0 bg-white bg-opacity-60 flex items-center justify-center">
-              <span className={`text-2xl font-bold font-como ${product.status === 'Sold' ? 'text-black' : 'text-yellow-800'}`}>
-                {product.status === 'Sold' ? 'SOLD' : 'ON HOLD'}
+              <span className={`text-2xl font-bold font-como ${product.status === 'Sold' ? 'text-black' : product.status === 'OnHold' ? 'text-yellow-800' : 'text-black'}`}>
+                {product.status === 'Sold' ? 'SOLD' : product.status === 'OnHold' ? 'ON HOLD' : 'PENDING'}
               </span>
             </div>
           )}

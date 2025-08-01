@@ -15,6 +15,7 @@ class Product extends Model
     const STATUS_AVAILABLE = 'Available';
     const STATUS_SOLD = 'Sold';
     const STATUS_ON_HOLD = 'OnHold';
+    const STATUS_PENDING = 'Pending';
 
     /**
      * The attributes that are mass assignable.

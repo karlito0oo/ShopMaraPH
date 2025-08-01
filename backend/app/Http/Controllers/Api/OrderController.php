@@ -115,7 +115,7 @@ class OrderController extends Controller
                 $orderItem->save();
 
                 // Mark the product as sold
-                $product->status = 'Sold';
+                $product->status = 'Pending';
                 $product->save();
             }
 
@@ -378,6 +378,24 @@ class OrderController extends Controller
                 foreach ($order->items as $item) {
                     if ($item->product) {
                         $item->product->status = 'Available';
+                        $item->product->save();
+                    }
+                }
+            }
+            
+            if ($request->status === Order::STATUS_PENDING) {
+                foreach ($order->items as $item) {
+                    if ($item->product) {
+                        $item->product->status = 'Pending';
+                        $item->product->save();
+                    }
+                }
+            }
+            
+            if ($request->status === Order::STATUS_APPROVED || $request->status === Order::STATUS_SHIPPED || $request->status === Order::STATUS_DELIVERED) {
+                foreach ($order->items as $item) {
+                    if ($item->product) {
+                        $item->product->status = 'SOLD';
                         $item->product->save();
                     }
                 }
