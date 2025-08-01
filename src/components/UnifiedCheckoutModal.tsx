@@ -682,7 +682,7 @@ const UnifiedCheckoutModal: React.FC<UnifiedCheckoutModalProps> = ({
                             <li><span className="font-medium">Mobile:</span> {formData.mobileNumber}</li>
                             <li><span className="font-medium">Subtotal:</span> ₱{totalAmount.toFixed(2)}</li>
                             <li><span className="font-medium">Shipping Fee:</span> {settings.isLoading ? 'Loading...' : `₱${formData.province ? (formData.province === 'Metro Manila' ? settings.deliveryFeeNcr : settings.deliveryFeeOutsideNcr).toFixed(2) : '0.00'}`}</li>
-                            <li><span className="font-medium">Grand Total:</span> {settings.isLoading ? 'Loading...' : `₱${formData.province ? (totalAmount + (formData.province === 'Metro Manila' ? settings.deliveryFeeNcr : settings.deliveryFeeOutsideNcr)).toFixed(2) : totalAmount.toFixed(2)}`}</li>
+                            <li><span className="font-medium">Grand Total:</span> {settings.isLoading ? 'Loading...' : `₱${formData.province ? (totalAmount).toFixed(2) : totalAmount.toFixed(2)}`}</li>
                           </ul>
                         </div>
                         {!!settings.paymentOptionsDescription && (
