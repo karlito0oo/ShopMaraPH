@@ -13,5 +13,6 @@ class HeroCarousel extends Model
         'link',
         'order',
         'is_active',
+        'view_type',
     ];
 }

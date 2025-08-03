@@ -43,11 +43,18 @@ class HeroCarouselController extends Controller
             'link' => 'nullable|string|max:255',
             'order' => 'nullable|integer',
             'is_active' => 'nullable|boolean',
+            'view_type' => 'nullable|in:desktop,mobile',
         ]);
         if ($validator->fails()) {
             return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
         }
-        $data = $request->only(['title', 'subtitle', 'link', 'order', 'is_active']);
+        $data = $request->only(['title', 'subtitle', 'link', 'order', 'is_active', 'view_type']);
+        
+        // Set default view_type if not provided
+        if (!isset($data['view_type'])) {
+            $data['view_type'] = 'desktop';
+        }
+        
         // Handle image upload
         if ($request->hasFile('image')) {
             $path = $request->file('image')->store('hero_carousel', 'public');
@@ -82,11 +89,13 @@ class HeroCarouselController extends Controller
             'link' => 'nullable|string|max:255',
             'order' => 'nullable|integer',
             'is_active' => 'nullable|boolean',
+            'view_type' => 'nullable|in:desktop,mobile',
         ]);
         if ($validator->fails()) {
             return response()->json(['success' => false, 'errors' => $validator->errors()], 422);
         }
-        $data = $request->only(['title', 'subtitle', 'link', 'order', 'is_active']);
+        $data = $request->only(['title', 'subtitle', 'link', 'order', 'is_active', 'view_type']);
+        
         // Handle image upload
         if ($request->hasFile('image')) {
             $path = $request->file('image')->store('hero_carousel', 'public');

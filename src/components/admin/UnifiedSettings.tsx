@@ -14,6 +14,7 @@ interface HeroCarousel {
   link: string;
   order: number;
   is_active: boolean;
+  view_type: 'desktop' | 'mobile';
 }
 
 interface UnifiedSettingsProps {
@@ -42,6 +43,7 @@ const UnifiedSettings: React.FC<UnifiedSettingsProps> = ({ onSuccess, onError })
     link: '',
     order: 0,
     is_active: true,
+    view_type: 'desktop',
   });
   const [validationErrors, setValidationErrors] = useState<Record<string, string[]>>({});
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error'; visible: boolean }>({ message: '', type: 'success', visible: false });
@@ -158,6 +160,7 @@ const UnifiedSettings: React.FC<UnifiedSettingsProps> = ({ onSuccess, onError })
     formData.append('link', carouselForm.link || '');
     formData.append('order', String(carouselForm.order || 0));
     formData.append('is_active', carouselForm.is_active ? '1' : '0');
+    formData.append('view_type', carouselForm.view_type || 'desktop');
     try {
       if (editing) {
         await HeroCarouselApi.update(token, editing.id, formData);
@@ -168,7 +171,7 @@ const UnifiedSettings: React.FC<UnifiedSettingsProps> = ({ onSuccess, onError })
       }
       setShowCarouselModal(false);
       setEditing(null);
-      setCarouselForm({ image: null, title: '', subtitle: '', link: '', order: 0, is_active: true });
+      setCarouselForm({ image: null, title: '', subtitle: '', link: '', order: 0, is_active: true, view_type: 'desktop' });
       fetchAll();
     } catch (err: any) {
         console.log(err);
@@ -263,8 +266,11 @@ const UnifiedSettings: React.FC<UnifiedSettingsProps> = ({ onSuccess, onError })
       {/* Carousel Slides CRUD */}
       <div className="mt-10">
         <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-semibold">Hero Carousel Slides</h3>
-          <button className="bg-black text-white px-4 py-2 rounded hover:bg-gray-800" onClick={() => { setShowCarouselModal(true); setEditing(null); setCarouselForm({ image: null, title: '', subtitle: '', link: '', order: 0, is_active: true }); }}>Add Slide</button>
+          <div>
+            <h3 className="text-lg font-semibold">Hero Carousel Slides</h3>
+            <p className="text-sm text-gray-600 mt-1">Create separate slides for desktop and mobile views. Desktop slides show on screens ≥768px wide.</p>
+          </div>
+          <button className="bg-black text-white px-4 py-2 rounded hover:bg-gray-800" onClick={() => { setShowCarouselModal(true); setEditing(null); setCarouselForm({ image: null, title: '', subtitle: '', link: '', order: 0, is_active: true, view_type: 'desktop' }); }}>Add Slide</button>
         </div>
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200 mb-6">
@@ -275,18 +281,33 @@ const UnifiedSettings: React.FC<UnifiedSettingsProps> = ({ onSuccess, onError })
                 <th className="px-4 py-2">Subtitle</th>
                 <th className="px-4 py-2">Link</th>
                 <th className="px-4 py-2">Order</th>
+                <th className="px-4 py-2">View Type</th>
                 <th className="px-4 py-2">Active</th>
                 <th className="px-4 py-2">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {carousels.map((slide) => (
+              {carousels
+                .sort((a, b) => {
+                  // First sort by view_type (desktop first, then mobile)
+                  if (a.view_type !== b.view_type) {
+                    return a.view_type === 'desktop' ? -1 : 1;
+                  }
+                  // Then sort by order
+                  return a.order - b.order;
+                })
+                .map((slide) => (
                 <tr key={slide.id} className="border-b">
                   <td className="px-4 py-2">{slide.image_url && <img src={slide.image_url} alt="" className="h-16 w-32 object-cover rounded" />}</td>
                   <td className="px-4 py-2">{slide.title}</td>
                   <td className="px-4 py-2">{slide.subtitle}</td>
-                  <td className="px-4 py-2">{slide.link}</td>
+                  <td className="px-4 py-2 max-w-xs truncate">{slide.link}</td>
                   <td className="px-4 py-2">{slide.order}</td>
+                  <td className="px-4 py-2">
+                    <span className={`px-2 py-1 rounded text-xs font-medium ${slide.view_type === 'desktop' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'}`}>
+                      {slide.view_type === 'desktop' ? 'Desktop' : 'Mobile'}
+                    </span>
+                  </td>
                   <td className="px-4 py-2">{slide.is_active ? 'Yes' : 'No'}</td>
                   <td className="px-4 py-2 space-x-2">
                     <button className="text-blue-600 hover:underline" onClick={() => handleEditCarousel(slide)}>Edit</button>
@@ -327,6 +348,20 @@ const UnifiedSettings: React.FC<UnifiedSettingsProps> = ({ onSuccess, onError })
             <label className="block text-sm font-medium text-gray-700">Order</label>
             <input type="number" name="order" value={carouselForm.order || 0} onChange={handleCarouselFormChange} className="w-full border-gray-300 rounded-md shadow-sm p-2 border" />
             {validationErrors.order && <div className="text-red-600 text-xs mt-1">{validationErrors.order.join(', ')}</div>}
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">View Type</label>
+            <select 
+              name="view_type" 
+              value={carouselForm.view_type || 'desktop'} 
+              onChange={handleCarouselFormChange} 
+              className="w-full border-gray-300 rounded-md shadow-sm p-2 border"
+            >
+              <option value="desktop">Desktop</option>
+              <option value="mobile">Mobile</option>
+            </select>
+            <p className="text-sm text-gray-500 mt-1">Desktop images will be shown on screens 768px and wider. Mobile images will be shown on smaller screens.</p>
+            {validationErrors.view_type && <div className="text-red-600 text-xs mt-1">{validationErrors.view_type.join(', ')}</div>}
           </div>
           <div>
             <label className="inline-flex items-center">

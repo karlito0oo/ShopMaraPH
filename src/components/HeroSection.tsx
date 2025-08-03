@@ -9,27 +9,62 @@ const sampleImages = [
 ];
 
 const HeroSection = () => {
+  const [allSlides, setAllSlides] = useState<any[]>([]);
   const [slides, setSlides] = useState<any[]>([]);
   const [intervalMs, setIntervalMs] = useState<number>(4000);
   const [current, setCurrent] = useState(0);
   const [prev, setPrev] = useState(0);
   const [isSliding, setIsSliding] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     HeroCarouselApi.getPublic().then(res => {
       if (res.data.carousels && res.data.carousels.length > 0) {
-        setSlides(res.data.carousels);
+        setAllSlides(res.data.carousels);
         setIntervalMs(res.data.interval || 4000);
       } else {
-        setSlides(sampleImages.map(url => ({ image_url: url })));
+        setAllSlides(sampleImages.map(url => ({ image_url: url, view_type: 'desktop' })));
         setIntervalMs(4000);
       }
     }).catch(() => {
-      setSlides(sampleImages.map(url => ({ image_url: url })));
+      setAllSlides(sampleImages.map(url => ({ image_url: url, view_type: 'desktop' })));
       setIntervalMs(4000);
     });
   }, []);
+
+  // Detect screen size and update isMobile state
+  useEffect(() => {
+    const checkScreenSize = () => {
+      setIsMobile(window.innerWidth < 768); // md breakpoint
+    };
+
+    checkScreenSize();
+    window.addEventListener('resize', checkScreenSize);
+
+    return () => window.removeEventListener('resize', checkScreenSize);
+  }, []);
+
+  // Filter slides based on viewport type
+  useEffect(() => {
+    if (allSlides.length === 0) return;
+
+    const viewType = isMobile ? 'mobile' : 'desktop';
+    const filteredSlides = allSlides.filter(slide => 
+      slide.view_type === viewType && slide.is_active !== false
+    );
+
+    // If no slides for current viewport, fall back to all slides
+    if (filteredSlides.length === 0) {
+      setSlides(allSlides.filter(slide => slide.is_active !== false));
+    } else {
+      setSlides(filteredSlides);
+    }
+
+    // Reset carousel position when slides change
+    setCurrent(0);
+    setPrev(0);
+  }, [allSlides, isMobile]);
 
   useEffect(() => {
     if (slides.length === 0) return;
