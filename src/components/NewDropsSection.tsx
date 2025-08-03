@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import type { Product } from '../types/product';
 import { getNewArrivalProducts } from '../services/ProductService';
+import ProductCard from './ProductCard';
 
 const NewDropsSection = () => {
   const [newProducts, setNewProducts] = useState<Product[]>([]);
@@ -13,7 +14,13 @@ const NewDropsSection = () => {
       try {
         setIsLoading(true);
         const arrivals = await getNewArrivalProducts();
-        setNewProducts(arrivals.slice(0, 8)); // Limit to 8 products
+        // Filter out products with Hold, Pending, or Sold status
+        const availableProducts = arrivals.filter(product => 
+          product.status !== 'OnHold' && 
+          product.status !== 'Pending' && 
+          product.status !== 'Sold'
+        );
+        setNewProducts(availableProducts.slice(0, 8)); // Limit to 8 products
       } catch (err) {
         console.error('Error fetching new arrivals:', err);
         setError('Failed to load new arrivals');
@@ -71,21 +78,7 @@ const NewDropsSection = () => {
         
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {newProducts.map((product) => (
-            <div key={product.id} className="group relative">
-              <Link to={`/product/${product.id}`} className="block no-underline text-inherit">
-                <div className="aspect-h-1 aspect-w-1 w-full overflow-hidden bg-gray-200 group-hover:opacity-90">
-                  <img
-                    src={product.image}
-                    alt={product.name}
-                    className="h-full w-full object-cover object-center"
-                  />
-                </div>
-                <div className="mt-4">
-                  <h3 className="text-sm text-gray-700">{product.name}</h3>
-                  <p className="mt-1 text-sm font-medium text-gray-900">₱{product.price.toFixed(2)}</p>
-                </div>
-              </Link>
-            </div>
+            <ProductCard key={product.id} product={product} />
           ))}
         </div>
         
