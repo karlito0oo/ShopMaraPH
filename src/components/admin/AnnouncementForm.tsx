@@ -111,7 +111,7 @@ const AnnouncementForm = ({ token }: AnnouncementFormProps) => {
 
   return (
     <div className="p-4 max-w-2xl mx-auto">
-      <h2 className="text-2xl font-como mb-6">
+      <h2 className="text-2xl font-header mb-6">
         {isEditing ? 'Edit Announcement' : 'Create New Announcement'}
       </h2>
 

@@ -145,7 +145,7 @@ const HoldTimer: React.FC<HoldTimerProps> = ({ expiryTime, handleExpired }) => {
           <p className="text-yellow-800 font-medium">Products on hold</p>
           <p className="text-sm text-yellow-600">Your selected items are reserved for:</p>
         </div>
-        <div className="text-2xl font-bold text-yellow-800">{formatTime(timeLeft)}</div>
+        <div className="text-2xl font-bold font-header text-yellow-800">{formatTime(timeLeft)}</div>
       </div>
     </div>
   );

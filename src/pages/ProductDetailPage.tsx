@@ -113,7 +113,7 @@ const ProductDetailPage = () => {
             />
             {(product.status === 'Sold' || product.status === 'OnHold' || product.status === 'Pending') && (
               <div className="absolute inset-0 bg-white bg-opacity-60 flex items-center justify-center">
-                <span className={`text-2xl font-bold font-como ${product.status === 'Sold' ? 'text-black' : 'text-yellow-800'}`}>
+                <span className={`text-2xl font-bold font-header ${product.status === 'Sold' ? 'text-black' : 'text-yellow-800'}`}>
                   {product.status === 'Sold' ? 'SOLD' : product.status === 'OnHold' ? 'ON HOLD' : 'PENDING'}
                 </span>
               </div>

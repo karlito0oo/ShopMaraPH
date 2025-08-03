@@ -7,7 +7,10 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        'como': ['"Como Light"', 'sans-serif'], // Como Light font
+        'lovelo': ['Lovelo', 'sans-serif'], // Header font
+        'source-code': ['Source Code Pro', 'monospace'], // Body font
+        'header': ['Lovelo', 'sans-serif'], // Alias for headers
+        'body': ['Source Code Pro', 'monospace'], // Alias for body text
       },
       colors: {
         'brand-pink': '#ad688f',

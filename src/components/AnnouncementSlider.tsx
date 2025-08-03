@@ -64,7 +64,7 @@ const AnnouncementSlider = () => {
         }}
       >
         <div className="flex items-center justify-center flex-1">
-          <p className="text-center font-como font-light">{currentAnnouncement.text}</p>
+          <p className="text-center font-body font-light">{currentAnnouncement.text}</p>
           
           {currentAnnouncement.buttonText && currentAnnouncement.buttonLink && (
             <Link 

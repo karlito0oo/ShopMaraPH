@@ -13,7 +13,7 @@ const AboutPage = () => {
             }}
           />
         </div>
-        <h1 className="text-4xl font-como font-light text-gray-900 mb-4">About ShopMara PH</h1>
+        <h1 className="text-4xl font-header font-light text-gray-900 mb-4">About ShopMara PH</h1>
         <div className="w-20 h-1 bg-[#ad688f] mx-auto"></div>
       </div>
       
@@ -30,20 +30,20 @@ const AboutPage = () => {
           />
         </div>
         <div>
-          <h2 className="text-3xl font-como font-light text-gray-900 mb-6">Story Time!</h2>
-          <p className="text-gray-700 mb-4 leading-relaxed font-como font-light">
+          <h2 className="text-3xl font-header font-light text-gray-900 mb-6">Story Time!</h2>
+          <p className="text-gray-700 mb-4 leading-relaxed font-body font-light">
             ShopMaraPH started in 2022 on Instagram, born from a love of vintage fashion and sustainability. 
             After a heartbreaking loss that year, we lent the name "Mara" to our business as a tribute to our angel baby.
           </p>
-          <p className="text-gray-700 mb-4 leading-relaxed font-como font-light">
+          <p className="text-gray-700 mb-4 leading-relaxed font-body font-light">
             In 2023, we paused operations due to severe nausea. Little did we know, we were expecting our rainbow baby, 
             who would one day carry the name Mara, just as it was meant to be.
           </p>
-          <p className="text-gray-700 mb-4 leading-relaxed font-como font-light">
+          <p className="text-gray-700 mb-4 leading-relaxed font-body font-light">
             Now a proud mom of two, I spend my days curating timeless pieces I love—elegant, confident styles 
             that help modern women build a conscious wardrobe for work and beyond.
           </p>
-          <p className="text-gray-700 font-como font-light italic">
+          <p className="text-gray-700 font-body font-light italic">
             This journey is for her, and we can't wait to grow with you.
           </p>
         </div>
@@ -57,8 +57,8 @@ const AboutPage = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
               </svg>
             </div>
-            <h3 className="text-lg font-como font-normal mb-2">Sustainable Fashion</h3>
-            <p className="text-gray-600 font-como font-light">Curated pieces that are timeless and eco-conscious</p>
+            <h3 className="text-lg font-header font-normal mb-2">Sustainable Fashion</h3>
+            <p className="text-gray-600 font-body font-light">Curated pieces that are timeless and eco-conscious</p>
           </div>
           
           <div className="text-center">
@@ -67,8 +67,8 @@ const AboutPage = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
               </svg>
             </div>
-            <h3 className="text-lg font-como font-normal mb-2">Made with Love</h3>
-            <p className="text-gray-600 font-como font-light">Each piece is selected with purpose and meaning</p>
+            <h3 className="text-lg font-header font-normal mb-2">Made with Love</h3>
+            <p className="text-gray-600 font-body font-light">Each piece is selected with purpose and meaning</p>
           </div>
           
           <div className="text-center">
@@ -77,14 +77,14 @@ const AboutPage = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" />
               </svg>
             </div>
-            <h3 className="text-lg font-como font-normal mb-2">Elegant Designs</h3>
-            <p className="text-gray-600 font-como font-light">Confident styles for the modern woman</p>
+            <h3 className="text-lg font-header font-normal mb-2">Elegant Designs</h3>
+            <p className="text-gray-600 font-body font-light">Confident styles for the modern woman</p>
           </div>
         </div>
       </div>
       
       <div className="mt-16 text-center">
-        <h3 className="text-2xl font-como font-normal mb-6">Connect With Us</h3>
+        <h3 className="text-2xl font-header font-normal mb-6">Connect With Us</h3>
         <div className="flex justify-center space-x-6">
           <a href="https://instagram.com/shopmaraph" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-[#ad688f]">
             <span className="sr-only">Instagram</span>

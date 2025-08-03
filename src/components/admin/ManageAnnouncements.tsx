@@ -83,7 +83,7 @@ const ManageAnnouncements = ({ token }: ManageAnnouncementsProps) => {
   return (
     <div className="p-4">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-como">Manage Announcements</h2>
+        <h2 className="text-2xl font-header">Manage Announcements</h2>
         <button 
           onClick={handleCreate}
           className="bg-black text-white px-4 py-2 hover:bg-gray-800"
