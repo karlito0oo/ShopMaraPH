@@ -7,11 +7,11 @@ class UpdateStatusEnumAddPending extends Migration
 {
     public function up()
     {
-        DB::statement("ALTER TABLE products MODIFY status ENUM('Available', 'Sold', 'Pending') DEFAULT 'Available'");
+        DB::statement("ALTER TABLE products MODIFY status ENUM('Available', 'Sold', 'Pending', 'OnHold') DEFAULT 'Available'");
     }
 
     public function down()
     {
-        DB::statement("ALTER TABLE products MODIFY status ENUM('Available', 'Sold') DEFAULT 'Available'");
+        DB::statement("ALTER TABLE products MODIFY status ENUM('Available', 'Sold', 'OnHold') DEFAULT 'Available'");
     }
 }
