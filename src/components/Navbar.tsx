@@ -63,7 +63,7 @@ const Navbar = () => {
             <img 
               src="/app-logo.jpg" 
               alt="SHOPMARA PH" 
-              className="h-8 w-auto"
+              className="h-12 w-auto bg-[rgb(173,104,143)] px-2 py-1 rounded"
               onError={(e) => {
                 const target = e.target as HTMLImageElement;
                 target.src = 'https://via.placeholder.com/120x40?text=SHOPMARA+PH';
