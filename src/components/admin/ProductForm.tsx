@@ -4,6 +4,7 @@ import { useToast } from '../../context/ToastContext';
 import { useAuth } from '../../context/AuthContext';
 import { ProductApi } from '../../services/ApiService';
 import RichTextEditor from '../ui/RichTextEditor';
+import ImageCropper from '../ui/ImageCropper';
 import type { ProductSize } from '../../types/product';
 
 interface ProductFormProps {
@@ -28,6 +29,12 @@ const ProductForm: React.FC<ProductFormProps> = ({
   const [mainImagePreview, setMainImagePreview] = useState<string>('');
   const [existingAdditionalImages, setExistingAdditionalImages] = useState<string[]>([]);
   const [newAdditionalImagePreviews, setNewAdditionalImagePreviews] = useState<string[]>([]);
+  
+  // Image cropper states
+  const [showMainImageCropper, setShowMainImageCropper] = useState(false);
+  const [showAdditionalImageCropper, setShowAdditionalImageCropper] = useState(false);
+  const [tempImageSrc, setTempImageSrc] = useState<string>('');
+  const [pendingAdditionalImages, setPendingAdditionalImages] = useState<string[]>([]);
 
   const [formData, setFormData] = useState({
     sku: '',
@@ -74,18 +81,58 @@ const ProductForm: React.FC<ProductFormProps> = ({
 
   const handleMainImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setMainImage(e.target.files[0]);
-      setMainImagePreview(URL.createObjectURL(e.target.files[0]));
+      const file = e.target.files[0];
+      const imageUrl = URL.createObjectURL(file);
+      setTempImageSrc(imageUrl);
+      setShowMainImageCropper(true);
     }
   };
 
   const handleAdditionalImagesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
-      const newFiles = Array.from(e.target.files);
-      setNewAdditionalImages(prev => [...prev, ...newFiles]);
-      const newPreviews = newFiles.map(file => URL.createObjectURL(file));
-      setNewAdditionalImagePreviews(prev => [...prev, ...newPreviews]);
+      const files = Array.from(e.target.files);
+      const imageUrls = files.map(file => URL.createObjectURL(file));
+      setPendingAdditionalImages(imageUrls);
+      if (imageUrls.length > 0) {
+        setTempImageSrc(imageUrls[0]);
+        setShowAdditionalImageCropper(true);
+      }
     }
+  };
+
+  const handleMainImageCropComplete = (croppedImageBlob: Blob) => {
+    // Convert blob to file
+    const file = new File([croppedImageBlob], 'main-image.jpg', { type: 'image/jpeg' });
+    setMainImage(file);
+    setMainImagePreview(URL.createObjectURL(file));
+    setShowMainImageCropper(false);
+    setTempImageSrc('');
+  };
+
+  const handleAdditionalImageCropComplete = (croppedImageBlob: Blob) => {
+    // Convert blob to file
+    const file = new File([croppedImageBlob], `additional-image-${Date.now()}.jpg`, { type: 'image/jpeg' });
+    setNewAdditionalImages(prev => [...prev, file]);
+    setNewAdditionalImagePreviews(prev => [...prev, URL.createObjectURL(file)]);
+    
+    // Move to next pending image or close cropper
+    const currentIndex = pendingAdditionalImages.findIndex(url => url === tempImageSrc);
+    const nextIndex = currentIndex + 1;
+    
+    if (nextIndex < pendingAdditionalImages.length) {
+      setTempImageSrc(pendingAdditionalImages[nextIndex]);
+    } else {
+      setShowAdditionalImageCropper(false);
+      setTempImageSrc('');
+      setPendingAdditionalImages([]);
+    }
+  };
+
+  const handleCropCancel = () => {
+    setShowMainImageCropper(false);
+    setShowAdditionalImageCropper(false);
+    setTempImageSrc('');
+    setPendingAdditionalImages([]);
   };
 
   const removeExistingImage = (index: number) => {
@@ -308,7 +355,8 @@ const ProductForm: React.FC<ProductFormProps> = ({
               <div className="space-y-1 text-center">
                 {mainImagePreview ? (
                   <div>
-                    <img src={mainImagePreview} alt="Preview" className="mx-auto h-32 w-32 object-cover" />
+                    <img src={mainImagePreview} alt="Preview" className="mx-auto h-32 w-32 object-cover rounded" />
+                    <p className="text-xs text-green-600 mt-2">✓ Image cropped and ready</p>
                     <button
                       type="button"
                       onClick={() => {
@@ -338,6 +386,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
                         />
                       </label>
                     </div>
+                    <p className="text-xs text-gray-500 mt-2">Image will be cropped to square format for product cards</p>
                   </div>
                 )}
               </div>
@@ -352,7 +401,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
                   {/* Existing Images */}
                   {existingAdditionalImages.map((imageUrl, index) => (
                     <div key={`existing-${index}`} className="relative">
-                      <img src={imageUrl} alt={`Existing ${index + 1}`} className="h-32 w-32 object-cover" />
+                      <img src={imageUrl} alt={`Existing ${index + 1}`} className="h-32 w-32 object-cover rounded" />
                       <button
                         type="button"
                         onClick={() => removeExistingImage(index)}
@@ -366,7 +415,8 @@ const ProductForm: React.FC<ProductFormProps> = ({
                   {/* New Images */}
                   {newAdditionalImagePreviews.map((preview, index) => (
                     <div key={`new-${index}`} className="relative">
-                      <img src={preview} alt={`New ${index + 1}`} className="h-32 w-32 object-cover" />
+                      <img src={preview} alt={`New ${index + 1}`} className="h-32 w-32 object-cover rounded" />
+                      <p className="text-xs text-green-600 mt-1">✓ Cropped</p>
                       <button
                         type="button"
                         onClick={() => removeNewImage(index)}
@@ -393,6 +443,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
                       className="sr-only"
                     />
                   </label>
+                  <p className="text-xs text-gray-500 mt-2">Each image will be cropped to square format</p>
                 </div>
               </div>
             </div>
@@ -418,6 +469,25 @@ const ProductForm: React.FC<ProductFormProps> = ({
           </button>
         </div>
       </div>
+
+      {/* Image Croppers */}
+      {showMainImageCropper && (
+        <ImageCropper
+          src={tempImageSrc}
+          onCropComplete={handleMainImageCropComplete}
+          onCancel={handleCropCancel}
+          aspectRatio={1}
+        />
+      )}
+
+      {showAdditionalImageCropper && (
+        <ImageCropper
+          src={tempImageSrc}
+          onCropComplete={handleAdditionalImageCropComplete}
+          onCancel={handleCropCancel}
+          aspectRatio={1}
+        />
+      )}
     </form>
   );
 };
