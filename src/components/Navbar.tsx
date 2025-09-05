@@ -1,7 +1,7 @@
-import { useState, useRef, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { useCart } from '../context/CartContext';
-import { useAuth } from '../context/AuthContext';
+import { useState, useRef, useEffect } from "react";
+import { Link } from "react-router-dom";
+import { useCart } from "../context/CartContext";
+import { useAuth } from "../context/AuthContext";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -13,28 +13,28 @@ const Navbar = () => {
 
   useEffect(() => {
     // Check for guest_id in localStorage
-    setHasGuestOrders(!!localStorage.getItem('guest_id'));
+    setHasGuestOrders(!!localStorage.getItem("guest_id"));
 
     // Listen for changes to localStorage (e.g., guest_id set after guest checkout)
     const handleStorage = (event: StorageEvent) => {
-      if (event.key === 'guest_id') {
+      if (event.key === "guest_id") {
         setHasGuestOrders(!!event.newValue);
       }
     };
-    window.addEventListener('storage', handleStorage);
+    window.addEventListener("storage", handleStorage);
     // Listen for custom event (same tab)
     const handleGuestIdSet = () => setHasGuestOrders(true);
-    window.addEventListener('guest_id_set', handleGuestIdSet);
+    window.addEventListener("guest_id_set", handleGuestIdSet);
     return () => {
-      window.removeEventListener('storage', handleStorage);
-      window.removeEventListener('guest_id_set', handleGuestIdSet);
+      window.removeEventListener("storage", handleStorage);
+      window.removeEventListener("guest_id_set", handleGuestIdSet);
     };
   }, []);
 
   // Also check when menu is opened (for mobile)
   useEffect(() => {
     if (isMenuOpen) {
-      setHasGuestOrders(!!localStorage.getItem('guest_id'));
+      setHasGuestOrders(!!localStorage.getItem("guest_id"));
     }
   }, [isMenuOpen]);
 
@@ -59,30 +59,48 @@ const Navbar = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <Link to="/" className="flex-shrink-0 flex items-center">
-            <img 
-              src="/app-logo.jpg" 
-              alt="SHOPMARA PH" 
-              className="h-12 w-auto bg-[rgb(173,104,143)] px-2 py-1 rounded"
-              onError={(e) => {
-                const target = e.target as HTMLImageElement;
-                target.src = 'https://via.placeholder.com/120x40?text=SHOPMARA+PH';
-              }}
-            />
-          </Link>
+          <div
+            className="bg-[rgb(173,104,143)] rounded flex items-center justify-center"
+            style={{ height: "100%", width: "200px" }}
+          >
+            <Link to="/" className="p-2">
+              <img
+                src="/app-logo.jpg"
+                alt="SHOPMARA PH"
+                className="h-12 w-auto bg-[rgb(173,104,143)] px-2 py-1 rounded"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.src =
+                    "https://via.placeholder.com/120x40?text=SHOPMARA+PH";
+                }}
+              />
+            </Link>
+          </div>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
-            <Link to="/products" className="text-gray-700 hover:text-black transition-colors">
+            <Link
+              to="/products"
+              className="text-gray-700 hover:text-black transition-colors"
+            >
               All Products
             </Link>
-            <Link to="/new" className="text-gray-700 hover:text-black transition-colors">
+            <Link
+              to="/new"
+              className="text-gray-700 hover:text-black transition-colors"
+            >
               New Arrivals
             </Link>
-            <Link to="/sale" className="text-gray-700 hover:text-black transition-colors">
+            <Link
+              to="/sale"
+              className="text-gray-700 hover:text-black transition-colors"
+            >
               Sale
             </Link>
-            <Link to="/about" className="text-gray-700 hover:text-black transition-colors">
+            <Link
+              to="/about"
+              className="text-gray-700 hover:text-black transition-colors"
+            >
               About Us
             </Link>
           </div>
@@ -90,9 +108,23 @@ const Navbar = () => {
           {/* Desktop Right Menu */}
           <div className="hidden md:flex items-center space-x-6">
             {/* Cart */}
-            <Link to="/cart" className="text-gray-700 hover:text-black transition-colors relative">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+            <Link
+              to="/cart"
+              className="text-gray-700 hover:text-black transition-colors relative"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1.5}
+                  d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
+                />
               </svg>
               {getTotalItems() > 0 && (
                 <span className="absolute -top-2 -right-2 bg-black text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
@@ -103,12 +135,23 @@ const Navbar = () => {
 
             {/* Account Dropdown */}
             <div className="relative" ref={dropdownRef}>
-              <button 
+              <button
                 onClick={toggleAccountDropdown}
                 className="flex items-center space-x-2 text-gray-700 hover:text-black transition-colors focus:outline-none"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1.5}
+                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                  />
                 </svg>
                 <span className="text-sm">Account</span>
               </button>
@@ -119,11 +162,19 @@ const Navbar = () => {
                   {isAuthenticated ? (
                     <>
                       {isAdmin && (
-                        <Link to="/admin" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => setIsAccountDropdownOpen(false)}>
+                        <Link
+                          to="/admin"
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                          onClick={() => setIsAccountDropdownOpen(false)}
+                        >
                           Admin Dashboard
                         </Link>
                       )}
-                      <Link to="/my-orders" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => setIsAccountDropdownOpen(false)}>
+                      <Link
+                        to="/my-orders"
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        onClick={() => setIsAccountDropdownOpen(false)}
+                      >
                         My Orders
                       </Link>
                       <button
@@ -135,14 +186,26 @@ const Navbar = () => {
                     </>
                   ) : (
                     <>
-                      <Link to="/login" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => setIsAccountDropdownOpen(false)}>
+                      <Link
+                        to="/login"
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        onClick={() => setIsAccountDropdownOpen(false)}
+                      >
                         Login
                       </Link>
-                      <Link to="/register" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => setIsAccountDropdownOpen(false)}>
+                      <Link
+                        to="/register"
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                        onClick={() => setIsAccountDropdownOpen(false)}
+                      >
                         Sign Up
                       </Link>
                       {hasGuestOrders && (
-                        <Link to="/my-orders" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => setIsAccountDropdownOpen(false)}>
+                        <Link
+                          to="/my-orders"
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                          onClick={() => setIsAccountDropdownOpen(false)}
+                        >
                           My Orders
                         </Link>
                       )}
@@ -155,9 +218,23 @@ const Navbar = () => {
 
           {/* Mobile Menu Button */}
           <div className="flex md:hidden items-center space-x-4">
-            <Link to="/cart" className="text-gray-700 hover:text-black transition-colors relative">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+            <Link
+              to="/cart"
+              className="text-gray-700 hover:text-black transition-colors relative"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1.5}
+                  d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
+                />
               </svg>
               {getTotalItems() > 0 && (
                 <span className="absolute -top-2 -right-2 bg-black text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
@@ -169,8 +246,23 @@ const Navbar = () => {
               onClick={toggleMenu}
               className="text-gray-700 hover:text-black focus:outline-none"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={isMenuOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"} />
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d={
+                    isMenuOpen
+                      ? "M6 18L18 6M6 6l12 12"
+                      : "M4 6h16M4 12h16M4 18h16"
+                  }
+                />
               </svg>
             </button>
           </div>
@@ -178,7 +270,11 @@ const Navbar = () => {
       </div>
 
       {/* Mobile Menu */}
-      <div className={`md:hidden transition-all duration-300 ease-in-out ${isMenuOpen ? 'max-h-screen' : 'max-h-0'} overflow-hidden bg-white border-t border-gray-200`}>
+      <div
+        className={`md:hidden transition-all duration-300 ease-in-out ${
+          isMenuOpen ? "max-h-screen" : "max-h-0"
+        } overflow-hidden bg-white border-t border-gray-200`}
+      >
         <div className="px-4 pt-2 pb-3 space-y-1">
           <Link
             to="/products"
