@@ -1,14 +1,22 @@
 import React, { useState, useEffect } from 'react';
+import { regions, provinces } from 'select-philippines-address';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
-import UnifiedCheckoutModal, { PH_PROVINCES } from '../components/UnifiedCheckoutModal';
+import UnifiedCheckoutModal from '../components/UnifiedCheckoutModal';
 import { useProfile } from '../context/ProfileContext';
 import { useGuestProfile } from '../context/GuestProfileContext';
 import { useSettings } from '../context/SettingsContext';
 import { useToast } from '../context/ToastContext';
 import type { Product } from '../types/product';
 import { GUEST_ID_KEY } from '../constants';
+
+interface Province {
+  psgc_code: string;
+  province_name: string;
+  province_code: string;
+  region_code: string;
+}
 
 const CartPage = () => {
   const { isAuthenticated, user } = useAuth();
@@ -25,6 +33,60 @@ const CartPage = () => {
   const { deliveryFeeNcr, deliveryFeeOutsideNcr, isLoading: settingsLoading } = useSettings();
   const { showToast } = useToast();
   const [province, setProvince] = useState('');
+  const [provinceOptions, setProvinceOptions] = useState<Province[]>([]);
+
+  // Helper function to get all provinces from all regions
+  const getAllProvinces = async () => {
+    try {
+      const allRegions = await regions();
+      const allProvinces: Province[] = [];
+      let hasNCR = false;
+
+      for (const region of allRegions) {
+        const regionProvinces = await provinces(region.region_code);
+        
+        // Check if this region contains NCR/Metro Manila districts
+        const ncrProvinces = regionProvinces.filter((p: Province) => 
+          p.province_name.toLowerCase().includes('ncr') || 
+          p.province_name.toLowerCase().includes('metro manila') ||
+          p.province_name.toLowerCase().includes('national capital region')
+        );
+        
+        if (ncrProvinces.length > 0 && !hasNCR) {
+          // Add a single "Metro Manila" entry instead of multiple NCR districts
+          allProvinces.push({
+            psgc_code: 'NCR',
+            province_name: 'Metro-Manila',
+            province_code: 'NCR',
+            region_code: region.region_code
+          });
+          hasNCR = true;
+        } else {
+          // Add non-NCR provinces normally with hyphenated names
+          const nonNcrProvinces = regionProvinces.filter((p: Province) => 
+            !p.province_name.toLowerCase().includes('ncr') && 
+            !p.province_name.toLowerCase().includes('metro manila') &&
+            !p.province_name.toLowerCase().includes('national capital region')
+          );
+          const hyphenatedProvinces = nonNcrProvinces.map(p => ({
+            ...p,
+            province_name: p.province_name.replace(/ /g, '-')
+          }));
+          allProvinces.push(...hyphenatedProvinces);
+        }
+      }
+      
+      return allProvinces.sort((a, b) => a.province_name.localeCompare(b.province_name));
+    } catch (error) {
+      console.error('Error fetching provinces:', error);
+      return [];
+    }
+  };
+
+  // Load provinces on mount
+  useEffect(() => {
+    getAllProvinces().then(setProvinceOptions);
+  }, []);
 
   // Check if any products are unavailable (sold or on hold by others)
   const hasUnavailableProducts = cartItems.some(item => {
@@ -44,9 +106,13 @@ const CartPage = () => {
 
   useEffect(() => {
     if (isAuthenticated && profile?.province) {
-      setProvince(profile.province);
+      // Convert original province name to hyphenated format if needed
+      const hyphenatedProvince = profile.province === 'Metro Manila' ? 'Metro-Manila' : profile.province.replace(/ /g, '-');
+      setProvince(hyphenatedProvince);
     } else if (!isAuthenticated && guestProfile?.province) {
-      setProvince(guestProfile.province);
+      // Convert original province name to hyphenated format if needed
+      const hyphenatedProvince = guestProfile.province === 'Metro Manila' ? 'Metro-Manila' : guestProfile.province.replace(/ /g, '-');
+      setProvince(hyphenatedProvince);
     }
   }, [isAuthenticated, profile, guestProfile]);
 
@@ -54,7 +120,7 @@ const CartPage = () => {
   let shipping = 0;
   if (cartItems.length > 0) {
     if (province) {
-      shipping = province === 'Metro Manila' ? deliveryFeeNcr : deliveryFeeOutsideNcr;
+      shipping = province === 'Metro-Manila' ? deliveryFeeNcr : deliveryFeeOutsideNcr;
     } else {
       shipping = 0;
     }
@@ -245,23 +311,28 @@ const CartPage = () => {
                 <span className="text-gray-600">Subtotal ({cartItems.length} {cartItems.length === 1 ? 'item' : 'items'})</span>
                 <span className="font-medium">₱{Number(subtotal).toFixed(2)}</span>
               </div>
-              <div className="flex justify-between items-center">
-                <span className="text-gray-600">Shipping</span>
-                <select
-                  className="border border-gray-300 rounded-md py-1 px-2 focus:outline-none focus:ring-black focus:border-black text-sm ml-2"
-                  value={province}
-                  onChange={handleProvinceChange}
-                  disabled={settingsLoading}
-                >
-                  {PH_PROVINCES.map((prov) => (
-                    <option key={prov.value} value={prov.value}>{prov.label}</option>
-                  ))}
-                </select>
-                <span className="font-medium ml-2">
-                  {province
-                    ? (settingsLoading ? 'Loading...' : `₱${Number(shipping).toFixed(2)}`)
-                    : '—'}
-                </span>
+              <div className="space-y-2">
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Shipping</span>
+                  <select
+                    className="border border-gray-300 rounded-md py-1 px-2 focus:outline-none focus:ring-black focus:border-black text-sm"
+                    value={province}
+                    onChange={handleProvinceChange}
+                    disabled={settingsLoading}
+                  >
+                    <option value="">Select Province</option>
+                    {provinceOptions.map((prov: Province) => (
+                      <option key={prov.province_code} value={prov.province_name}>{prov.province_name}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="flex justify-end">
+                  <span className="font-medium">
+                    {province
+                      ? (settingsLoading ? 'Loading...' : `₱${Number(shipping).toFixed(2)}`)
+                      : '—'}
+                  </span>
+                </div>
               </div>
               <div className="flex justify-between border-t border-gray-200 pt-4">
                 <span className="font-medium text-lg">Total</span>
