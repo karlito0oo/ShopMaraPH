@@ -28,7 +28,7 @@ import { ProtectedRoute } from "./components/ProtectedRoute";
 
 // Layout wrapper component to handle padding for fixed navbar
 const MainLayout = ({ children }: { children: React.ReactNode }) => {
-  return <div className="min-h-screen pt-16 md:pt-20">{children}</div>;
+  return <div className="min-h-screen md:pt-20">{children}</div>;
 };
 
 const App = () => {

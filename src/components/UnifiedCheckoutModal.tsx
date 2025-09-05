@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { getProvinces, getCities, getBarangays } from 'select-philippines-address';
 import { useAuth } from '../context/AuthContext';
 import { useProfile } from '../context/ProfileContext';
 import { useGuestProfile } from '../context/GuestProfileContext';
@@ -7,92 +8,22 @@ import {  OrderApi } from '../services/ApiService';
 import { nanoid } from 'nanoid';
 import { useCart } from '../context/CartContext';
 
-// PH_PROVINCES constant moved here from CheckoutModal.tsx
-export const PH_PROVINCES = [
-  { value: '', label: 'Select Province' },
-  { value: 'Metro Manila', label: 'Metro Manila (NCR)' },
-  { value: 'Abra', label: 'Abra' },
-  { value: 'Agusan del Norte', label: 'Agusan del Norte' },
-  { value: 'Agusan del Sur', label: 'Agusan del Sur' },
-  { value: 'Aklan', label: 'Aklan' },
-  { value: 'Albay', label: 'Albay' },
-  { value: 'Antique', label: 'Antique' },
-  { value: 'Apayao', label: 'Apayao' },
-  { value: 'Aurora', label: 'Aurora' },
-  { value: 'Basilan', label: 'Basilan' },
-  { value: 'Bataan', label: 'Bataan' },
-  { value: 'Batanes', label: 'Batanes' },
-  { value: 'Batangas', label: 'Batangas' },
-  { value: 'Benguet', label: 'Benguet' },
-  { value: 'Biliran', label: 'Biliran' },
-  { value: 'Bohol', label: 'Bohol' },
-  { value: 'Bukidnon', label: 'Bukidnon' },
-  { value: 'Bulacan', label: 'Bulacan' },
-  { value: 'Cagayan', label: 'Cagayan' },
-  { value: 'Camarines Norte', label: 'Camarines Norte' },
-  { value: 'Camarines Sur', label: 'Camarines Sur' },
-  { value: 'Camiguin', label: 'Camiguin' },
-  { value: 'Capiz', label: 'Capiz' },
-  { value: 'Catanduanes', label: 'Catanduanes' },
-  { value: 'Cavite', label: 'Cavite' },
-  { value: 'Cebu', label: 'Cebu' },
-  { value: 'Cotabato', label: 'Cotabato' },
-  { value: 'Davao de Oro', label: 'Davao de Oro' },
-  { value: 'Davao del Norte', label: 'Davao del Norte' },
-  { value: 'Davao del Sur', label: 'Davao del Sur' },
-  { value: 'Davao Occidental', label: 'Davao Occidental' },
-  { value: 'Davao Oriental', label: 'Davao Oriental' },
-  { value: 'Dinagat Islands', label: 'Dinagat Islands' },
-  { value: 'Eastern Samar', label: 'Eastern Samar' },
-  { value: 'Guimaras', label: 'Guimaras' },
-  { value: 'Ifugao', label: 'Ifugao' },
-  { value: 'Ilocos Norte', label: 'Ilocos Norte' },
-  { value: 'Ilocos Sur', label: 'Ilocos Sur' },
-  { value: 'Iloilo', label: 'Iloilo' },
-  { value: 'Isabela', label: 'Isabela' },
-  { value: 'Kalinga', label: 'Kalinga' },
-  { value: 'La Union', label: 'La Union' },
-  { value: 'Laguna', label: 'Laguna' },
-  { value: 'Lanao del Norte', label: 'Lanao del Norte' },
-  { value: 'Lanao del Sur', label: 'Lanao del Sur' },
-  { value: 'Leyte', label: 'Leyte' },
-  { value: 'Maguindanao', label: 'Maguindanao' },
-  { value: 'Marinduque', label: 'Marinduque' },
-  { value: 'Masbate', label: 'Masbate' },
-  { value: 'Misamis Occidental', label: 'Misamis Occidental' },
-  { value: 'Misamis Oriental', label: 'Misamis Oriental' },
-  { value: 'Mountain Province', label: 'Mountain Province' },
-  { value: 'Negros Occidental', label: 'Negros Occidental' },
-  { value: 'Negros Oriental', label: 'Negros Oriental' },
-  { value: 'Northern Samar', label: 'Northern Samar' },
-  { value: 'Nueva Ecija', label: 'Nueva Ecija' },
-  { value: 'Nueva Vizcaya', label: 'Nueva Vizcaya' },
-  { value: 'Occidental Mindoro', label: 'Occidental Mindoro' },
-  { value: 'Oriental Mindoro', label: 'Oriental Mindoro' },
-  { value: 'Palawan', label: 'Palawan' },
-  { value: 'Pampanga', label: 'Pampanga' },
-  { value: 'Pangasinan', label: 'Pangasinan' },
-  { value: 'Quezon', label: 'Quezon' },
-  { value: 'Quirino', label: 'Quirino' },
-  { value: 'Rizal', label: 'Rizal' },
-  { value: 'Romblon', label: 'Romblon' },
-  { value: 'Samar', label: 'Samar' },
-  { value: 'Sarangani', label: 'Sarangani' },
-  { value: 'Siquijor', label: 'Siquijor' },
-  { value: 'Sorsogon', label: 'Sorsogon' },
-  { value: 'South Cotabato', label: 'South Cotabato' },
-  { value: 'Southern Leyte', label: 'Southern Leyte' },
-  { value: 'Sultan Kudarat', label: 'Sultan Kudarat' },
-  { value: 'Sulu', label: 'Sulu' },
-  { value: 'Surigao del Norte', label: 'Surigao del Norte' },
-  { value: 'Surigao del Sur', label: 'Surigao del Sur' },
-  { value: 'Tarlac', label: 'Tarlac' },
-  { value: 'Tawi-Tawi', label: 'Tawi-Tawi' },
-  { value: 'Zambales', label: 'Zambales' },
-  { value: 'Zamboanga del Norte', label: 'Zamboanga del Norte' },
-  { value: 'Zamboanga del Sur', label: 'Zamboanga del Sur' },
-  { value: 'Zamboanga Sibugay', label: 'Zamboanga Sibugay' },
-];
+interface Province {
+  province_code: string;
+  province_name: string;
+}
+
+interface City {
+  city_code: string;
+  city_name: string;
+  province_code: string;
+}
+
+interface Barangay {
+  brgy_code: string;
+  brgy_name: string;
+  city_code: string;
+}
 
 interface UnifiedCheckoutModalProps {
   isOpen: boolean;
@@ -190,6 +121,33 @@ const UnifiedCheckoutModal: React.FC<UnifiedCheckoutModalProps> = ({
   const [orderError, setOrderError] = useState<string | null>(null);
   const [accountCreated, setAccountCreated] = useState(false);
   const [holdExpiryTime, setHoldExpiryTime] = useState<number | null>(null);
+
+  // Address select state
+  const [provinceOptions, setProvinceOptions] = useState<Province[]>([]);
+  const [cityOptions, setCityOptions] = useState<City[]>([]);
+  const [barangayOptions, setBarangayOptions] = useState<Barangay[]>([]);
+
+  // Load provinces on mount
+  useEffect(() => {
+    getProvinces().then(setProvinceOptions);
+  }, []);
+
+  // Load cities when province changes
+  useEffect(() => {
+    if (formData.province) {
+      getCities(formData.province).then(setCityOptions);
+      setFormData((prev) => ({ ...prev, city: '', barangay: '' }));
+      setBarangayOptions([]);
+    }
+  }, [formData.province]);
+
+  // Load barangays when city changes
+  useEffect(() => {
+    if (formData.city) {
+      getBarangays(formData.city).then(setBarangayOptions);
+      setFormData((prev) => ({ ...prev, barangay: '' }));
+    }
+  }, [formData.city]);
   
   useEffect(() => {
     const handleEffect = async () => {
@@ -600,31 +558,8 @@ const UnifiedCheckoutModal: React.FC<UnifiedCheckoutModalProps> = ({
                           </div>
                           {errors.instagramUsername && <p className="mt-1 text-sm text-red-600">{errors.instagramUsername}</p>}
                         </div>
-                        <div>
-                          <label htmlFor="addressLine1" className="block text-sm font-medium text-gray-700">Address Line 1</label>
-                          <input
-                            type="text"
-                            id="addressLine1"
-                            name="addressLine1"
-                            value={formData.addressLine1}
-                            onChange={handleChange}
-                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#ad688f] focus:border-[#ad688f] sm:text-sm"
-                          />
-                          {errors.addressLine1 && <p className="mt-1 text-sm text-red-600">{errors.addressLine1}</p>}
-                        </div>
+                        {/* Address fields in proper order: Province > City > Barangay > Address Line 1 */}
                         <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <label htmlFor="barangay" className="block text-sm font-medium text-gray-700">Barangay</label>
-                            <input
-                              type="text"
-                              id="barangay"
-                              name="barangay"
-                              value={formData.barangay}
-                              onChange={handleChange}
-                              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#ad688f] focus:border-[#ad688f] sm:text-sm"
-                            />
-                            {errors.barangay && <p className="mt-1 text-sm text-red-600">{errors.barangay}</p>}
-                          </div>
                           <div>
                             <label htmlFor="province" className="block text-sm font-medium text-gray-700">Province</label>
                             <select
@@ -634,26 +569,63 @@ const UnifiedCheckoutModal: React.FC<UnifiedCheckoutModalProps> = ({
                               onChange={handleSelectChange}
                               className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#ad688f] focus:border-[#ad688f] sm:text-sm"
                             >
-                              {PH_PROVINCES.map((prov) => (
-                                <option key={prov.value} value={prov.value}>{prov.label}</option>
+                              <option value="">Select Province</option>
+                              {provinceOptions.map((prov: Province) => (
+                                <option key={prov.province_code} value={prov.province_name}>{prov.province_name}</option>
                               ))}
                             </select>
                             {errors.province && <p className="mt-1 text-sm text-red-600">{errors.province}</p>}
                           </div>
-                        </div>
-                        <div className="grid grid-cols-2 gap-4">
                           <div>
                             <label htmlFor="city" className="block text-sm font-medium text-gray-700">City</label>
-                            <input
-                              type="text"
+                            <select
                               id="city"
                               name="city"
                               value={formData.city}
+                              onChange={handleSelectChange}
+                              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#ad688f] focus:border-[#ad688f] sm:text-sm"
+                              disabled={!formData.province}
+                            >
+                              <option value="">Select City</option>
+                              {cityOptions.map((city: City) => (
+                                <option key={city.city_code} value={city.city_name}>{city.city_name}</option>
+                              ))}
+                            </select>
+                            {errors.city && <p className="mt-1 text-sm text-red-600">{errors.city}</p>}
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label htmlFor="barangay" className="block text-sm font-medium text-gray-700">Barangay</label>
+                            <select
+                              id="barangay"
+                              name="barangay"
+                              value={formData.barangay}
+                              onChange={handleSelectChange}
+                              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#ad688f] focus:border-[#ad688f] sm:text-sm"
+                              disabled={!formData.city}
+                            >
+                              <option value="">Select Barangay</option>
+                              {barangayOptions.map((brgy: Barangay) => (
+                                <option key={brgy.brgy_code} value={brgy.brgy_name}>{brgy.brgy_name}</option>
+                              ))}
+                            </select>
+                            {errors.barangay && <p className="mt-1 text-sm text-red-600">{errors.barangay}</p>}
+                          </div>
+                          <div>
+                            <label htmlFor="addressLine1" className="block text-sm font-medium text-gray-700">Address Line 1</label>
+                            <input
+                              type="text"
+                              id="addressLine1"
+                              name="addressLine1"
+                              value={formData.addressLine1}
                               onChange={handleChange}
                               className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-[#ad688f] focus:border-[#ad688f] sm:text-sm"
                             />
-                            {errors.city && <p className="mt-1 text-sm text-red-600">{errors.city}</p>}
+                            {errors.addressLine1 && <p className="mt-1 text-sm text-red-600">{errors.addressLine1}</p>}
                           </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
                           <div>
                             <label htmlFor="mobileNumber" className="block text-sm font-medium text-gray-700">Mobile Number</label>
                             <input
