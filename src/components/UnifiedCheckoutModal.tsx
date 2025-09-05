@@ -88,7 +88,7 @@ const HoldTimer: React.FC<HoldTimerProps> = ({ expiryTime, handleExpired }) => {
             Your selected items are reserved for:
           </p>
         </div>
-        <div className="text-2xl font-bold font-header text-yellow-800">
+        <div className="text-2xl font-bold header-font text-yellow-800">
           {formatTime(timeLeft)}
         </div>
       </div>
@@ -152,34 +152,36 @@ const UnifiedCheckoutModal: React.FC<UnifiedCheckoutModalProps> = ({
 
       for (const region of allRegions) {
         const regionProvinces = await provinces(region.region_code);
-        
+
         // Check if this region contains NCR/Metro Manila districts
-        const ncrProvinces = regionProvinces.filter((p: Province) => 
-          p.province_name.toLowerCase().includes('ncr') || 
-          p.province_name.toLowerCase().includes('metro manila') ||
-          p.province_name.toLowerCase().includes('national capital region')
+        const ncrProvinces = regionProvinces.filter(
+          (p: Province) =>
+            p.province_name.toLowerCase().includes("ncr") ||
+            p.province_name.toLowerCase().includes("metro manila") ||
+            p.province_name.toLowerCase().includes("national capital region")
         );
-        
+
         if (ncrProvinces.length > 0 && !hasNCR) {
           // Add a single "Metro Manila" entry instead of multiple NCR districts
           allProvinces.push({
-            psgc_code: 'NCR',
-            province_name: 'Metro-Manila',
-            province_code: 'NCR',
-            region_code: region.region_code
+            psgc_code: "NCR",
+            province_name: "Metro-Manila",
+            province_code: "NCR",
+            region_code: region.region_code,
           });
           hasNCR = true;
         } else {
           // Add non-NCR provinces normally
-          const nonNcrProvinces = regionProvinces.filter((p: Province) => 
-            !p.province_name.toLowerCase().includes('ncr') && 
-            !p.province_name.toLowerCase().includes('metro manila') &&
-            !p.province_name.toLowerCase().includes('national capital region')
+          const nonNcrProvinces = regionProvinces.filter(
+            (p: Province) =>
+              !p.province_name.toLowerCase().includes("ncr") &&
+              !p.province_name.toLowerCase().includes("metro manila") &&
+              !p.province_name.toLowerCase().includes("national capital region")
           );
           // Convert spaces to hyphens in province names
-          const hyphenatedProvinces = nonNcrProvinces.map(p => ({
+          const hyphenatedProvinces = nonNcrProvinces.map((p) => ({
             ...p,
-            province_name: p.province_name.replace(/ /g, '-')
+            province_name: p.province_name.replace(/ /g, "-"),
           }));
           allProvinces.push(...hyphenatedProvinces);
         }
@@ -198,50 +200,53 @@ const UnifiedCheckoutModal: React.FC<UnifiedCheckoutModalProps> = ({
   const getCitiesByProvinceName = async (provinceName: string) => {
     try {
       // Convert hyphenated name back to original name for API calls
-      const originalProvinceName = provinceName.replace(/-/g, ' ');
-      
+      const originalProvinceName = provinceName.replace(/-/g, " ");
+
       // Special handling for Metro Manila - get cities from all NCR districts
-      if (originalProvinceName === 'Metro Manila') {
+      if (originalProvinceName === "Metro Manila") {
         const allRegions = await regions();
         const allCities: City[] = [];
-        
+
         for (const region of allRegions) {
           const regionProvinces = await provinces(region.region_code);
-          const ncrProvinces = regionProvinces.filter((p: Province) => 
-            p.province_name.toLowerCase().includes('ncr') || 
-            p.province_name.toLowerCase().includes('metro manila') ||
-            p.province_name.toLowerCase().includes('national capital region')
+          const ncrProvinces = regionProvinces.filter(
+            (p: Province) =>
+              p.province_name.toLowerCase().includes("ncr") ||
+              p.province_name.toLowerCase().includes("metro manila") ||
+              p.province_name.toLowerCase().includes("national capital region")
           );
-          
+
           for (const ncrProvince of ncrProvinces) {
             const provinceCities = await cities(ncrProvince.province_code);
             allCities.push(...provinceCities);
           }
         }
-        
+
         // Remove duplicates and convert to hyphens
-        const uniqueCities = allCities.filter((city, index, self) => 
-          index === self.findIndex((c: City) => c.city_name === city.city_name)
+        const uniqueCities = allCities.filter(
+          (city, index, self) =>
+            index ===
+            self.findIndex((c: City) => c.city_name === city.city_name)
         );
-        
-        return uniqueCities.map(city => ({
-          ...city,
-          city_name: city.city_name.replace(/ /g, '-')
-        })).sort((a: City, b: City) =>
-          a.city_name.localeCompare(b.city_name)
-        );
+
+        return uniqueCities
+          .map((city) => ({
+            ...city,
+            city_name: city.city_name.replace(/ /g, "-"),
+          }))
+          .sort((a: City, b: City) => a.city_name.localeCompare(b.city_name));
       }
-      
+
       // Regular province handling
       const province = await provinceByName(originalProvinceName);
       if (province && province.province_code) {
         const provinceCities = await cities(province.province_code);
-        return provinceCities.map(city => ({
-          ...city,
-          city_name: city.city_name.replace(/ /g, '-')
-        })).sort((a: City, b: City) =>
-          a.city_name.localeCompare(b.city_name)
-        );
+        return provinceCities
+          .map((city) => ({
+            ...city,
+            city_name: city.city_name.replace(/ /g, "-"),
+          }))
+          .sort((a: City, b: City) => a.city_name.localeCompare(b.city_name));
       }
       return [];
     } catch (error) {
@@ -257,51 +262,60 @@ const UnifiedCheckoutModal: React.FC<UnifiedCheckoutModalProps> = ({
   ) => {
     try {
       // Convert hyphenated names back to original names
-      const originalCityName = cityName.replace(/-/g, ' ');
-      const originalProvinceName = provinceName.replace(/-/g, ' ');
-      
+      const originalCityName = cityName.replace(/-/g, " ");
+      const originalProvinceName = provinceName.replace(/-/g, " ");
+
       // Special handling for Metro Manila
-      if (originalProvinceName === 'Metro Manila') {
+      if (originalProvinceName === "Metro Manila") {
         const allRegions = await regions();
-        
+
         for (const region of allRegions) {
           const regionProvinces = await provinces(region.region_code);
-          const ncrProvinces = regionProvinces.filter((p: Province) => 
-            p.province_name.toLowerCase().includes('ncr') || 
-            p.province_name.toLowerCase().includes('metro manila') ||
-            p.province_name.toLowerCase().includes('national capital region')
+          const ncrProvinces = regionProvinces.filter(
+            (p: Province) =>
+              p.province_name.toLowerCase().includes("ncr") ||
+              p.province_name.toLowerCase().includes("metro manila") ||
+              p.province_name.toLowerCase().includes("national capital region")
           );
-          
+
           for (const ncrProvince of ncrProvinces) {
             const provinceCities = await cities(ncrProvince.province_code);
-            const city = provinceCities.find((c: City) => c.city_name === originalCityName);
+            const city = provinceCities.find(
+              (c: City) => c.city_name === originalCityName
+            );
             if (city && city.city_code) {
               const cityBarangays = await barangays(city.city_code);
-              return cityBarangays.map(barangay => ({
-                ...barangay,
-                brgy_name: barangay.brgy_name.replace(/ /g, '-')
-              })).sort((a: Barangay, b: Barangay) =>
-                a.brgy_name.localeCompare(b.brgy_name)
-              );
+              return cityBarangays
+                .map((barangay) => ({
+                  ...barangay,
+                  brgy_name: barangay.brgy_name.replace(/ /g, "-"),
+                }))
+                .sort((a: Barangay, b: Barangay) =>
+                  a.brgy_name.localeCompare(b.brgy_name)
+                );
             }
           }
         }
         return [];
       }
-      
+
       // Regular province handling
       const province = await provinceByName(originalProvinceName);
       if (province && province.province_code) {
         const provinceCities = await cities(province.province_code);
-        const city = provinceCities.find((c: City) => c.city_name === originalCityName);
+        const city = provinceCities.find(
+          (c: City) => c.city_name === originalCityName
+        );
         if (city && city.city_code) {
           const cityBarangays = await barangays(city.city_code);
-          return cityBarangays.map(barangay => ({
-            ...barangay,
-            brgy_name: barangay.brgy_name.replace(/ /g, '-')
-          })).sort((a: Barangay, b: Barangay) =>
-            a.brgy_name.localeCompare(b.brgy_name)
-          );
+          return cityBarangays
+            .map((barangay) => ({
+              ...barangay,
+              brgy_name: barangay.brgy_name.replace(/ /g, "-"),
+            }))
+            .sort((a: Barangay, b: Barangay) =>
+              a.brgy_name.localeCompare(b.brgy_name)
+            );
         }
       }
       return [];
@@ -523,9 +537,9 @@ const UnifiedCheckoutModal: React.FC<UnifiedCheckoutModalProps> = ({
       orderData.append("customer_name", formData.name);
       orderData.append("instagram_username", formData.instagramUsername);
       orderData.append("address_line1", formData.addressLine1);
-      orderData.append("barangay", formData.barangay.replace(/-/g, ' '));
-      orderData.append("province", formData.province.replace(/-/g, ' '));
-      orderData.append("city", formData.city.replace(/-/g, ' '));
+      orderData.append("barangay", formData.barangay.replace(/-/g, " "));
+      orderData.append("province", formData.province.replace(/-/g, " "));
+      orderData.append("city", formData.city.replace(/-/g, " "));
       orderData.append("mobile_number", formData.mobileNumber);
       orderData.append("payment_proof", formData.paymentProof!);
       orderData.append("shipping_fee", shippingFee.toString());
@@ -554,9 +568,9 @@ const UnifiedCheckoutModal: React.FC<UnifiedCheckoutModalProps> = ({
         await updateProfile({
           instagram_username: formData.instagramUsername,
           address_line1: formData.addressLine1,
-          barangay: formData.barangay.replace(/-/g, ' '),
-          province: formData.province.replace(/-/g, ' '),
-          city: formData.city.replace(/-/g, ' '),
+          barangay: formData.barangay.replace(/-/g, " "),
+          province: formData.province.replace(/-/g, " "),
+          city: formData.city.replace(/-/g, " "),
           mobile_number: formData.mobileNumber,
         });
         await OrderApi.createOrder(localStorage.getItem("token")!, orderData);
@@ -1063,8 +1077,10 @@ const UnifiedCheckoutModal: React.FC<UnifiedCheckoutModalProps> = ({
                               </li>
                               <li>
                                 <span className="font-medium">Address:</span>{" "}
-                                {formData.addressLine1}, {formData.barangay.replace(/-/g, ' ')},{" "}
-                                {formData.city.replace(/-/g, ' ')}, {formData.province.replace(/-/g, ' ')}
+                                {formData.addressLine1},{" "}
+                                {formData.barangay.replace(/-/g, " ")},{" "}
+                                {formData.city.replace(/-/g, " ")},{" "}
+                                {formData.province.replace(/-/g, " ")}
                               </li>
                               <li>
                                 <span className="font-medium">Mobile:</span>{" "}
@@ -1082,7 +1098,10 @@ const UnifiedCheckoutModal: React.FC<UnifiedCheckoutModalProps> = ({
                                   ? "Loading..."
                                   : `₱${
                                       formData.province
-                                        ? (formData.province.replace(/-/g, ' ') === "Metro Manila"
+                                        ? (formData.province.replace(
+                                            /-/g,
+                                            " "
+                                          ) === "Metro Manila"
                                             ? settings.deliveryFeeNcr
                                             : settings.deliveryFeeOutsideNcr
                                           ).toFixed(2)

@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { AnnouncementService } from '../../services/AnnouncementService';
-import type { AnnouncementData } from '../../types/announcement';
+import { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { AnnouncementService } from "../../services/AnnouncementService";
+import type { AnnouncementData } from "../../types/announcement";
 
 interface AnnouncementFormProps {
   token: string;
@@ -11,17 +11,19 @@ const AnnouncementForm = ({ token }: AnnouncementFormProps) => {
   const navigate = useNavigate();
   const { id } = useParams<{ id?: string }>();
   const isEditing = !!id;
-  
-  const [formData, setFormData] = useState<Omit<AnnouncementData, 'id' | 'createdAt' | 'updatedAt'>>({
-    text: '',
+
+  const [formData, setFormData] = useState<
+    Omit<AnnouncementData, "id" | "createdAt" | "updatedAt">
+  >({
+    text: "",
     isActive: true,
     displayOrder: 0,
     buttonText: null,
     buttonLink: null,
-    backgroundColor: '#000000',
-    textColor: '#FFFFFF'
+    backgroundColor: "#000000",
+    textColor: "#FFFFFF",
   });
-  
+
   const [loading, setLoading] = useState(isEditing);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -31,10 +33,13 @@ const AnnouncementForm = ({ token }: AnnouncementFormProps) => {
   useEffect(() => {
     const fetchAnnouncement = async () => {
       if (!isEditing) return;
-      
+
       try {
         setLoading(true);
-        const data = await AnnouncementService.getAnnouncementById(token, Number(id));
+        const data = await AnnouncementService.getAnnouncementById(
+          token,
+          Number(id)
+        );
         setFormData({
           text: data.text,
           isActive: data.isActive,
@@ -42,11 +47,11 @@ const AnnouncementForm = ({ token }: AnnouncementFormProps) => {
           buttonText: data.buttonText,
           buttonLink: data.buttonLink,
           backgroundColor: data.backgroundColor,
-          textColor: data.textColor
+          textColor: data.textColor,
         });
       } catch (err) {
-        setError('Failed to load announcement data. Please try again.');
-        console.error('Error fetching announcement:', err);
+        setError("Failed to load announcement data. Please try again.");
+        console.error("Error fetching announcement:", err);
       } finally {
         setLoading(false);
       }
@@ -56,14 +61,18 @@ const AnnouncementForm = ({ token }: AnnouncementFormProps) => {
   }, [id, isEditing, token]);
 
   // Handle form input changes
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ) => {
     const { name, value, type } = e.target;
-    
-    if (name === 'isActive' && type === 'checkbox') {
+
+    if (name === "isActive" && type === "checkbox") {
       const target = e.target as HTMLInputElement;
-      setFormData(prev => ({ ...prev, [name]: target.checked }));
+      setFormData((prev) => ({ ...prev, [name]: target.checked }));
     } else {
-      setFormData(prev => ({ ...prev, [name]: value }));
+      setFormData((prev) => ({ ...prev, [name]: value }));
     }
   };
 
@@ -73,28 +82,39 @@ const AnnouncementForm = ({ token }: AnnouncementFormProps) => {
     setError(null);
     setSuccess(null);
     setSubmitting(true);
-    
+
     try {
       if (isEditing) {
-        await AnnouncementService.updateAnnouncement(token, Number(id), formData);
-        setSuccess('Announcement updated successfully!');
+        await AnnouncementService.updateAnnouncement(
+          token,
+          Number(id),
+          formData
+        );
+        setSuccess("Announcement updated successfully!");
       } else {
         await AnnouncementService.createAnnouncement(token, formData);
-        setSuccess('Announcement created successfully!');
+        setSuccess("Announcement created successfully!");
         // Reset form after successful creation
         setFormData({
-          text: '',
+          text: "",
           isActive: true,
           displayOrder: 0,
           buttonText: null,
           buttonLink: null,
-          backgroundColor: '#000000',
-          textColor: '#FFFFFF'
+          backgroundColor: "#000000",
+          textColor: "#FFFFFF",
         });
       }
     } catch (err) {
-      setError(`Failed to ${isEditing ? 'update' : 'create'} announcement. Please try again.`);
-      console.error(`Error ${isEditing ? 'updating' : 'creating'} announcement:`, err);
+      setError(
+        `Failed to ${
+          isEditing ? "update" : "create"
+        } announcement. Please try again.`
+      );
+      console.error(
+        `Error ${isEditing ? "updating" : "creating"} announcement:`,
+        err
+      );
     } finally {
       setSubmitting(false);
     }
@@ -102,7 +122,7 @@ const AnnouncementForm = ({ token }: AnnouncementFormProps) => {
 
   // Go back to announcements list
   const handleCancel = () => {
-    navigate('/admin/announcements');
+    navigate("/admin/announcements");
   };
 
   if (loading) {
@@ -111,8 +131,8 @@ const AnnouncementForm = ({ token }: AnnouncementFormProps) => {
 
   return (
     <div className="p-4 max-w-2xl mx-auto">
-      <h2 className="text-2xl font-header mb-6">
-        {isEditing ? 'Edit Announcement' : 'Create New Announcement'}
+      <h2 className="text-2xl header-font mb-6">
+        {isEditing ? "Edit Announcement" : "Create New Announcement"}
       </h2>
 
       {error && (
@@ -160,7 +180,8 @@ const AnnouncementForm = ({ token }: AnnouncementFormProps) => {
             min="0"
           />
           <p className="text-sm text-gray-500 mt-1">
-            Lower numbers appear first. Announcements with the same order are sorted by creation date.
+            Lower numbers appear first. Announcements with the same order are
+            sorted by creation date.
           </p>
         </div>
 
@@ -188,7 +209,7 @@ const AnnouncementForm = ({ token }: AnnouncementFormProps) => {
             type="text"
             id="buttonText"
             name="buttonText"
-            value={formData.buttonText || ''}
+            value={formData.buttonText || ""}
             onChange={handleChange}
             className="w-full p-2 border border-gray-300"
             placeholder="e.g., Shop Now"
@@ -204,7 +225,7 @@ const AnnouncementForm = ({ token }: AnnouncementFormProps) => {
             type="text"
             id="buttonLink"
             name="buttonLink"
-            value={formData.buttonLink || ''}
+            value={formData.buttonLink || ""}
             onChange={handleChange}
             className="w-full p-2 border border-gray-300"
             placeholder="e.g., /sale"
@@ -264,16 +285,16 @@ const AnnouncementForm = ({ token }: AnnouncementFormProps) => {
         {/* Preview */}
         <div className="mt-6">
           <h3 className="font-medium mb-2">Preview</h3>
-          <div 
+          <div
             className="p-3 flex items-center justify-center"
-            style={{ 
+            style={{
               backgroundColor: formData.backgroundColor,
-              color: formData.textColor 
+              color: formData.textColor,
             }}
           >
             <span>{formData.text}</span>
             {formData.buttonText && (
-              <button 
+              <button
                 className="ml-4 px-3 py-1 border border-current"
                 style={{ color: formData.textColor }}
               >
@@ -298,7 +319,11 @@ const AnnouncementForm = ({ token }: AnnouncementFormProps) => {
             className="px-4 py-2 bg-black text-white hover:bg-gray-800"
             disabled={submitting}
           >
-            {submitting ? 'Saving...' : isEditing ? 'Update Announcement' : 'Create Announcement'}
+            {submitting
+              ? "Saving..."
+              : isEditing
+              ? "Update Announcement"
+              : "Create Announcement"}
           </button>
         </div>
       </form>
@@ -306,4 +331,4 @@ const AnnouncementForm = ({ token }: AnnouncementFormProps) => {
   );
 };
 
-export default AnnouncementForm; 
+export default AnnouncementForm;

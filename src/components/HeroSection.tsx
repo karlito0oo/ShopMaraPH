@@ -143,11 +143,11 @@ const HeroSection = () => {
       {/* Content */}
       <div className="relative z-20 w-full flex flex-col items-center justify-center h-full">
         {slides[current]?.title ? (
-          <h1 className="text-5xl md:text-7xl font-header font-light mb-4 text-center text-white drop-shadow-lg">
+          <h1 className="text-5xl md:text-7xl header-font font-light mb-4 text-center text-white drop-shadow-lg">
             {slides[current].title}
           </h1>
         ) : (
-          <h1 className="text-5xl md:text-7xl font-header font-light mb-4 text-center text-white drop-shadow-lg">
+          <h1 className="text-5xl md:text-7xl header-font font-light mb-4 text-center text-white drop-shadow-lg">
             SHOPMARA PH
           </h1>
         )}
