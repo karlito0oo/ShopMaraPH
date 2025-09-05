@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import type { Product } from '../types/product';
-import { useCart } from '../context/CartContext';
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
+import type { Product } from "../types/product";
+import { useCart } from "../context/CartContext";
 
 interface ProductCardProps {
   product: Product;
@@ -10,24 +10,24 @@ interface ProductCardProps {
 const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const { addToCart, isInCart } = useCart();
   const [isLoading, setIsLoading] = useState(false);
-  
+
   const handleAddToCart = async (e: React.MouseEvent) => {
     e.preventDefault(); // Prevent navigation to product page
     e.stopPropagation(); // Stop event propagation
-    
-    if (product.status === 'Available' && product.size) {
+
+    if (product.status === "Available" && product.size) {
       try {
         setIsLoading(true);
         await addToCart(product);
       } catch (err) {
-        console.error('Error adding to cart:', err);
+        console.error("Error adding to cart:", err);
         // Error handling is now done in CartContext with toast notifications
       } finally {
         setIsLoading(false);
       }
     }
   };
-  
+
   return (
     <div className="product-card">
       {/* Product Tags (New Arrival & Sale) */}
@@ -43,58 +43,88 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           </div>
         )}
       </div>
-      
+
       {/* Product Image */}
-      <Link to={`/product/${product.id}`} className="no-underline text-inherit block">
+      <Link
+        to={`/product/${product.id}`}
+        className="no-underline text-inherit block"
+      >
         <div className="product-card__image-container">
-          <img 
-            src={product.image} 
+          <img
+            src={product.image}
             alt={product.name}
             className="product-card__image"
           />
-          
+
           {/* Status Overlay */}
-          {(product.status === 'Sold' || product.status === 'OnHold' || product.status === 'Pending') && (
+          {(product.status === "Sold" ||
+            product.status === "OnHold" ||
+            product.status === "Pending") && (
             <div className="absolute inset-0 bg-white bg-opacity-60 flex items-center justify-center">
-              <span className={`text-2xl font-bold font-header ${product.status === 'Sold' ? 'text-black' : product.status === 'OnHold' ? 'text-yellow-800' : 'text-black'}`}>
-                {product.status === 'Sold' ? 'SOLD' : product.status === 'OnHold' ? 'ON HOLD' : 'PENDING'}
+              <span
+                className={`text-2xl font-bold header-font ${
+                  product.status === "Sold"
+                    ? "text-black"
+                    : product.status === "OnHold"
+                    ? "text-yellow-800"
+                    : "text-black"
+                }`}
+              >
+                {product.status === "Sold"
+                  ? "SOLD"
+                  : product.status === "OnHold"
+                  ? "ON HOLD"
+                  : "PENDING"}
               </span>
             </div>
           )}
         </div>
       </Link>
-      
+
       {/* Product Content */}
       <div className="p-4">
         {/* Product Name and Size Row */}
-        <div className="flex items-start justify-between mb-1" style={{height: '20px'}}>
+        <div
+          className="flex items-start justify-between mb-1"
+          style={{ height: "20px" }}
+        >
           {/* Product Name */}
-          <Link to={`/product/${product.id}`} className="no-underline text-inherit flex-1">
-            <h3 className="product-card__title text-sm font-medium line-clamp-1 m-0">{product.name}</h3>
+          <Link
+            to={`/product/${product.id}`}
+            className="no-underline text-inherit flex-1"
+          >
+            <h3 className="product-card__title text-sm font-medium line-clamp-1 m-0">
+              {product.name}
+            </h3>
           </Link>
-          
+
           {/* Size Badge */}
           <span className="ml-2 bg-gray-100 text-gray-800 text-xs font-medium px-2 py-0.5 rounded whitespace-nowrap">
             Size: {product.size?.toUpperCase()}
           </span>
         </div>
-        
+
         {/* Price */}
         <div className="product-card__price text-sm font-semibold mb-2">
           ₱{product.price.toFixed(2)}
         </div>
-        
+
         {/* Add to Cart Button */}
         <button
           type="button"
           onClick={handleAddToCart}
-          disabled={product.status !== 'Available' || !product.size || isLoading || isInCart(product.id)}
+          disabled={
+            product.status !== "Available" ||
+            !product.size ||
+            isLoading ||
+            isInCart(product.id)
+          }
           className={`w-full py-1.5 px-3 text-sm font-medium rounded transition-colors ${
-            product.status !== 'Available' || !product.size
-              ? 'bg-gray-200 text-gray-500 cursor-not-allowed'
+            product.status !== "Available" || !product.size
+              ? "bg-gray-200 text-gray-500 cursor-not-allowed"
               : isInCart(product.id)
-              ? 'bg-green-600 text-white cursor-not-allowed'
-              : 'bg-black text-white hover:bg-gray-800'
+              ? "bg-green-600 text-white cursor-not-allowed"
+              : "bg-black text-white hover:bg-gray-800"
           }`}
         >
           {isLoading ? (
@@ -102,13 +132,19 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
               Adding...
             </div>
-          ) : product.status === 'Sold' ? 'Sold' : 
-             product.status === 'OnHold' ? 'On Hold' :
-             isInCart(product.id) ? 'In Cart' : 'Add to Cart'}
+          ) : product.status === "Sold" ? (
+            "Sold"
+          ) : product.status === "OnHold" ? (
+            "On Hold"
+          ) : isInCart(product.id) ? (
+            "In Cart"
+          ) : (
+            "Add to Cart"
+          )}
         </button>
       </div>
     </div>
   );
 };
 
-export default ProductCard; 
+export default ProductCard;
