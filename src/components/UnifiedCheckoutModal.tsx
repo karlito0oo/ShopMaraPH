@@ -330,24 +330,70 @@ const UnifiedCheckoutModal: React.FC<UnifiedCheckoutModalProps> = ({
     getAllProvinces().then(setProvinceOptions);
   }, []);
 
-  // Load cities when province changes
+  // Load cities when province changes OR when profile data is loaded
   useEffect(() => {
     if (formData.province) {
-      getCitiesByProvinceName(formData.province).then(setCityOptions);
-      setFormData((prev) => ({ ...prev, city: "", barangay: "" }));
-      setBarangayOptions([]);
-    }
-  }, [formData.province]);
+      getCitiesByProvinceName(formData.province).then((cities) => {
+        setCityOptions(cities);
+        // If we have a saved city value but it's not in formData.city yet, preserve it
+        if (!formData.city && (profile?.city || guestProfile?.city)) {
+          const savedCity = isAuthenticated
+            ? profile?.city
+            : guestProfile?.city;
+          if (savedCity) {
+            setFormData((prev) => ({ ...prev, city: savedCity }));
+          }
+        }
+      });
 
-  // Load barangays when city changes
+      // Reset city and barangay if province changed by user selection
+      if (formData.city && formData.barangay) {
+        // Don't reset if we're just loading initial data
+        const hasInitialData =
+          (isAuthenticated && profile) || (!isAuthenticated && guestProfile);
+        if (!hasInitialData) {
+          setFormData((prev) => ({ ...prev, city: "", barangay: "" }));
+          setBarangayOptions([]);
+        }
+      }
+    }
+  }, [formData.province, profile, guestProfile, isAuthenticated]);
+
+  // Load barangays when city changes OR when profile data is loaded
   useEffect(() => {
     if (formData.city && formData.province) {
       getBarangaysByCityName(formData.city, formData.province).then(
-        setBarangayOptions
+        (barangays) => {
+          setBarangayOptions(barangays);
+          // If we have a saved barangay value but it's not in formData.barangay yet, preserve it
+          if (
+            !formData.barangay &&
+            (profile?.barangay || guestProfile?.barangay)
+          ) {
+            const savedBarangay = isAuthenticated
+              ? profile?.barangay
+              : guestProfile?.barangay;
+            if (savedBarangay) {
+              setFormData((prev) => ({ ...prev, barangay: savedBarangay }));
+            }
+          }
+        }
       );
-      setFormData((prev) => ({ ...prev, barangay: "" }));
+
+      // Reset barangay if city changed by user selection
+      const hasInitialData =
+        (isAuthenticated && profile) || (!isAuthenticated && guestProfile);
+      if (!hasInitialData && formData.barangay) {
+        setFormData((prev) => ({ ...prev, barangay: "" }));
+      }
     }
-  }, [formData.city]);
+  }, [
+    formData.city,
+    formData.province,
+    profile,
+    guestProfile,
+    isAuthenticated,
+  ]);
 
   useEffect(() => {
     const handleEffect = async () => {
@@ -417,6 +463,10 @@ const UnifiedCheckoutModal: React.FC<UnifiedCheckoutModalProps> = ({
       setOrderError(null);
       setIsSubmitting(false);
       setAccountCreated(false);
+
+      // Reset dropdown options when modal opens
+      setCityOptions([]);
+      setBarangayOptions([]);
     }
   }, [isOpen, isAuthenticated, user, profile, guestProfile, province]);
 
@@ -537,9 +587,9 @@ const UnifiedCheckoutModal: React.FC<UnifiedCheckoutModalProps> = ({
       orderData.append("customer_name", formData.name);
       orderData.append("instagram_username", formData.instagramUsername);
       orderData.append("address_line1", formData.addressLine1);
-      orderData.append("barangay", formData.barangay.replace(/-/g, " "));
-      orderData.append("province", formData.province.replace(/-/g, " "));
-      orderData.append("city", formData.city.replace(/-/g, " "));
+      orderData.append("barangay", formData.barangay);
+      orderData.append("province", formData.province);
+      orderData.append("city", formData.city);
       orderData.append("mobile_number", formData.mobileNumber);
       orderData.append("payment_proof", formData.paymentProof!);
       orderData.append("shipping_fee", shippingFee.toString());
@@ -568,9 +618,9 @@ const UnifiedCheckoutModal: React.FC<UnifiedCheckoutModalProps> = ({
         await updateProfile({
           instagram_username: formData.instagramUsername,
           address_line1: formData.addressLine1,
-          barangay: formData.barangay.replace(/-/g, " "),
-          province: formData.province.replace(/-/g, " "),
-          city: formData.city.replace(/-/g, " "),
+          barangay: formData.barangay,
+          province: formData.province,
+          city: formData.city,
           mobile_number: formData.mobileNumber,
         });
         await OrderApi.createOrder(localStorage.getItem("token")!, orderData);
@@ -1028,7 +1078,7 @@ const UnifiedCheckoutModal: React.FC<UnifiedCheckoutModalProps> = ({
                               )}
                             </div>
                           </div>
-                          <div className="grid grid-cols-2 gap-4">
+                          <div className="grid grid-cols-1 gap-4">
                             <div>
                               <label
                                 htmlFor="mobileNumber"
@@ -1077,10 +1127,8 @@ const UnifiedCheckoutModal: React.FC<UnifiedCheckoutModalProps> = ({
                               </li>
                               <li>
                                 <span className="font-medium">Address:</span>{" "}
-                                {formData.addressLine1},{" "}
-                                {formData.barangay.replace(/-/g, " ")},{" "}
-                                {formData.city.replace(/-/g, " ")},{" "}
-                                {formData.province.replace(/-/g, " ")}
+                                {formData.addressLine1}, {formData.barangay},{" "}
+                                {formData.city}, {formData.province}
                               </li>
                               <li>
                                 <span className="font-medium">Mobile:</span>{" "}
