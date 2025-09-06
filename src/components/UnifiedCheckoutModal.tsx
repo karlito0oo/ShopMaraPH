@@ -83,9 +83,9 @@ const HoldTimer: React.FC<HoldTimerProps> = ({ expiryTime, handleExpired }) => {
     <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4 mb-4">
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-yellow-800 font-medium">Products on hold</p>
+          <p className="text-yellow-800 font-medium">Reserved for you!</p>
           <p className="text-sm text-yellow-600">
-            Your selected items are reserved for:
+            Time left to complete your order:
           </p>
         </div>
         <div className="text-2xl font-bold header-font text-yellow-800">
@@ -866,7 +866,7 @@ const UnifiedCheckoutModal: React.FC<UnifiedCheckoutModalProps> = ({
                       <div className="flex justify-between mt-1 text-xs text-gray-500">
                         <span>Customer Info</span>
                         <span>Payment</span>
-                        <span>Confirmation</span>
+                        <span>Place Order</span>
                       </div>
                     </div>
                     {orderError && (
@@ -1135,8 +1135,8 @@ const UnifiedCheckoutModal: React.FC<UnifiedCheckoutModalProps> = ({
                                 {formData.mobileNumber}
                               </li>
                               <li>
-                                <span className="font-medium">Subtotal:</span> ₱
-                                {totalAmount.toFixed(2)}
+                                <span className="font-medium">Item total:</span>{" "}
+                                ₱{totalAmount.toFixed(2)}
                               </li>
                               <li>
                                 <span className="font-medium">
@@ -1157,16 +1157,17 @@ const UnifiedCheckoutModal: React.FC<UnifiedCheckoutModalProps> = ({
                                     }`}
                               </li>
                               <li>
-                                <span className="font-medium">
-                                  Grand Total:
-                                </span>{" "}
-                                {settings.isLoading
-                                  ? "Loading..."
-                                  : `₱${
-                                      formData.province
-                                        ? totalAmount.toFixed(2)
-                                        : totalAmount.toFixed(2)
-                                    }`}
+                                <span className="font-bold">ORDER TOTAL:</span>{" "}
+                                {settings.isLoading ? (
+                                  "Loading..."
+                                ) : (
+                                  <span className="font-bold">
+                                    ₱
+                                    {formData.province
+                                      ? totalAmount.toFixed(2)
+                                      : totalAmount.toFixed(2)}
+                                  </span>
+                                )}
                               </li>
                             </ul>
                           </div>

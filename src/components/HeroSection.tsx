@@ -125,7 +125,7 @@ const HeroSection = () => {
   };
 
   return (
-    <div className="relative w-full h-[700px] md:h-[600px] flex items-center justify-center overflow-hidden border-b border-gray-200 bg-black -mt-20">
+    <div className="relative w-full h-[450px] md:h-[700px] flex items-center justify-center overflow-hidden border-b border-gray-200 bg-black -mt-20">
       {/* Carousel Images */}
       <div className="absolute top-0 left-0 w-full h-full">
         {slides.map((slide, idx) => (
@@ -145,7 +145,7 @@ const HeroSection = () => {
         {/* White background container for main content */}
         <div className="bg-white bg-opacity-50 backdrop-blur-sm rounded-lg p-8 md:p-12 max-w-4xl mx-4 shadow-lg flex flex-col items-center justify-center">
           {slides[current]?.title ? (
-            <h1 className="text-5xl md:text-7xl header-font font-light mb-4 text-center text-white drop-shadow-lg">
+            <h1 className="text-5xl md:text-7xl header-font font-light mb-4 text-center text-black drop-shadow-lg">
               {slides[current].title}
             </h1>
           ) : (
@@ -155,7 +155,7 @@ const HeroSection = () => {
           )}
           {slides[current]?.subtitle ? (
             <div className="bg-[#ad688f] px-6 py-2 mb-8 bg-opacity-90 rounded">
-              <p className="text-lg font-body font-light text-black">
+              <p className="text-lg font-body font-light text-white">
                 {slides[current].subtitle}
               </p>
             </div>
@@ -168,22 +168,19 @@ const HeroSection = () => {
           )}
           <div className="max-w-2xl text-center mx-auto px-4">
             {slides[current]?.link ? (
-              <a
-                href={slides[current].link}
-                className="text-white underline mb-4 block"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
+              <p className="text-black mb-8 font-body font-light drop-shadow">
                 {slides[current].link}
-              </a>
-            ) : null}
-            <p className="text-black mb-8 font-body font-light drop-shadow">
-              ShopMaraPH is a passion project rooted in timeless style and
-              conscious living. We offer carefully handpicked vintage
-              polos—elegant, versatile pieces made for modern women who lead,
-              whether in the office or off-duty. Beautifully curated,
-              sustainably sourced.
-            </p>
+              </p>
+            ) : (
+              <p className="text-black mb-8 font-body font-light drop-shadow">
+                ShopMaraPH is a passion project rooted in timeless style and
+                conscious living. We offer carefully handpicked vintage
+                polos—elegant, versatile pieces made for modern women who lead,
+                whether in the office or off-duty. Beautifully curated,
+                sustainably sourced.
+              </p>
+            )}
+
             <AnnouncementSlider />
           </div>
         </div>

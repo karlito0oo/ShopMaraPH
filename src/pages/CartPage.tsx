@@ -1,15 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import { regions, provinces } from 'select-philippines-address';
-import { useCart } from '../context/CartContext';
-import { useAuth } from '../context/AuthContext';
-import { Link } from 'react-router-dom';
-import UnifiedCheckoutModal from '../components/UnifiedCheckoutModal';
-import { useProfile } from '../context/ProfileContext';
-import { useGuestProfile } from '../context/GuestProfileContext';
-import { useSettings } from '../context/SettingsContext';
-import { useToast } from '../context/ToastContext';
-import type { Product } from '../types/product';
-import { GUEST_ID_KEY } from '../constants';
+import React, { useState, useEffect } from "react";
+import { regions, provinces } from "select-philippines-address";
+import { useCart } from "../context/CartContext";
+import { useAuth } from "../context/AuthContext";
+import { Link } from "react-router-dom";
+import UnifiedCheckoutModal from "../components/UnifiedCheckoutModal";
+import { useProfile } from "../context/ProfileContext";
+import { useGuestProfile } from "../context/GuestProfileContext";
+import { useSettings } from "../context/SettingsContext";
+import { useToast } from "../context/ToastContext";
+import type { Product } from "../types/product";
+import { GUEST_ID_KEY } from "../constants";
 
 interface Province {
   psgc_code: string;
@@ -21,18 +21,17 @@ interface Province {
 const CartPage = () => {
   const { isAuthenticated, user } = useAuth();
   const [isUnifiedCheckoutOpen, setIsUnifiedCheckoutOpen] = useState(false);
-  const { 
-    cartItems, 
-    removeFromCart, 
-    getTotalPrice,
-    clearCart,
-  } = useCart();
+  const { cartItems, removeFromCart, getTotalPrice, clearCart } = useCart();
 
   const { profile } = useProfile();
   const { profile: guestProfile } = useGuestProfile();
-  const { deliveryFeeNcr, deliveryFeeOutsideNcr, isLoading: settingsLoading } = useSettings();
+  const {
+    deliveryFeeNcr,
+    deliveryFeeOutsideNcr,
+    isLoading: settingsLoading,
+  } = useSettings();
   const { showToast } = useToast();
-  const [province, setProvince] = useState('');
+  const [province, setProvince] = useState("");
   const [provinceOptions, setProvinceOptions] = useState<Province[]>([]);
 
   // Helper function to get all provinces from all regions
@@ -44,41 +43,45 @@ const CartPage = () => {
 
       for (const region of allRegions) {
         const regionProvinces = await provinces(region.region_code);
-        
+
         // Check if this region contains NCR/Metro Manila districts
-        const ncrProvinces = regionProvinces.filter((p: Province) => 
-          p.province_name.toLowerCase().includes('ncr') || 
-          p.province_name.toLowerCase().includes('metro manila') ||
-          p.province_name.toLowerCase().includes('national capital region')
+        const ncrProvinces = regionProvinces.filter(
+          (p: Province) =>
+            p.province_name.toLowerCase().includes("ncr") ||
+            p.province_name.toLowerCase().includes("metro manila") ||
+            p.province_name.toLowerCase().includes("national capital region")
         );
-        
+
         if (ncrProvinces.length > 0 && !hasNCR) {
           // Add a single "Metro Manila" entry instead of multiple NCR districts
           allProvinces.push({
-            psgc_code: 'NCR',
-            province_name: 'Metro-Manila',
-            province_code: 'NCR',
-            region_code: region.region_code
+            psgc_code: "NCR",
+            province_name: "Metro-Manila",
+            province_code: "NCR",
+            region_code: region.region_code,
           });
           hasNCR = true;
         } else {
           // Add non-NCR provinces normally with hyphenated names
-          const nonNcrProvinces = regionProvinces.filter((p: Province) => 
-            !p.province_name.toLowerCase().includes('ncr') && 
-            !p.province_name.toLowerCase().includes('metro manila') &&
-            !p.province_name.toLowerCase().includes('national capital region')
+          const nonNcrProvinces = regionProvinces.filter(
+            (p: Province) =>
+              !p.province_name.toLowerCase().includes("ncr") &&
+              !p.province_name.toLowerCase().includes("metro manila") &&
+              !p.province_name.toLowerCase().includes("national capital region")
           );
-          const hyphenatedProvinces = nonNcrProvinces.map(p => ({
+          const hyphenatedProvinces = nonNcrProvinces.map((p) => ({
             ...p,
-            province_name: p.province_name.replace(/ /g, '-')
+            province_name: p.province_name.replace(/ /g, "-"),
           }));
           allProvinces.push(...hyphenatedProvinces);
         }
       }
-      
-      return allProvinces.sort((a, b) => a.province_name.localeCompare(b.province_name));
+
+      return allProvinces.sort((a, b) =>
+        a.province_name.localeCompare(b.province_name)
+      );
     } catch (error) {
-      console.error('Error fetching provinces:', error);
+      console.error("Error fetching provinces:", error);
       return [];
     }
   };
@@ -89,29 +92,43 @@ const CartPage = () => {
   }, []);
 
   // Check if any products are unavailable (sold or on hold by others)
-  const hasUnavailableProducts = cartItems.some(item => {
-    if (item.product.status === 'Sold') return true;
-    
-    if (item.product.status === 'OnHold') {
-      const currentUserId = isAuthenticated ? user?.id : localStorage.getItem(GUEST_ID_KEY);
-      const isHeldByCurrentUser = 
-        item.product.onhold_by_id == currentUserId && 
-        item.product.onhold_by_type == (isAuthenticated ? 'user' : 'guest');
-      console.log({isHeldByCurrentUser, currentUserId, isAuthenticated, item, profile})
+  const hasUnavailableProducts = cartItems.some((item) => {
+    if (item.product.status === "Sold") return true;
+
+    if (item.product.status === "OnHold") {
+      const currentUserId = isAuthenticated
+        ? user?.id
+        : localStorage.getItem(GUEST_ID_KEY);
+      const isHeldByCurrentUser =
+        item.product.onhold_by_id == currentUserId &&
+        item.product.onhold_by_type == (isAuthenticated ? "user" : "guest");
+      console.log({
+        isHeldByCurrentUser,
+        currentUserId,
+        isAuthenticated,
+        item,
+        profile,
+      });
       return !isHeldByCurrentUser; // Only unavailable if NOT held by current user
     }
-    
+
     return false;
   });
 
   useEffect(() => {
     if (isAuthenticated && profile?.province) {
       // Convert original province name to hyphenated format if needed
-      const hyphenatedProvince = profile.province === 'Metro Manila' ? 'Metro-Manila' : profile.province.replace(/ /g, '-');
+      const hyphenatedProvince =
+        profile.province === "Metro Manila"
+          ? "Metro-Manila"
+          : profile.province.replace(/ /g, "-");
       setProvince(hyphenatedProvince);
     } else if (!isAuthenticated && guestProfile?.province) {
       // Convert original province name to hyphenated format if needed
-      const hyphenatedProvince = guestProfile.province === 'Metro Manila' ? 'Metro-Manila' : guestProfile.province.replace(/ /g, '-');
+      const hyphenatedProvince =
+        guestProfile.province === "Metro Manila"
+          ? "Metro-Manila"
+          : guestProfile.province.replace(/ /g, "-");
       setProvince(hyphenatedProvince);
     }
   }, [isAuthenticated, profile, guestProfile]);
@@ -120,7 +137,8 @@ const CartPage = () => {
   let shipping = 0;
   if (cartItems.length > 0) {
     if (province) {
-      shipping = province === 'Metro-Manila' ? deliveryFeeNcr : deliveryFeeOutsideNcr;
+      shipping =
+        province === "Metro-Manila" ? deliveryFeeNcr : deliveryFeeOutsideNcr;
     } else {
       shipping = 0;
     }
@@ -129,7 +147,10 @@ const CartPage = () => {
 
   const handleCheckoutClick = () => {
     if (hasUnavailableProducts) {
-      showToast('Please remove unavailable items from your cart before proceeding to checkout.', 'error');
+      showToast(
+        "Please remove unavailable items from your cart before proceeding to checkout.",
+        "error"
+      );
       return;
     }
     setIsUnifiedCheckoutOpen(true);
@@ -144,26 +165,35 @@ const CartPage = () => {
   };
 
   const getProductStatusBadge = (product: Product) => {
-    if (product.status === 'Sold') {
+    if (product.status === "Sold") {
       return (
         <span className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-red-100 text-red-800">
           Sold
         </span>
       );
-    } else if (product.status === 'OnHold') {
-      const currentUserId = isAuthenticated ? user?.id : localStorage.getItem(GUEST_ID_KEY);
-      const isHeldByCurrentUser = 
-        product.onhold_by_id == currentUserId && 
-        product.onhold_by_type == (isAuthenticated ? 'user' : 'guest');
-        console.log("getProductStatusBadge")
-      console.log({isHeldByCurrentUser, currentUserId, isAuthenticated, product})
+    } else if (product.status === "OnHold") {
+      const currentUserId = isAuthenticated
+        ? user?.id
+        : localStorage.getItem(GUEST_ID_KEY);
+      const isHeldByCurrentUser =
+        product.onhold_by_id == currentUserId &&
+        product.onhold_by_type == (isAuthenticated ? "user" : "guest");
+      console.log("getProductStatusBadge");
+      console.log({
+        isHeldByCurrentUser,
+        currentUserId,
+        isAuthenticated,
+        product,
+      });
       return (
-        <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${
-          isHeldByCurrentUser 
-            ? 'bg-green-100 text-green-800'
-            : 'bg-yellow-100 text-yellow-800'
-        }`}>
-          {isHeldByCurrentUser ? 'Reserved by You' : 'On hold by other user'}
+        <span
+          className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${
+            isHeldByCurrentUser
+              ? "bg-green-100 text-green-800"
+              : "bg-yellow-100 text-yellow-800"
+          }`}
+        >
+          {isHeldByCurrentUser ? "Reserved by You" : "On hold by other user"}
         </span>
       );
     }
@@ -173,12 +203,12 @@ const CartPage = () => {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <h1 className="text-3xl font-bold mb-8">Your Cart</h1>
-      
+
       {cartItems.length === 0 ? (
         <div className="text-center py-12 bg-white shadow rounded p-8">
           <p className="text-xl mb-6">Your cart is empty</p>
-          <Link 
-            to="/products" 
+          <Link
+            to="/products"
             className="inline-block border border-black px-8 py-3 hover:bg-black hover:text-white transition-colors no-underline text-black"
           >
             Continue Shopping
@@ -193,48 +223,77 @@ const CartPage = () => {
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">
                     <tr>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th
+                        scope="col"
+                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      >
                         Product
                       </th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th
+                        scope="col"
+                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      >
                         Price
                       </th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th
+                        scope="col"
+                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      >
                         Status
                       </th>
-                      <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th
+                        scope="col"
+                        className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      >
                         Action
                       </th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200">
                     {cartItems.map((item) => (
-                      <tr key={`desktop-${item.product.id}`} className={item.product.status !== 'Available' ? 'bg-gray-50' : ''}>
+                      <tr
+                        key={`desktop-${item.product.id}`}
+                        className={
+                          item.product.status !== "Available"
+                            ? "bg-gray-50"
+                            : ""
+                        }
+                      >
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center">
                             <div className="h-16 w-16 bg-gray-200 rounded flex-shrink-0 overflow-hidden">
-                              <img 
-                                src={item.product.image} 
-                                alt={item.product.name} 
+                              <img
+                                src={item.product.image}
+                                alt={item.product.name}
                                 className="h-full w-full object-cover"
                               />
                             </div>
                             <div className="ml-4">
-                              <div className="text-sm font-medium text-gray-900">{item.product.name}</div>
-                              <div className="text-sm text-gray-500">Size: {item.product.size?.toUpperCase()}</div>
+                              <div className="text-sm font-medium text-gray-900">
+                                {item.product.name}
+                              </div>
+                              <div className="text-sm text-gray-500">
+                                Size: {item.product.size?.toUpperCase()}
+                              </div>
                             </div>
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-medium text-gray-900">₱{Number(item.product.price).toFixed(2)}</div>
+                          <div className="text-sm font-medium text-gray-900">
+                            ₱{Number(item.product.price).toFixed(2)}
+                          </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           {getProductStatusBadge(item.product)}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                          <button 
+                          <button
                             className="text-red-600 hover:text-red-800 font-medium"
-                            onClick={() => item.id !== undefined ? removeFromCart(item.id) : null}
+                            onClick={() =>
+                              item.id !== undefined
+                                ? removeFromCart(item.id)
+                                : null
+                            }
                           >
                             Remove
                           </button>
@@ -244,32 +303,49 @@ const CartPage = () => {
                   </tbody>
                 </table>
               </div>
-              
+
               {/* Cart Items - Mobile View */}
               <div className="md:hidden">
                 <div className="divide-y divide-gray-200">
                   {cartItems.map((item) => (
-                    <div key={`mobile-${item.product.id}`} className={`p-4 ${item.product.status !== 'Available' ? 'bg-gray-50' : ''}`}>
+                    <div
+                      key={`mobile-${item.product.id}`}
+                      className={`p-4 ${
+                        item.product.status !== "Available" ? "bg-gray-50" : ""
+                      }`}
+                    >
                       <div className="flex mb-4">
                         <div className="h-20 w-20 bg-gray-200 rounded flex-shrink-0 overflow-hidden">
-                          <img 
-                            src={item.product.image} 
-                            alt={item.product.name} 
+                          <img
+                            src={item.product.image}
+                            alt={item.product.name}
                             className="h-full w-full object-cover"
                           />
                         </div>
                         <div className="ml-4 flex-grow">
-                          <div className="text-sm font-medium text-gray-900">{item.product.name}</div>
-                          <div className="text-sm text-gray-500">Size: {item.product.size?.toUpperCase()}</div>
-                          <div className="text-sm font-medium text-gray-900 mt-1">₱{Number(item.product.price).toFixed(2)}</div>
-                          <div className="mt-2">{getProductStatusBadge(item.product)}</div>
+                          <div className="text-sm font-medium text-gray-900">
+                            {item.product.name}
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            Size: {item.product.size?.toUpperCase()}
+                          </div>
+                          <div className="text-sm font-medium text-gray-900 mt-1">
+                            ₱{Number(item.product.price).toFixed(2)}
+                          </div>
+                          <div className="mt-2">
+                            {getProductStatusBadge(item.product)}
+                          </div>
                         </div>
                       </div>
-                      
+
                       <div className="flex justify-end items-center mt-2">
-                        <button 
+                        <button
                           className="text-red-600 hover:text-red-800 font-medium"
-                          onClick={() => item.id !== undefined ? removeFromCart(item.id) : null}
+                          onClick={() =>
+                            item.id !== undefined
+                              ? removeFromCart(item.id)
+                              : null
+                          }
                         >
                           Remove
                         </button>
@@ -278,15 +354,15 @@ const CartPage = () => {
                   ))}
                 </div>
               </div>
-              
+
               <div className="p-4 flex justify-between border-t border-gray-200">
-                <Link 
-                  to="/products" 
+                <Link
+                  to="/products"
                   className="text-sm font-medium text-gray-700 hover:text-black"
                 >
                   Continue Shopping
                 </Link>
-                <button 
+                <button
                   onClick={clearCart}
                   className="text-sm font-medium text-red-600 hover:text-red-800"
                 >
@@ -295,21 +371,27 @@ const CartPage = () => {
               </div>
             </div>
           </div>
-          
+
           {/* Order Summary */}
           <div className="bg-white shadow rounded p-6">
             <h2 className="text-lg font-medium mb-4">Order Summary</h2>
             {hasUnavailableProducts && (
               <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
                 <p className="text-sm text-yellow-800">
-                  Some items in your cart are no longer available. Please remove them before proceeding to checkout.
+                  Some items in your cart are no longer available. Please remove
+                  them before proceeding to checkout.
                 </p>
               </div>
             )}
             <div className="space-y-4">
               <div className="flex justify-between">
-                <span className="text-gray-600">Subtotal ({cartItems.length} {cartItems.length === 1 ? 'item' : 'items'})</span>
-                <span className="font-medium">₱{Number(subtotal).toFixed(2)}</span>
+                <span className="text-gray-600">
+                  Item total ({cartItems.length}{" "}
+                  {cartItems.length === 1 ? "item" : "items"})
+                </span>
+                <span className="font-medium">
+                  ₱{Number(subtotal).toFixed(2)}
+                </span>
               </div>
               <div className="space-y-2">
                 <div className="flex justify-between">
@@ -322,32 +404,43 @@ const CartPage = () => {
                   >
                     <option value="">Select Province</option>
                     {provinceOptions.map((prov: Province) => (
-                      <option key={prov.province_code} value={prov.province_name}>{prov.province_name}</option>
+                      <option
+                        key={prov.province_code}
+                        value={prov.province_name}
+                      >
+                        {prov.province_name}
+                      </option>
                     ))}
                   </select>
                 </div>
                 <div className="flex justify-end">
                   <span className="font-medium">
                     {province
-                      ? (settingsLoading ? 'Loading...' : `₱${Number(shipping).toFixed(2)}`)
-                      : '—'}
+                      ? settingsLoading
+                        ? "Loading..."
+                        : `₱${Number(shipping).toFixed(2)}`
+                      : "—"}
                   </span>
                 </div>
               </div>
               <div className="flex justify-between border-t border-gray-200 pt-4">
                 <span className="font-medium text-lg">Total</span>
-                <span className="font-medium text-lg">₱{Number(total).toFixed(2)}</span>
+                <span className="font-medium text-lg">
+                  ₱{Number(total).toFixed(2)}
+                </span>
               </div>
               <button
                 onClick={handleCheckoutClick}
                 disabled={hasUnavailableProducts}
                 className={`w-full py-3 px-4 font-medium rounded transition-colors ${
                   hasUnavailableProducts
-                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                    : 'bg-[#ad688f] text-white hover:bg-[#96577b]'
+                    ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                    : "bg-[#ad688f] text-white hover:bg-[#96577b]"
                 }`}
               >
-                {hasUnavailableProducts ? 'Remove Unavailable Items' : 'Checkout'}
+                {hasUnavailableProducts
+                  ? "Remove Unavailable Items"
+                  : "Checkout"}
               </button>
               {isAuthenticated && (
                 <Link
@@ -372,4 +465,4 @@ const CartPage = () => {
   );
 };
 
-export default CartPage; 
+export default CartPage;
