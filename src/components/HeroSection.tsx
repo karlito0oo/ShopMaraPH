@@ -125,7 +125,7 @@ const HeroSection = () => {
   };
 
   return (
-    <div className="relative w-full h-[450px] md:h-[600px] flex items-center justify-center overflow-hidden border-b border-gray-200 bg-black">
+    <div className="relative w-full h-[700px] md:h-[600px] flex items-center justify-center overflow-hidden border-b border-gray-200 bg-black -mt-20">
       {/* Carousel Images */}
       <div className="absolute top-0 left-0 w-full h-full">
         {slides.map((slide, idx) => (
@@ -139,50 +139,53 @@ const HeroSection = () => {
         ))}
       </div>
       {/* Overlay */}
-      <div className="absolute inset-0 bg-black bg-opacity-40 z-10" />
+      <div className="absolute inset-0 bg-opacity-40 z-10" />
       {/* Content */}
-      <div className="relative z-20 w-full flex flex-col items-center justify-center h-full">
-        {slides[current]?.title ? (
-          <h1 className="text-5xl md:text-7xl header-font font-light mb-4 text-center text-white drop-shadow-lg">
-            {slides[current].title}
-          </h1>
-        ) : (
-          <h1 className="text-5xl md:text-7xl header-font font-light mb-4 text-center text-white drop-shadow-lg">
-            SHOPMARA PH
-          </h1>
-        )}
-        {slides[current]?.subtitle ? (
-          <div className="bg-[#ad688f] px-6 py-2 mb-8 bg-opacity-90 rounded">
-            <p className="text-lg font-body font-light text-white">
-              {slides[current].subtitle}
+      <div className="relative z-20 w-full h-full flex items-center justify-center">
+        {/* White background container for main content */}
+        <div className="bg-white bg-opacity-50 backdrop-blur-sm rounded-lg p-8 md:p-12 max-w-4xl mx-4 shadow-lg flex flex-col items-center justify-center">
+          {slides[current]?.title ? (
+            <h1 className="text-5xl md:text-7xl header-font font-light mb-4 text-center text-white drop-shadow-lg">
+              {slides[current].title}
+            </h1>
+          ) : (
+            <h1 className="text-5xl md:text-7xl header-font font-light mb-4 text-center text-black drop-shadow-lg">
+              SHOPMARA PH
+            </h1>
+          )}
+          {slides[current]?.subtitle ? (
+            <div className="bg-[#ad688f] px-6 py-2 mb-8 bg-opacity-90 rounded">
+              <p className="text-lg font-body font-light text-black">
+                {slides[current].subtitle}
+              </p>
+            </div>
+          ) : (
+            <div className="bg-[#ad688f] px-6 py-2 mb-8 bg-opacity-90 rounded">
+              <p className="text-lg font-body font-light text-white text-center">
+                Carefully Curated Timeless Finds
+              </p>
+            </div>
+          )}
+          <div className="max-w-2xl text-center mx-auto px-4">
+            {slides[current]?.link ? (
+              <a
+                href={slides[current].link}
+                className="text-white underline mb-4 block"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {slides[current].link}
+              </a>
+            ) : null}
+            <p className="text-black mb-8 font-body font-light drop-shadow">
+              ShopMaraPH is a passion project rooted in timeless style and
+              conscious living. We offer carefully handpicked vintage
+              polos—elegant, versatile pieces made for modern women who lead,
+              whether in the office or off-duty. Beautifully curated,
+              sustainably sourced.
             </p>
+            <AnnouncementSlider />
           </div>
-        ) : (
-          <div className="bg-[#ad688f] px-6 py-2 mb-8 bg-opacity-90 rounded">
-            <p className="text-lg font-body font-light text-white">
-              Carefully Curated Timeless Finds
-            </p>
-          </div>
-        )}
-        <div className="max-w-2xl text-center px-4">
-          {slides[current]?.link ? (
-            <a
-              href={slides[current].link}
-              className="text-white underline mb-4 block"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              {slides[current].link}
-            </a>
-          ) : null}
-          <p className="text-gray-100 mb-8 font-body font-light drop-shadow">
-            ShopMaraPH is a passion project rooted in timeless style and
-            conscious living. We offer carefully handpicked vintage
-            polos—elegant, versatile pieces made for modern women who lead,
-            whether in the office or off-duty. Beautifully curated, sustainably
-            sourced.
-          </p>
-          <AnnouncementSlider />
         </div>
       </div>
     </div>

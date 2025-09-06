@@ -1,8 +1,8 @@
-import React from 'react';
-import type { ReactNode } from 'react';
-import { Link } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
-import TabButton from '../ui/TabButton';
+import React from "react";
+import type { ReactNode } from "react";
+import { Link } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
+import TabButton from "../ui/TabButton";
 
 interface AdminLayoutProps {
   children: ReactNode;
@@ -20,12 +20,12 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({
   children,
   title,
   showBackButton = false,
-  backButtonPath = '/admin',
-  backButtonText = 'Back to Admin',
+  backButtonPath = "/admin",
+  backButtonText = "Back to Admin",
   tabs,
   activeTab,
   onTabChange,
-  darkTabs = false
+  darkTabs = false,
 }) => {
   const { isAdmin } = useAuth();
 
@@ -44,7 +44,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({
       <div className="container mx-auto px-4 py-8">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
           <h1 className="text-2xl font-bold">{title}</h1>
-          
+
           {showBackButton && (
             <Link
               to={backButtonPath}
@@ -54,22 +54,26 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({
             </Link>
           )}
         </div>
-        
+
         {tabs && activeTab && onTabChange && (
-          <div className={`${darkTabs ? 'bg-gray-900' : 'bg-white'} shadow rounded mb-6`}>
-            <TabButton 
-              tabs={tabs} 
-              activeTab={activeTab} 
+          <div
+            className={`${
+              darkTabs ? "bg-gray-900" : "bg-white"
+            } shadow rounded mb-6`}
+          >
+            <TabButton
+              tabs={tabs}
+              activeTab={activeTab}
               onTabChange={onTabChange}
               darkMode={darkTabs}
             />
           </div>
         )}
-        
+
         {children}
       </div>
     </div>
   );
 };
 
-export default AdminLayout; 
+export default AdminLayout;
