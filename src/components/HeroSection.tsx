@@ -125,15 +125,15 @@ const HeroSection = () => {
   };
 
   return (
-    <div className="relative w-full h-[450px] md:h-[700px] flex items-center justify-center overflow-hidden border-b border-gray-200 bg-black -mt-20">
+    <div className="relative w-full h-[800px] md:h-[700px] flex items-center justify-center overflow-hidden border-b border-gray-200 bg-black -mt-20">
       {/* Carousel Images */}
-      <div className="absolute top-0 left-0 w-full h-full">
+      <div className="absolute  left-0 w-full h-full">
         {slides.map((slide, idx) => (
           <img
             key={slide.image_url + idx}
             src={slide.image_url}
             alt="carousel background"
-            className="absolute top-0 left-0 w-full h-full object-cover"
+            className="absolute  left-0 w-full h-full object-cover"
             style={getSlideStyle(idx)}
           />
         ))}
@@ -141,7 +141,7 @@ const HeroSection = () => {
       {/* Overlay */}
       <div className="absolute inset-0 bg-opacity-40 z-10" />
       {/* Content */}
-      <div className="relative z-20 w-full h-full flex items-center justify-center">
+      <div className="relative z-20 w-full h-full flex items-center justify-center pt-[128px] md:pt-[64px]">
         {/* White background container for main content */}
         <div className="bg-white bg-opacity-50 backdrop-blur-sm rounded-lg p-8 md:p-12 max-w-4xl mx-4 shadow-lg flex flex-col items-center justify-center">
           {slides[current]?.title ? (
