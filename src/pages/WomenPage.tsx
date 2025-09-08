@@ -1,16 +1,17 @@
-import { useState, useEffect } from 'react';
-import ProductFilter from '../components/ProductFilter';
-import ProductGrid from '../components/ProductGrid';
-import type { ProductCategory, ProductSize, Product } from '../types/product';
-import { filterProducts } from '../types/product';
-import { getAllProducts } from '../services/ProductService';
+import { useState, useEffect } from "react";
+import ProductFilter from "../components/ProductFilter";
+import ProductGrid from "../components/ProductGrid";
+import type { ProductCategory, ProductSize, Product } from "../types/product";
+import { filterProducts } from "../types/product";
+import { getAllProducts } from "../services/ProductService";
 
 const WomenPage = () => {
-  const [activeCategory, setActiveCategory] = useState<ProductCategory>('women');
-  const [activeSize, setActiveSize] = useState<ProductSize>('all');
+  const [activeCategory, setActiveCategory] =
+    useState<ProductCategory>("women");
+  const [activeSize, setActiveSize] = useState<ProductSize>("all");
   const [bestSellerOnly, setBestSellerOnly] = useState(false);
   const [showNewOnly, setShowNewOnly] = useState(false);
-  const [searchKeyword, setSearchKeyword] = useState('');
+  const [searchKeyword, setSearchKeyword] = useState("");
   const [products, setProducts] = useState<Product[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -24,13 +25,13 @@ const WomenPage = () => {
         const productsData = await getAllProducts();
         setProducts(productsData);
       } catch (err) {
-        console.error('Error fetching products:', err);
-        setError('Failed to load products');
+        console.error("Error fetching products:", err);
+        setError("Failed to load products");
       } finally {
         setIsLoading(false);
       }
     };
-    
+
     fetchProducts();
   }, []);
 
@@ -38,30 +39,40 @@ const WomenPage = () => {
   useEffect(() => {
     if (products.length > 0) {
       let productsToFilter = products;
-      
+
       // If not showing all products, pre-filter to show only women's products plus the selected category
-      if (activeCategory !== 'all') {
-        productsToFilter = products.filter(product => 
-          product.category === 'women' || product.category === activeCategory
+      if (activeCategory !== "all") {
+        productsToFilter = products.filter(
+          (product) =>
+            product.category === "women" || product.category === activeCategory
         );
       }
-      
-      setFilteredProducts(filterProducts(
-        productsToFilter,
-        activeCategory, 
-        activeSize, 
-        searchKeyword,
-        showNewOnly
-      ));
+
+      setFilteredProducts(
+        filterProducts(
+          productsToFilter,
+          activeCategory,
+          activeSize,
+          searchKeyword,
+          showNewOnly
+        )
+      );
     }
-  }, [products, activeCategory, activeSize, bestSellerOnly, showNewOnly, searchKeyword]);
+  }, [
+    products,
+    activeCategory,
+    activeSize,
+    bestSellerOnly,
+    showNewOnly,
+    searchKeyword,
+  ]);
 
   const resetFilters = () => {
-    setActiveCategory('women');
-    setActiveSize('all');
+    setActiveCategory("women");
+    setActiveSize("all");
     setBestSellerOnly(false);
     setShowNewOnly(false);
-    setSearchKeyword('');
+    setSearchKeyword("");
   };
 
   if (isLoading) {
@@ -89,29 +100,27 @@ const WomenPage = () => {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <h1 className="text-3xl font-bold mb-8">Women's Collection</h1>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
         {/* Filters sidebar */}
         <div className="md:col-span-1">
-          <ProductFilter 
+          <ProductFilter
             activeCategory={activeCategory}
             activeSize={activeSize}
-            searchKeyword={searchKeyword}
             onCategoryChange={setActiveCategory}
             onSizeChange={setActiveSize}
-            onKeywordChange={setSearchKeyword}
           />
         </div>
-        
+
         {/* Products grid */}
-        <ProductGrid 
-          products={filteredProducts} 
+        <ProductGrid
+          products={filteredProducts}
           onResetFilters={resetFilters}
           searchKeyword={searchKeyword}
         />
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default WomenPage 
+export default WomenPage;
