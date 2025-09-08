@@ -67,6 +67,7 @@ const UnifiedSettings: React.FC<UnifiedSettingsProps> = ({
     useState<string>("");
   const [whatHappensAfterPayment, setWhatHappensAfterPayment] =
     useState<string>("");
+  const [thanksMessage, setThanksMessage] = useState<string>("");
 
   // Image cropper states
   const [showImageCropper, setShowImageCropper] = useState(false);
@@ -99,6 +100,7 @@ const UnifiedSettings: React.FC<UnifiedSettingsProps> = ({
       const whatHappensSetting = settings.find(
         (s) => s.key === "what_happens_after_payment"
       );
+      const thanksMessage = settings.find((s) => s.key === "thanks_message");
       const holdDurationSetting = settings.find(
         (s) => s.key === "product_hold_duration"
       );
@@ -111,6 +113,7 @@ const UnifiedSettings: React.FC<UnifiedSettingsProps> = ({
         setPaymentOptionsDescription(paymentOptionsSetting.value || "");
       if (whatHappensSetting)
         setWhatHappensAfterPayment(whatHappensSetting.value || "");
+      if (thanksMessage) setThanksMessage(thanksMessage.value || "");
       if (holdDurationSetting)
         setProductHoldDuration(parseInt(holdDurationSetting.value));
       // Carousel
@@ -146,6 +149,7 @@ const UnifiedSettings: React.FC<UnifiedSettingsProps> = ({
           value: paymentOptionsDescription,
         },
         { key: "what_happens_after_payment", value: whatHappensAfterPayment },
+        { key: "thanks_message", value: thanksMessage },
         { key: "product_hold_duration", value: productHoldDuration },
       ]);
       showToast("Settings updated successfully.", "success");
@@ -367,18 +371,30 @@ const UnifiedSettings: React.FC<UnifiedSettingsProps> = ({
             formatting, links, and images.
           </p>
         </div>
-        {/* What Happens After Payment */}
+
+        {/* Checkout confirmation */}
         <div className="mb-6">
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Checkout Prompt
+            Confirm payment
           </label>
           <RichTextEditor
             value={whatHappensAfterPayment}
             onChange={setWhatHappensAfterPayment}
           />
           <p className="text-sm text-gray-500 mt-1">
-            This description will be shown to customers after they place an
-            order. You can use formatting, links, and images.
+            This text will be displayed to customers as a prompt to confirm
+            their payment. You can include instructions, links, and images.
+          </p>
+        </div>
+        {/* What Happens After Payment */}
+        <div className="mb-6">
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Thank you message
+          </label>
+          <RichTextEditor value={thanksMessage} onChange={setThanksMessage} />
+          <p className="text-sm text-gray-500 mt-1">
+            Shown as a thank-you note after the order. Supports text, links, and
+            images.
           </p>
         </div>
         {/* Carousel Interval */}

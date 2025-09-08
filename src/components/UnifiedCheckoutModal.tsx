@@ -1255,25 +1255,12 @@ const UnifiedCheckoutModal: React.FC<UnifiedCheckoutModalProps> = ({
               {orderSuccess && (
                 <div className="space-y-4">
                   <div className="bg-green-50 p-4 rounded border border-green-200">
-                    <p className="text-gray-700 mb-2">
-                      Thank you, fairy✨
-                      <br />
-                      <br />
-                      Your order is now pending while we verify your payment
-                      within 24 hours. Once confirmed, your order will be
-                      carefully packed just for you. 💕
-                      <br />
-                      <br />
-                      We can hold paid orders for up to 2 weeks. If you’d like
-                      us to hold your order for single shipping with other
-                      items, please message us on Instagram (@shopmaraph).
-                      Otherwise, your order will be shipped automatically.
-                      You’ll receive tracking details via email (or on Instagram
-                      if you’ve shared your username).
-                      <br />
-                      <br />
-                      Thank you for your patience and understanding.
-                    </p>
+                    <div
+                      className="prose prose-sm max-w-none"
+                      dangerouslySetInnerHTML={{
+                        __html: settings.thanksMessage,
+                      }}
+                    />
                   </div>
                 </div>
               )}

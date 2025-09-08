@@ -1,4 +1,4 @@
-import { apiRequest } from './ApiService';
+import { apiRequest } from "./ApiService";
 
 interface PublicSettings {
   delivery_fee_ncr: number;
@@ -6,6 +6,7 @@ interface PublicSettings {
   free_delivery_threshold: number;
   payment_options_description: string;
   what_happens_after_payment: string;
+  thanks_message: string;
 }
 
 interface Setting {
@@ -25,17 +26,18 @@ export const SettingService = {
    */
   getPublicSettings: async (): Promise<PublicSettings> => {
     try {
-      const response = await apiRequest('/settings');
+      const response = await apiRequest("/settings");
       return response.data;
     } catch (error) {
-      console.error('Error fetching public settings:', error);
+      console.error("Error fetching public settings:", error);
       // Return default values if API call fails
       return {
         delivery_fee_ncr: 80,
         delivery_fee_outside_ncr: 120,
         free_delivery_threshold: 0,
-        payment_options_description: '',
-        what_happens_after_payment: '',
+        payment_options_description: "",
+        what_happens_after_payment: "",
+        thanks_message: "",
       };
     }
   },
@@ -45,30 +47,45 @@ export const SettingService = {
    */
   getAllSettings: async (token: string): Promise<Setting[]> => {
     const headers: Record<string, string> = {};
-    headers['Authorization'] = `Bearer ${token}`;
-    const response = await apiRequest('/admin/settings', 'GET', null, headers);
+    headers["Authorization"] = `Bearer ${token}`;
+    const response = await apiRequest("/admin/settings", "GET", null, headers);
     return response.data;
   },
 
   /**
    * Admin: Update a setting
    */
-  updateSetting: async (token: string, key: string, value: string | number | boolean): Promise<any> => {
-    
+  updateSetting: async (
+    token: string,
+    key: string,
+    value: string | number | boolean
+  ): Promise<any> => {
     const headers: Record<string, string> = {};
-    headers['Authorization'] = `Bearer ${token}`;
-    const response = await apiRequest(`/admin/settings/${key}`, 'PUT', { value }, headers);
+    headers["Authorization"] = `Bearer ${token}`;
+    const response = await apiRequest(
+      `/admin/settings/${key}`,
+      "PUT",
+      { value },
+      headers
+    );
     return response.data;
   },
 
   /**
    * Admin: Update multiple settings at once
    */
-  updateMultipleSettings: async (token: string, settings: { key: string, value: any }[]): Promise<any> => {
-    
+  updateMultipleSettings: async (
+    token: string,
+    settings: { key: string; value: any }[]
+  ): Promise<any> => {
     const headers: Record<string, string> = {};
-    headers['Authorization'] = `Bearer ${token}`;
-    const response = await apiRequest('/admin/settings', 'POST', { settings }, headers);
+    headers["Authorization"] = `Bearer ${token}`;
+    const response = await apiRequest(
+      "/admin/settings",
+      "POST",
+      { settings },
+      headers
+    );
     return response.data;
-  }
-}; 
+  },
+};

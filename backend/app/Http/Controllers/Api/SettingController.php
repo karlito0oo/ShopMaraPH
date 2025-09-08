@@ -41,6 +41,7 @@ class SettingController extends Controller
             'free_delivery_threshold' => Setting::get('free_delivery_threshold', 0),
             'payment_options_description' => Setting::get('payment_options_description', ''),
             'what_happens_after_payment' => Setting::get('what_happens_after_payment', ''),
+            'thanks_message' => Setting::get('thanks_message', ''),
         ];
         
         return response()->json([

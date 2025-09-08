@@ -399,6 +399,18 @@ class OrderController extends Controller
                         $item->product->save();
                     }
                 }
+
+                // If the order is being approved, add it to Google Sheets
+                if ($request->status === Order::STATUS_APPROVED) {
+                    try {
+                        $googleSheetsService = new \App\Services\GoogleSheetsService();
+                        $googleSheetsService->appendOrderData($order);
+                    } catch (\Exception $e) {
+                        \Log::error('Failed to add order to Google Sheets: ' . $e->getMessage());
+                        // Don't throw the exception - we don't want to block the order status update
+                        // if Google Sheets sync fails
+                    }
+                }
             }
 
             $order->status = $request->status;
