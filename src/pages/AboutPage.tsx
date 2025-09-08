@@ -2,18 +2,6 @@ const AboutPage = () => {
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
       <div className="text-center mb-16">
-        <div className="flex justify-center mb-6">
-          <img
-            src="/app-logo.jpg"
-            alt="ShopMara PH Logo"
-            className="h-28 w-auto"
-            onError={(e) => {
-              const target = e.target as HTMLImageElement;
-              target.src =
-                "https://via.placeholder.com/180x180?text=ShopMara+PH";
-            }}
-          />
-        </div>
         <h1 className="text-4xl header-font font-light text-gray-900 mb-4">
           About ShopMara PH
         </h1>
