@@ -127,52 +127,52 @@ const HeroSection = () => {
   return (
     <div className="relative w-full h-[800px] md:h-[700px] flex items-center justify-center overflow-hidden border-b border-gray-200 bg-black -mt-20">
       {/* Carousel Images */}
-      <div className="absolute  left-0 w-full h-full">
+      <div className="absolute left-0 w-full h-full">
         {slides.map((slide, idx) => (
           <img
             key={slide.image_url + idx}
             src={slide.image_url}
             alt="carousel background"
-            className="absolute  left-0 w-full h-full object-cover"
+            className="absolute left-0 w-full h-full object-cover"
             style={getSlideStyle(idx)}
           />
         ))}
       </div>
-      {/* Overlay */}
-      <div className="absolute inset-0 bg-opacity-40 z-10" />
+      {/* Overlay - reduced on mobile */}
+      <div className="absolute inset-0 bg-black bg-opacity-0  z-10" />
       {/* Content */}
       <div className="relative z-20 w-full h-full flex items-center justify-center pt-[128px] md:pt-[64px]">
         {/* White background container for main content */}
-        <div className="bg-white bg-opacity-50 backdrop-blur-sm rounded-lg p-8 md:p-12 max-w-4xl mx-4 shadow-lg flex flex-col items-center justify-center">
+        <div className="bg-white bg-opacity-10 md:bg-opacity-20 backdrop-blur-sm rounded-lg p-4 md:p-12 max-w-4xl mx-4 shadow-lg flex flex-col items-center justify-center">
           {slides[current]?.title ? (
-            <h1 className="text-5xl md:text-7xl header-font font-light mb-4 text-center text-black drop-shadow-lg">
+            <h1 className="text-4xl md:text-7xl header-font font-light mb-2 md:mb-4 text-center text-black drop-shadow-lg">
               {slides[current].title}
             </h1>
           ) : (
-            <h1 className="text-5xl md:text-7xl header-font font-light mb-4 text-center text-black drop-shadow-lg">
+            <h1 className="text-4xl md:text-7xl header-font font-light mb-2 md:mb-4 text-center text-black drop-shadow-lg">
               SHOPMARA PH
             </h1>
           )}
           {slides[current]?.subtitle ? (
-            <div className="bg-[#ad688f] px-6 py-2 mb-8 bg-opacity-90 rounded">
-              <p className="text-lg font-body font-light text-white">
+            <div className="bg-[#ad688f] px-4 md:px-6 py-1 md:py-2 mb-4 md:mb-8 bg-opacity-90 rounded">
+              <p className="text-sm md:text-lg font-body font-light text-white">
                 {slides[current].subtitle}
               </p>
             </div>
           ) : (
-            <div className="bg-[#ad688f] px-6 py-2 mb-8 bg-opacity-90 rounded">
-              <p className="text-lg font-body font-light text-white text-center">
+            <div className="bg-[#ad688f] px-4 md:px-6 py-1 md:py-2 mb-4 md:mb-8 bg-opacity-90 rounded">
+              <p className="text-sm md:text-lg font-body font-light text-white text-center">
                 Carefully Curated Timeless Finds
               </p>
             </div>
           )}
-          <div className="max-w-2xl text-center mx-auto px-4">
+          <div className="max-w-2xl text-center mx-auto px-2 md:px-4">
             {slides[current]?.link ? (
-              <p className="text-black mb-8 font-body font-light drop-shadow">
+              <p className="text-black mb-4 md:mb-8 font-body font-light drop-shadow text-sm md:text-base">
                 {slides[current].link}
               </p>
             ) : (
-              <p className="text-black mb-8 font-body font-light drop-shadow">
+              <p className="text-black mb-4 md:mb-8 font-body font-light drop-shadow text-xs md:text-base leading-relaxed">
                 ShopMaraPH is a passion project rooted in timeless style and
                 conscious living. We offer carefully handpicked vintage
                 polos—elegant, versatile pieces made for modern women who lead,
