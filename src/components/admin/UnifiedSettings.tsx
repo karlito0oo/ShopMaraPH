@@ -778,6 +778,7 @@ const UnifiedSettings: React.FC<UnifiedSettingsProps> = ({
           onCropComplete={handleImageCropComplete}
           onCancel={handleCropCancel}
           aspectRatio={carouselForm.view_type === "desktop" ? 16 / 9 : 3 / 4}
+          cropType="hero"
         />
       )}
     </div>

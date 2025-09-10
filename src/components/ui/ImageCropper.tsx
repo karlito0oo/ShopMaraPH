@@ -7,13 +7,15 @@ interface ImageCropperProps {
   onCropComplete: (croppedImageBlob: Blob) => void;
   onCancel: () => void;
   aspectRatio?: number;
+  cropType?: 'product' | 'hero';
 }
 
 const ImageCropper: React.FC<ImageCropperProps> = ({
   src,
   onCropComplete,
   onCancel,
-  aspectRatio = 1 // Default to 1:1 for square crops
+  aspectRatio = 1, // Default to 1:1 for square crops
+  cropType = 'product'
 }) => {
   const [crop, setCrop] = useState<Crop>({
     unit: '%',
@@ -63,10 +65,39 @@ const ImageCropper: React.FC<ImageCropperProps> = ({
       throw new Error('No 2d context');
     }
 
-    // Set canvas size to match the desired output (square for ProductCard)
-    const targetSize = 400; // 400x400 for good quality
-    canvas.width = targetSize;
-    canvas.height = targetSize;
+    // Calculate output dimensions based on aspect ratio and crop type
+    let outputWidth: number;
+    let outputHeight: number;
+
+    if (cropType === 'hero') {
+      // For hero images, use higher resolution
+      if (aspectRatio === 16/9) {
+        // Desktop hero: 16:9 ratio
+        outputWidth = 1920;
+        outputHeight = 1080;
+      } else if (aspectRatio === 3/4) {
+        // Mobile hero: 3:4 ratio
+        outputWidth = 1080;
+        outputHeight = 1440;
+      } else {
+        // Fallback for other ratios
+        const baseSize = 1200;
+        if (aspectRatio > 1) {
+          outputWidth = baseSize;
+          outputHeight = baseSize / aspectRatio;
+        } else {
+          outputHeight = baseSize;
+          outputWidth = baseSize * aspectRatio;
+        }
+      }
+    } else {
+      // For product images, keep square 400x400
+      outputWidth = 400;
+      outputHeight = 400;
+    }
+
+    canvas.width = outputWidth;
+    canvas.height = outputHeight;
 
     // Calculate the scale factor
     const scaleX = image.naturalWidth / image.width;
@@ -81,8 +112,8 @@ const ImageCropper: React.FC<ImageCropperProps> = ({
       crop.height * scaleY,
       0,
       0,
-      targetSize,
-      targetSize
+      outputWidth,
+      outputHeight
     );
 
     return new Promise((resolve, reject) => {
@@ -94,7 +125,7 @@ const ImageCropper: React.FC<ImageCropperProps> = ({
         }
       }, 'image/jpeg', 0.9);
     });
-  }, []);
+  }, [aspectRatio, cropType]);
 
   const handleCropComplete = useCallback(async () => {
     if (!completedCrop || !imgRef.current) return;
@@ -107,11 +138,47 @@ const ImageCropper: React.FC<ImageCropperProps> = ({
     }
   }, [completedCrop, getCroppedImg, onCropComplete]);
 
+  // Get dynamic content based on crop type
+  const getContentConfig = () => {
+    if (cropType === 'hero') {
+      const isDesktop = aspectRatio === 16/9;
+      const isMobile = aspectRatio === 3/4;
+      
+      return {
+        title: isDesktop ? 'Crop Image for Desktop Hero Section' : 
+               isMobile ? 'Crop Image for Mobile Hero Section' : 
+               'Crop Image for Hero Section',
+        description: isDesktop ? 
+          '🖥️ Desktop hero images will be displayed at 16:9 aspect ratio (1920×1080px) on screens ≥768px wide.' :
+          isMobile ?
+          '📱 Mobile hero images will be displayed at 3:4 aspect ratio (1080×1440px) on screens <768px wide.' :
+          '🖼️ This image will be used for the hero section background.',
+        dimensions: isDesktop ? '1920×1080px (16:9 ratio)' :
+                   isMobile ? '1080×1440px (3:4 ratio)' :
+                   `Custom ratio (${aspectRatio.toFixed(2)}:1)`,
+        previewText: isDesktop ? 
+          '👀 Preview: This is exactly how your image will appear on desktop hero section' :
+          isMobile ?
+          '👀 Preview: This is exactly how your image will appear on mobile hero section' :
+          '👀 Preview: This is exactly how your image will appear on hero section'
+      };
+    } else {
+      return {
+        title: 'Crop Image for Product Card',
+        description: '📐 Perfect fit guaranteed! Adjust the crop area to fit your image perfectly for the product card.',
+        dimensions: '400×400px (1:1 ratio)',
+        previewText: '👀 Preview: This is exactly how your image will appear on product cards'
+      };
+    }
+  };
+
+  const contentConfig = getContentConfig();
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75">
       <div className="bg-white rounded-lg p-6 max-w-5xl max-h-[95vh] overflow-auto mx-4">
         <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-medium">Crop Image for Product Card</h3>
+          <h3 className="text-lg font-medium">{contentConfig.title}</h3>
           <button
             onClick={onCancel}
             className="text-gray-400 hover:text-gray-600 text-xl font-bold"
@@ -121,9 +188,9 @@ const ImageCropper: React.FC<ImageCropperProps> = ({
         </div>
         
         <div className="mb-4 text-sm text-gray-600 bg-blue-50 p-3 rounded">
-          <p>📐 <strong>Perfect fit guaranteed!</strong> Adjust the crop area to fit your image perfectly for the product card.</p>
-          <p>📏 The image will be cropped to a square format (1:1 aspect ratio) at 400x400 pixels.</p>
-          <p className="text-indigo-600 font-medium">👀 Preview: This is exactly how your image will appear on product cards</p>
+          <p><strong>Perfect fit guaranteed!</strong> {contentConfig.description}</p>
+          <p>📏 The image will be cropped to {contentConfig.dimensions}.</p>
+          <p className="text-indigo-600 font-medium">{contentConfig.previewText}</p>
         </div>
 
         <div className="flex justify-center mb-6">
