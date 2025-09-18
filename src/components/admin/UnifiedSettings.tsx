@@ -202,10 +202,16 @@ const UnifiedSettings: React.FC<UnifiedSettingsProps> = ({
   };
 
   const handleImageCropComplete = (croppedImageBlob: Blob) => {
-    // Convert blob to file
-    const file = new File([croppedImageBlob], "hero-carousel-image.jpg", {
+    // Convert blob to file with proper filename and type
+    const timestamp = Date.now();
+    const viewType = carouselForm.view_type || 'desktop';
+    const filename = `hero-carousel-${viewType}-${timestamp}.jpg`;
+    
+    const file = new File([croppedImageBlob], filename, {
       type: "image/jpeg",
+      lastModified: Date.now(),
     });
+    
     setCarouselForm((prev) => ({ ...prev, image: file }));
     setCroppedImagePreview(URL.createObjectURL(file));
     setShowImageCropper(false);
@@ -713,7 +719,7 @@ const UnifiedSettings: React.FC<UnifiedSettingsProps> = ({
                     </p>
                     {carouselForm.view_type === "desktop" ? (
                       <p className="text-xs text-blue-700">
-                        <strong>Desktop:</strong> 1920x1080px (16:9 ratio) - for
+                        <strong>Desktop:</strong> 1600x800px (2:1 ratio) - for
                         wide screens ≥768px
                       </p>
                     ) : (
@@ -777,7 +783,7 @@ const UnifiedSettings: React.FC<UnifiedSettingsProps> = ({
           src={tempImageSrc}
           onCropComplete={handleImageCropComplete}
           onCancel={handleCropCancel}
-          aspectRatio={carouselForm.view_type === "desktop" ? 16 / 9 : 3 / 4}
+          aspectRatio={carouselForm.view_type === "desktop" ? 2 / 1 : 3 / 4}
           cropType="hero"
         />
       )}

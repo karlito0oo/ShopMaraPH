@@ -71,8 +71,12 @@ const ImageCropper: React.FC<ImageCropperProps> = ({
 
     if (cropType === 'hero') {
       // For hero images, use higher resolution
-      if (aspectRatio === 16/9) {
-        // Desktop hero: 16:9 ratio
+      if (aspectRatio === 2/1) {
+        // Desktop hero: 2:1 ratio (better for hero sections)
+        outputWidth = 1600;
+        outputHeight = 800;
+      } else if (aspectRatio === 16/9) {
+        // Traditional desktop hero: 16:9 ratio
         outputWidth = 1920;
         outputHeight = 1080;
       } else if (aspectRatio === 3/4) {
@@ -99,6 +103,10 @@ const ImageCropper: React.FC<ImageCropperProps> = ({
     canvas.width = outputWidth;
     canvas.height = outputHeight;
 
+    // Enable better image scaling
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+
     // Calculate the scale factor
     const scaleX = image.naturalWidth / image.width;
     const scaleY = image.naturalHeight / image.height;
@@ -123,7 +131,7 @@ const ImageCropper: React.FC<ImageCropperProps> = ({
         } else {
           reject(new Error('Canvas is empty'));
         }
-      }, 'image/jpeg', 0.9);
+      }, 'image/jpeg', cropType === 'hero' ? 0.95 : 0.9); // Higher quality for hero images
     });
   }, [aspectRatio, cropType]);
 
@@ -141,23 +149,30 @@ const ImageCropper: React.FC<ImageCropperProps> = ({
   // Get dynamic content based on crop type
   const getContentConfig = () => {
     if (cropType === 'hero') {
-      const isDesktop = aspectRatio === 16/9;
+      const isDesktop = aspectRatio === 2/1;
+      const isTraditionalDesktop = aspectRatio === 16/9;
       const isMobile = aspectRatio === 3/4;
       
       return {
         title: isDesktop ? 'Crop Image for Desktop Hero Section' : 
+               isTraditionalDesktop ? 'Crop Image for Widescreen Hero Section' :
                isMobile ? 'Crop Image for Mobile Hero Section' : 
                'Crop Image for Hero Section',
         description: isDesktop ? 
-          '🖥️ Desktop hero images will be displayed at 16:9 aspect ratio (1920×1080px) on screens ≥768px wide.' :
+          '🖥️ Desktop hero images will be displayed at 2:1 aspect ratio (1600×800px) on screens ≥768px wide - perfect for hero sections!' :
+          isTraditionalDesktop ?
+          '🖥️ Widescreen hero images will be displayed at 16:9 aspect ratio (1920×1080px) on screens ≥768px wide.' :
           isMobile ?
           '📱 Mobile hero images will be displayed at 3:4 aspect ratio (1080×1440px) on screens <768px wide.' :
           '🖼️ This image will be used for the hero section background.',
-        dimensions: isDesktop ? '1920×1080px (16:9 ratio)' :
+        dimensions: isDesktop ? '1600×800px (2:1 ratio)' :
+                   isTraditionalDesktop ? '1920×1080px (16:9 ratio)' :
                    isMobile ? '1080×1440px (3:4 ratio)' :
                    `Custom ratio (${aspectRatio.toFixed(2)}:1)`,
         previewText: isDesktop ? 
           '👀 Preview: This is exactly how your image will appear on desktop hero section' :
+          isTraditionalDesktop ?
+          '👀 Preview: This is exactly how your image will appear on widescreen hero section' :
           isMobile ?
           '👀 Preview: This is exactly how your image will appear on mobile hero section' :
           '👀 Preview: This is exactly how your image will appear on hero section'
@@ -191,6 +206,11 @@ const ImageCropper: React.FC<ImageCropperProps> = ({
           <p><strong>Perfect fit guaranteed!</strong> {contentConfig.description}</p>
           <p>📏 The image will be cropped to {contentConfig.dimensions}.</p>
           <p className="text-indigo-600 font-medium">{contentConfig.previewText}</p>
+          {cropType === 'hero' && (
+            <p className="text-green-700 font-medium mt-2">
+              ✨ The cropped image will display exactly as shown in the crop preview!
+            </p>
+          )}
         </div>
 
         <div className="flex justify-center mb-6">

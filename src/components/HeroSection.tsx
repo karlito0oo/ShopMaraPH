@@ -125,17 +125,28 @@ const HeroSection = () => {
   };
 
   return (
-    <div className="relative w-full h-[800px] md:h-[700px] flex items-center justify-center overflow-hidden border-b border-gray-200 bg-black -mt-20">
+    <div className={`relative w-full flex items-center justify-center overflow-hidden border-b border-gray-200 bg-gray-900 -mt-20 ${
+      isMobile 
+        ? 'h-[600px] max-h-[80vh]' // Mobile: Fixed height instead of aspect ratio
+        : 'h-[600px] md:h-[700px]'  // Desktop: Fixed height for better control
+    }`}>
       {/* Carousel Images */}
       <div className="absolute left-0 w-full h-full">
         {slides.map((slide, idx) => (
-          <img
+          <div
             key={slide.image_url + idx}
-            src={slide.image_url}
-            alt="carousel background"
-            className="absolute left-0 w-full h-full object-cover"
+            className="absolute left-0 w-full h-full"
             style={getSlideStyle(idx)}
-          />
+          >
+            <img
+              src={slide.image_url}
+              alt="carousel background"
+              className="w-full h-full object-cover"
+              style={{ 
+                objectPosition: 'center'
+              }}
+            />
+          </div>
         ))}
       </div>
       {/* Overlay - reduced on mobile */}
