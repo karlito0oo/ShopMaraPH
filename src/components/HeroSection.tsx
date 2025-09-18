@@ -139,11 +139,11 @@ const HeroSection = () => {
         ))}
       </div>
       {/* Overlay - reduced on mobile */}
-      <div className="absolute inset-0 bg-black bg-opacity-0  z-10" />
+      <div className="absolute inset-0 bg-black bg-opacity-0 z-10" />
       {/* Content */}
       <div className="relative z-20 w-full h-full flex items-center justify-center pt-[128px] md:pt-[64px]">
         {/* White background container for main content */}
-        <div className="bg-white bg-opacity-10 md:bg-opacity-20 backdrop-blur-sm rounded-lg p-4 md:p-12 max-w-4xl mx-4 shadow-lg flex flex-col items-center justify-center">
+        <div className="bg-white bg-opacity-80 rounded-lg p-4 md:p-12 max-w-4xl mx-4 shadow-lg flex flex-col items-center justify-center">
           {slides[current]?.title ? (
             <h1 className="text-4xl md:text-7xl header-font font-light mb-2 md:mb-4 text-center text-black drop-shadow-lg">
               {slides[current].title}
